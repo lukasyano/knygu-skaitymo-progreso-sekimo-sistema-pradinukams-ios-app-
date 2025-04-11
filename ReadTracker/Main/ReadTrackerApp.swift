@@ -22,6 +22,7 @@ struct ReadTrackerApp: App {
         WindowGroup {
             ContentView()
         }
+
         .modelContainer(sharedModelContainer)
     }
 }

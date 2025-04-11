@@ -17,8 +17,8 @@ class RealtimeDatabasePublisher: ObservableObject {
     var cancellables: Set<AnyCancellable> = .init()
 
     init() {
-        DatabaseReference.child.observe(.value) { [weak self] _ in
-            guard let self else { return }
+        DatabaseReference.child.observe(.value) {  _ in
+            //  guard let self else { return }
 
             print("new record")
         }
