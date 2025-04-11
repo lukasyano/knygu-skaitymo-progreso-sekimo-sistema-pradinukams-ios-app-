@@ -1,4 +1,5 @@
 import FirebaseCore
+import FirebaseDatabase
 import SwiftData
 import SwiftUI
 
