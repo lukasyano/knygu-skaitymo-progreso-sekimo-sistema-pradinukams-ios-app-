@@ -1,19 +1,13 @@
-//
-//  Read_TrackerApp.swift
-//  Read Tracker
-//
-//  Created by Lukas Toliusis on 11/04/2025.
-//
-
-import SwiftUI
+import FirebaseCore
 import SwiftData
+import SwiftUI
 
 @main
-struct Read_TrackerApp: App {
+struct ReadTrackerApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
+
     var sharedModelContainer: ModelContainer = {
-        let schema = Schema([
-            Item.self,
-        ])
+        let schema = Schema([Item.self])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
         do {

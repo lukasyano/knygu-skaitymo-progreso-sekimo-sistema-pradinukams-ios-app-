@@ -1,10 +1,3 @@
-//
-//  ContentView.swift
-//  Read Tracker
-//
-//  Created by Lukas Toliusis on 11/04/2025.
-//
-
 import SwiftUI
 import SwiftData
 
