@@ -7,13 +7,24 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		12AE949A2DA99F8E00064C94 /* swiftlint.yml in Resources */ = {isa = PBXBuildFile; fileRef = 12AE94992DA99F8E00064C94 /* swiftlint.yml */; };
+		12AE949B2DA99F8E00064C94 /* swiftlint.yml in Resources */ = {isa = PBXBuildFile; fileRef = 12AE94992DA99F8E00064C94 /* swiftlint.yml */; };
+		12AE949C2DA99F8E00064C94 /* swiftlint.yml in Resources */ = {isa = PBXBuildFile; fileRef = 12AE94992DA99F8E00064C94 /* swiftlint.yml */; };
+		12AE94A12DA9A58E00064C94 /* ReadTrackerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12AE949F2DA9A58E00064C94 /* ReadTrackerTests.swift */; };
+		12AE94A52DA9A59100064C94 /* ReadTrackerUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12AE94A22DA9A59100064C94 /* ReadTrackerUITests.swift */; };
+		12AE94A62DA9A59100064C94 /* ReadTrackerUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12AE94A32DA9A59100064C94 /* ReadTrackerUITestsLaunchTests.swift */; };
+		12C7000F2DA9972A004DE9F4 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 12C700052DA9972A004DE9F4 /* GoogleService-Info.plist */; };
+		12C700102DA9972A004DE9F4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 12C700092DA9972A004DE9F4 /* Assets.xcassets */; };
+		12C700112DA9972A004DE9F4 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12C700072DA9972A004DE9F4 /* AppDelegate.swift */; };
+		12C700122DA9972A004DE9F4 /* AppDelegate+Application.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12C700082DA9972A004DE9F4 /* AppDelegate+Application.swift */; };
+		12C700132DA9972A004DE9F4 /* ReadTrackerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12C7000A2DA9972A004DE9F4 /* ReadTrackerApp.swift */; };
+		12C700142DA9972A004DE9F4 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12C7000C2DA9972A004DE9F4 /* ContentView.swift */; };
+		12C700152DA9972A004DE9F4 /* Item.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12C7000D2DA9972A004DE9F4 /* Item.swift */; };
 		12C7FF1E2DA91869004DE9F4 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 12C7FF1D2DA91869004DE9F4 /* FirebaseAuth */; };
 		12C7FF202DA91869004DE9F4 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = 12C7FF1F2DA91869004DE9F4 /* FirebaseCore */; };
 		12C7FF222DA91869004DE9F4 /* FirebaseDatabase in Frameworks */ = {isa = PBXBuildFile; productRef = 12C7FF212DA91869004DE9F4 /* FirebaseDatabase */; };
 		12C7FF242DA91869004DE9F4 /* FirebaseFirestoreCombine-Community in Frameworks */ = {isa = PBXBuildFile; productRef = 12C7FF232DA91869004DE9F4 /* FirebaseFirestoreCombine-Community */; };
 		12C7FF262DA91869004DE9F4 /* FirebaseFunctionsCombine-Community in Frameworks */ = {isa = PBXBuildFile; productRef = 12C7FF252DA91869004DE9F4 /* FirebaseFunctionsCombine-Community */; };
-		12C7FF282DA91869004DE9F4 /* FirebaseInAppMessaging-Beta in Frameworks */ = {isa = PBXBuildFile; productRef = 12C7FF272DA91869004DE9F4 /* FirebaseInAppMessaging-Beta */; };
-		12C7FF2A2DA91869004DE9F4 /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = 12C7FF292DA91869004DE9F4 /* FirebaseMessaging */; };
 		12C7FF2C2DA91869004DE9F4 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 12C7FF2B2DA91869004DE9F4 /* FirebaseStorage */; };
 		12C7FF2E2DA91869004DE9F4 /* FirebaseStorageCombine-Community in Frameworks */ = {isa = PBXBuildFile; productRef = 12C7FF2D2DA91869004DE9F4 /* FirebaseStorageCombine-Community */; };
 /* End PBXBuildFile section */
@@ -36,28 +47,21 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		12C7FEF02DA91192004DE9F4 /* Read Tracker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Read Tracker.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		12C7FEFF2DA91193004DE9F4 /* Read TrackerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Read TrackerTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
-		12C7FF092DA91193004DE9F4 /* Read TrackerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Read TrackerUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		12AE94992DA99F8E00064C94 /* swiftlint.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = swiftlint.yml; sourceTree = "<group>"; };
+		12AE949F2DA9A58E00064C94 /* ReadTrackerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadTrackerTests.swift; sourceTree = "<group>"; };
+		12AE94A22DA9A59100064C94 /* ReadTrackerUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadTrackerUITests.swift; sourceTree = "<group>"; };
+		12AE94A32DA9A59100064C94 /* ReadTrackerUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadTrackerUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		12C700052DA9972A004DE9F4 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		12C700072DA9972A004DE9F4 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		12C700082DA9972A004DE9F4 /* AppDelegate+Application.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+Application.swift"; sourceTree = "<group>"; };
+		12C700092DA9972A004DE9F4 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		12C7000A2DA9972A004DE9F4 /* ReadTrackerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadTrackerApp.swift; sourceTree = "<group>"; };
+		12C7000C2DA9972A004DE9F4 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		12C7000D2DA9972A004DE9F4 /* Item.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Item.swift; sourceTree = "<group>"; };
+		12C7FEF02DA91192004DE9F4 /* ReadTracker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ReadTracker.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		12C7FEFF2DA91193004DE9F4 /* ReadTrackerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ReadTrackerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		12C7FF092DA91193004DE9F4 /* ReadTrackerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ReadTrackerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
-
-/* Begin PBXFileSystemSynchronizedRootGroup section */
-		12C7FEF22DA91192004DE9F4 /* Read Tracker */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = "Read Tracker";
-			sourceTree = "<group>";
-		};
-		12C7FF022DA91193004DE9F4 /* Read TrackerTests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = "Read TrackerTests";
-			sourceTree = "<group>";
-		};
-		12C7FF0C2DA91193004DE9F4 /* Read TrackerUITests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = "Read TrackerUITests";
-			sourceTree = "<group>";
-		};
-/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		12C7FEED2DA91192004DE9F4 /* Frameworks */ = {
@@ -66,13 +70,11 @@
 			files = (
 				12C7FF222DA91869004DE9F4 /* FirebaseDatabase in Frameworks */,
 				12C7FF242DA91869004DE9F4 /* FirebaseFirestoreCombine-Community in Frameworks */,
-				12C7FF2A2DA91869004DE9F4 /* FirebaseMessaging in Frameworks */,
 				12C7FF202DA91869004DE9F4 /* FirebaseCore in Frameworks */,
 				12C7FF262DA91869004DE9F4 /* FirebaseFunctionsCombine-Community in Frameworks */,
 				12C7FF2C2DA91869004DE9F4 /* FirebaseStorage in Frameworks */,
 				12C7FF1E2DA91869004DE9F4 /* FirebaseAuth in Frameworks */,
 				12C7FF2E2DA91869004DE9F4 /* FirebaseStorageCombine-Community in Frameworks */,
-				12C7FF282DA91869004DE9F4 /* FirebaseInAppMessaging-Beta in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -93,12 +95,60 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		12AE94A02DA9A58E00064C94 /* ReadTrackerTests */ = {
+			isa = PBXGroup;
+			children = (
+				12AE949F2DA9A58E00064C94 /* ReadTrackerTests.swift */,
+			);
+			path = ReadTrackerTests;
+			sourceTree = "<group>";
+		};
+		12AE94A42DA9A59100064C94 /* ReadTrackerUITests */ = {
+			isa = PBXGroup;
+			children = (
+				12AE94A22DA9A59100064C94 /* ReadTrackerUITests.swift */,
+				12AE94A32DA9A59100064C94 /* ReadTrackerUITestsLaunchTests.swift */,
+			);
+			path = ReadTrackerUITests;
+			sourceTree = "<group>";
+		};
+		12C700062DA9972A004DE9F4 /* Google */ = {
+			isa = PBXGroup;
+			children = (
+				12C700052DA9972A004DE9F4 /* GoogleService-Info.plist */,
+			);
+			path = Google;
+			sourceTree = "<group>";
+		};
+		12C7000B2DA9972A004DE9F4 /* Main */ = {
+			isa = PBXGroup;
+			children = (
+				12C700062DA9972A004DE9F4 /* Google */,
+				12C700072DA9972A004DE9F4 /* AppDelegate.swift */,
+				12C700082DA9972A004DE9F4 /* AppDelegate+Application.swift */,
+				12C700092DA9972A004DE9F4 /* Assets.xcassets */,
+				12C7000A2DA9972A004DE9F4 /* ReadTrackerApp.swift */,
+			);
+			path = Main;
+			sourceTree = "<group>";
+		};
+		12C7000E2DA9972A004DE9F4 /* ReadTracker */ = {
+			isa = PBXGroup;
+			children = (
+				12C7000B2DA9972A004DE9F4 /* Main */,
+				12C7000C2DA9972A004DE9F4 /* ContentView.swift */,
+				12C7000D2DA9972A004DE9F4 /* Item.swift */,
+			);
+			path = ReadTracker;
+			sourceTree = "<group>";
+		};
 		12C7FEE72DA91192004DE9F4 = {
 			isa = PBXGroup;
 			children = (
-				12C7FEF22DA91192004DE9F4 /* Read Tracker */,
-				12C7FF022DA91193004DE9F4 /* Read TrackerTests */,
-				12C7FF0C2DA91193004DE9F4 /* Read TrackerUITests */,
+				12AE94992DA99F8E00064C94 /* swiftlint.yml */,
+				12C7000E2DA9972A004DE9F4 /* ReadTracker */,
+				12AE94A02DA9A58E00064C94 /* ReadTrackerTests */,
+				12AE94A42DA9A59100064C94 /* ReadTrackerUITests */,
 				12C7FEF12DA91192004DE9F4 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -106,9 +156,9 @@
 		12C7FEF12DA91192004DE9F4 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				12C7FEF02DA91192004DE9F4 /* Read Tracker.app */,
-				12C7FEFF2DA91193004DE9F4 /* Read TrackerTests.xctest */,
-				12C7FF092DA91193004DE9F4 /* Read TrackerUITests.xctest */,
+				12C7FEF02DA91192004DE9F4 /* ReadTracker.app */,
+				12C7FEFF2DA91193004DE9F4 /* ReadTrackerTests.xctest */,
+				12C7FF092DA91193004DE9F4 /* ReadTrackerUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -116,11 +166,12 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		12C7FEEF2DA91192004DE9F4 /* Read Tracker */ = {
+		12C7FEEF2DA91192004DE9F4 /* ReadTracker */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 12C7FF132DA91193004DE9F4 /* Build configuration list for PBXNativeTarget "Read Tracker" */;
+			buildConfigurationList = 12C7FF132DA91193004DE9F4 /* Build configuration list for PBXNativeTarget "ReadTracker" */;
 			buildPhases = (
 				12C7FEEC2DA91192004DE9F4 /* Sources */,
+				12AE949E2DA9A2E600064C94 /* SwiftLint */,
 				12C7FEED2DA91192004DE9F4 /* Frameworks */,
 				12C7FEEE2DA91192004DE9F4 /* Resources */,
 			);
@@ -128,28 +179,23 @@
 			);
 			dependencies = (
 			);
-			fileSystemSynchronizedGroups = (
-				12C7FEF22DA91192004DE9F4 /* Read Tracker */,
-			);
-			name = "Read Tracker";
+			name = ReadTracker;
 			packageProductDependencies = (
 				12C7FF1D2DA91869004DE9F4 /* FirebaseAuth */,
 				12C7FF1F2DA91869004DE9F4 /* FirebaseCore */,
 				12C7FF212DA91869004DE9F4 /* FirebaseDatabase */,
 				12C7FF232DA91869004DE9F4 /* FirebaseFirestoreCombine-Community */,
 				12C7FF252DA91869004DE9F4 /* FirebaseFunctionsCombine-Community */,
-				12C7FF272DA91869004DE9F4 /* FirebaseInAppMessaging-Beta */,
-				12C7FF292DA91869004DE9F4 /* FirebaseMessaging */,
 				12C7FF2B2DA91869004DE9F4 /* FirebaseStorage */,
 				12C7FF2D2DA91869004DE9F4 /* FirebaseStorageCombine-Community */,
 			);
 			productName = "Read Tracker";
-			productReference = 12C7FEF02DA91192004DE9F4 /* Read Tracker.app */;
+			productReference = 12C7FEF02DA91192004DE9F4 /* ReadTracker.app */;
 			productType = "com.apple.product-type.application";
 		};
-		12C7FEFE2DA91193004DE9F4 /* Read TrackerTests */ = {
+		12C7FEFE2DA91193004DE9F4 /* ReadTrackerTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 12C7FF162DA91193004DE9F4 /* Build configuration list for PBXNativeTarget "Read TrackerTests" */;
+			buildConfigurationList = 12C7FF162DA91193004DE9F4 /* Build configuration list for PBXNativeTarget "ReadTrackerTests" */;
 			buildPhases = (
 				12C7FEFB2DA91193004DE9F4 /* Sources */,
 				12C7FEFC2DA91193004DE9F4 /* Frameworks */,
@@ -160,19 +206,16 @@
 			dependencies = (
 				12C7FF012DA91193004DE9F4 /* PBXTargetDependency */,
 			);
-			fileSystemSynchronizedGroups = (
-				12C7FF022DA91193004DE9F4 /* Read TrackerTests */,
-			);
-			name = "Read TrackerTests";
+			name = ReadTrackerTests;
 			packageProductDependencies = (
 			);
 			productName = "Read TrackerTests";
-			productReference = 12C7FEFF2DA91193004DE9F4 /* Read TrackerTests.xctest */;
+			productReference = 12C7FEFF2DA91193004DE9F4 /* ReadTrackerTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		12C7FF082DA91193004DE9F4 /* Read TrackerUITests */ = {
+		12C7FF082DA91193004DE9F4 /* ReadTrackerUITests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 12C7FF192DA91193004DE9F4 /* Build configuration list for PBXNativeTarget "Read TrackerUITests" */;
+			buildConfigurationList = 12C7FF192DA91193004DE9F4 /* Build configuration list for PBXNativeTarget "ReadTrackerUITests" */;
 			buildPhases = (
 				12C7FF052DA91193004DE9F4 /* Sources */,
 				12C7FF062DA91193004DE9F4 /* Frameworks */,
@@ -183,14 +226,11 @@
 			dependencies = (
 				12C7FF0B2DA91193004DE9F4 /* PBXTargetDependency */,
 			);
-			fileSystemSynchronizedGroups = (
-				12C7FF0C2DA91193004DE9F4 /* Read TrackerUITests */,
-			);
-			name = "Read TrackerUITests";
+			name = ReadTrackerUITests;
 			packageProductDependencies = (
 			);
 			productName = "Read TrackerUITests";
-			productReference = 12C7FF092DA91193004DE9F4 /* Read TrackerUITests.xctest */;
+			productReference = 12C7FF092DA91193004DE9F4 /* ReadTrackerUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
@@ -216,7 +256,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 12C7FEEB2DA91192004DE9F4 /* Build configuration list for PBXProject "Read Tracker" */;
+			buildConfigurationList = 12C7FEEB2DA91192004DE9F4 /* Build configuration list for PBXProject "ReadTracker" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -227,15 +267,16 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				12C7FF1C2DA91869004DE9F4 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				12AE949D2DA9A15500064C94 /* XCRemoteSwiftPackageReference "SwiftLintPlugins" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 12C7FEF12DA91192004DE9F4 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				12C7FEEF2DA91192004DE9F4 /* Read Tracker */,
-				12C7FEFE2DA91193004DE9F4 /* Read TrackerTests */,
-				12C7FF082DA91193004DE9F4 /* Read TrackerUITests */,
+				12C7FEEF2DA91192004DE9F4 /* ReadTracker */,
+				12C7FEFE2DA91193004DE9F4 /* ReadTrackerTests */,
+				12C7FF082DA91193004DE9F4 /* ReadTrackerUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -245,6 +286,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				12C7000F2DA9972A004DE9F4 /* GoogleService-Info.plist in Resources */,
+				12AE949B2DA99F8E00064C94 /* swiftlint.yml in Resources */,
+				12C700102DA9972A004DE9F4 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -252,6 +296,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				12AE949C2DA99F8E00064C94 /* swiftlint.yml in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -259,16 +304,44 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				12AE949A2DA99F8E00064C94 /* swiftlint.yml in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		12AE949E2DA9A2E600064C94 /* SwiftLint */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = SwiftLint;
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if [[ \"$(uname -m)\" == arm64 ]]\nthen\n    export PATH=\"/opt/homebrew/bin:$PATH\"\nfi\n\nif command -v swiftlint >/dev/null 2>&1\nthen\n    swiftlint\nelse\n    echo \"warning: `swiftlint` command not found - See https://github.com/realm/SwiftLint#installation for installation instructions.\"\nfi\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		12C7FEEC2DA91192004DE9F4 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				12C700112DA9972A004DE9F4 /* AppDelegate.swift in Sources */,
+				12C700122DA9972A004DE9F4 /* AppDelegate+Application.swift in Sources */,
+				12C700132DA9972A004DE9F4 /* ReadTrackerApp.swift in Sources */,
+				12C700142DA9972A004DE9F4 /* ContentView.swift in Sources */,
+				12C700152DA9972A004DE9F4 /* Item.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -276,6 +349,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				12AE94A12DA9A58E00064C94 /* ReadTrackerTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -283,6 +357,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				12AE94A52DA9A59100064C94 /* ReadTrackerUITests.swift in Sources */,
+				12AE94A62DA9A59100064C94 /* ReadTrackerUITestsLaunchTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -291,12 +367,12 @@
 /* Begin PBXTargetDependency section */
 		12C7FF012DA91193004DE9F4 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 12C7FEEF2DA91192004DE9F4 /* Read Tracker */;
+			target = 12C7FEEF2DA91192004DE9F4 /* ReadTracker */;
 			targetProxy = 12C7FF002DA91193004DE9F4 /* PBXContainerItemProxy */;
 		};
 		12C7FF0B2DA91193004DE9F4 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 12C7FEEF2DA91192004DE9F4 /* Read Tracker */;
+			target = 12C7FEEF2DA91192004DE9F4 /* ReadTracker */;
 			targetProxy = 12C7FF0A2DA91193004DE9F4 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -340,7 +416,7 @@
 				DEVELOPMENT_TEAM = CQ6JSHCP7Q;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -404,7 +480,7 @@
 				DEVELOPMENT_TEAM = CQ6JSHCP7Q;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -494,7 +570,7 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Read Tracker.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Read Tracker";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ReadTracker.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/ReadTracker";
 			};
 			name = Debug;
 		};
@@ -513,7 +589,7 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Read Tracker.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Read Tracker";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ReadTracker.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/ReadTracker";
 			};
 			name = Release;
 		};
@@ -554,7 +630,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		12C7FEEB2DA91192004DE9F4 /* Build configuration list for PBXProject "Read Tracker" */ = {
+		12C7FEEB2DA91192004DE9F4 /* Build configuration list for PBXProject "ReadTracker" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				12C7FF112DA91193004DE9F4 /* Debug */,
@@ -563,7 +639,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		12C7FF132DA91193004DE9F4 /* Build configuration list for PBXNativeTarget "Read Tracker" */ = {
+		12C7FF132DA91193004DE9F4 /* Build configuration list for PBXNativeTarget "ReadTracker" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				12C7FF142DA91193004DE9F4 /* Debug */,
@@ -572,7 +648,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		12C7FF162DA91193004DE9F4 /* Build configuration list for PBXNativeTarget "Read TrackerTests" */ = {
+		12C7FF162DA91193004DE9F4 /* Build configuration list for PBXNativeTarget "ReadTrackerTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				12C7FF172DA91193004DE9F4 /* Debug */,
@@ -581,7 +657,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		12C7FF192DA91193004DE9F4 /* Build configuration list for PBXNativeTarget "Read TrackerUITests" */ = {
+		12C7FF192DA91193004DE9F4 /* Build configuration list for PBXNativeTarget "ReadTrackerUITests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				12C7FF1A2DA91193004DE9F4 /* Debug */,
@@ -593,6 +669,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		12AE949D2DA9A15500064C94 /* XCRemoteSwiftPackageReference "SwiftLintPlugins" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SimplyDanny/SwiftLintPlugins";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.59.0;
+			};
+		};
 		12C7FF1C2DA91869004DE9F4 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
@@ -628,16 +712,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 12C7FF1C2DA91869004DE9F4 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = "FirebaseFunctionsCombine-Community";
-		};
-		12C7FF272DA91869004DE9F4 /* FirebaseInAppMessaging-Beta */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 12C7FF1C2DA91869004DE9F4 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
-			productName = "FirebaseInAppMessaging-Beta";
-		};
-		12C7FF292DA91869004DE9F4 /* FirebaseMessaging */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 12C7FF1C2DA91869004DE9F4 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
-			productName = FirebaseMessaging;
 		};
 		12C7FF2B2DA91869004DE9F4 /* FirebaseStorage */ = {
 			isa = XCSwiftPackageProductDependency;

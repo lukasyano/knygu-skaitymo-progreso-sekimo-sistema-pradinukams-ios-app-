@@ -1,9 +1,35 @@
-import SwiftUI
+import Combine
+import FirebaseDatabase
 import SwiftData
+import SwiftUI
+
+extension DatabaseReference {
+    static let child = Database.database().reference().child("users")
+}
+
+struct UserData: Codable, Identifiable {
+    var id: UUID = .init()
+    var userName: String
+}
+
+class RealtimeDatabasePublisher: ObservableObject {
+    @Published var items: [Item] = .init()
+    var cancellables: Set<AnyCancellable> = .init()
+
+    init() {
+        DatabaseReference.child.observe(.value) {  _ in
+            //  guard let self else { return }
+
+            print("new record")
+        }
+    }
+}
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var items: [Item]
+
+    @StateObject private var realtimeDatabasePublisher = RealtimeDatabasePublisher()
 
     var body: some View {
         NavigationSplitView {

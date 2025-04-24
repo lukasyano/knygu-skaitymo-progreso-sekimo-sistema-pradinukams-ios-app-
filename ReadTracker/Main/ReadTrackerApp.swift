@@ -1,4 +1,5 @@
 import FirebaseCore
+import FirebaseDatabase
 import SwiftData
 import SwiftUI
 
@@ -21,6 +22,7 @@ struct ReadTrackerApp: App {
         WindowGroup {
             ContentView()
         }
+
         .modelContainer(sharedModelContainer)
     }
 }
