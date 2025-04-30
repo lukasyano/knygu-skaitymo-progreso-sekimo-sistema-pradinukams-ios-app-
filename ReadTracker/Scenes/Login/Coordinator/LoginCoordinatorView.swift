@@ -1,7 +1,7 @@
 import SwiftUI
 
-struct RegistrationCoordinatorView: View {
-    @ObservedObject var coordinator: DefaultRegistrationCoordinator
+struct LoginCoordinatorView: View {
+    @ObservedObject var coordinator: DefaultLoginCoordinator
 
     var body: some View {
         NavigationStack {
@@ -15,9 +15,9 @@ struct RegistrationCoordinatorView: View {
 
 // MARK: - Presented View Content
 
-extension RegistrationCoordinatorView {
+extension LoginCoordinatorView {
     @ViewBuilder
-    private func presentedViewContent(_ presentedView: RegistrationCoordinatorPresentedView) -> some View {
+    private func presentedViewContent(_ presentedView: LoginCoordinatorPresentedView) -> some View {
         switch presentedView {
         case let .validationError(error):
             ToastMessage(
@@ -27,13 +27,13 @@ extension RegistrationCoordinatorView {
             )
             .clearModalBackground()
 
-        case let .infoMessage(message, onDismiss):
+        case let .infoMessage(message):
             ToastMessage(
                 message: message,
                 delay: 10,
                 dismiss: {
                     coordinator.presentedView = .none
-                    onDismiss()
+                    coordinator.navigateToMain()
                 },
                 toastState: .info
             )
@@ -44,12 +44,12 @@ extension RegistrationCoordinatorView {
 
 // MARK: - Navigation
 
-extension RegistrationCoordinatorView {
+extension LoginCoordinatorView {
     @ViewBuilder
-    private func routeView(for route: RegistrationCoordinatorRoute) -> some View {
+    private func routeView(for route: LoginCoordinatorRoute) -> some View {
         switch route {
-        case let .login(email):
-            LoginCoordinatorView(coordinator: .init(parent: coordinator, email: email))
+        case .main:
+            Text("MainView")
         }
     }
 }

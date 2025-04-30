@@ -3,7 +3,7 @@ import FirebaseFirestore
 import Foundation
 
 public protocol UserProfileService {
-    func saveUserProfile(userID: String, email: String, role: String) -> AnyPublisher<Void, Error>
+    func saveUserProfile(userID: String, email: String, role: Role) -> AnyPublisher<Void, Error>
     func getUserRole(userID: String) -> AnyPublisher<String?, Error>
 }
 
@@ -12,12 +12,12 @@ public class DefaultUserProfileService: UserProfileService {
 
     public init() {}
 
-    public func saveUserProfile(userID: String, email: String, role: String) -> AnyPublisher<Void, Error> {
+    public func saveUserProfile(userID: String, email: String, role: Role) -> AnyPublisher<Void, Error> {
         Future { promise in
             let userReference = self.fireStoreReference.collection("users").document(userID)
             userReference.setData([
                 "email": email,
-                "role": role,
+                "role": role.rawValue,
             ], merge: true) { [weak self] error in
 
                 if let error = error {

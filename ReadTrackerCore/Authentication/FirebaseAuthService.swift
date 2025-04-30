@@ -63,7 +63,7 @@ extension DefaultFirebaseAuthService {
             let error = error as NSError?,
             let code = AuthErrorCode(rawValue: error.code)
         else {
-            return .message("Įvyko nežinoma klaida!")
+            return .message("Įvyko nežinoma klaida! Bandyk dar kartą.")
         }
 
         switch code {
@@ -73,14 +73,14 @@ extension DefaultFirebaseAuthService {
             return .message("Šis el. paštas jau registruotas! Prašome registuotis su kitais el. paštu.")
         case .weakPassword:
             return .message("Naudokite stipresnį slaptažodį (min. 6 simboliai).")
-        case .wrongPassword:
-            return .message("Neteisingas slaptažodis.")
+        case .wrongPassword, .invalidCredential:
+            return .message("Neteisingi duomenys.")
         case .userNotFound:
             return .message("Toks naudotojas nerastas.")
         case .networkError:
             return .message("Ryšio klaida. Patikrinkite internetą.")
         default:
-            return .message(error.localizedDescription)
+            return .message("Įvyko nežinoma klaida! Bandyk dar kartą.")
         }
     }
 }

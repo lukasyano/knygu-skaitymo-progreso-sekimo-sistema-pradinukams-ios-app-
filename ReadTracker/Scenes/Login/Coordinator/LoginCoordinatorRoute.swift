@@ -1,12 +1,11 @@
 import Foundation
 
-enum RegistrationCoordinatorRoute: Identifiable, Equatable {
-    case login(String)
+enum LoginCoordinatorRoute: Identifiable, Equatable {
+    case main
 
     var id: String {
         switch self {
-        case let .login(email):
-            "login_\(email)"
+        case .main: "main"
         }
     }
 

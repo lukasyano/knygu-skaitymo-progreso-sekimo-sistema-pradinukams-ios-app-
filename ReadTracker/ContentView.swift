@@ -24,8 +24,6 @@ import SwiftUI
 //    }
 // }
 
-import FirebaseAuth
-import SwiftUI
 
 // struct RegistrationView: View {
 //    @State private var email = ""

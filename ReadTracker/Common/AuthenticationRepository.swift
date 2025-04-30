@@ -37,7 +37,7 @@ extension DefaultAuthenticationRepository: AuthenticationRepository {
                 }
 
                 return self.userProfileService
-                    .saveUserProfile(userID: user.uid, email: user.email ?? email, role: role.rawValue)
+                    .saveUserProfile(userID: user.uid, email: user.email ?? email, role: role)
                     .map { user }
                     .mapError { AuthUIError.message($0.localizedDescription) }
                     .eraseToAnyPublisher()

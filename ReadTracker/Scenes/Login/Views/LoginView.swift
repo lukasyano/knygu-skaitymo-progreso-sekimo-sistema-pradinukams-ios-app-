@@ -1,21 +1,19 @@
 import SwiftUI
 
-private enum ViewConstants {
+private enum ViewConstants {}
 
-}
-
-struct RegistrationView<ViewModel: RegistrationViewModel>: View {
+struct LoginView<ViewModel: LoginViewModel>: View {
     // MARK: - Variables
 
     @Environment(\.dismiss) private var dismiss
-    private unowned var interactor: RegistrationInteractor
+    private unowned var interactor: LoginInteractor
     @ObservedObject private var viewModel: ViewModel
     @FocusState private var focusedField: Bool
 
     // MARK: - Init
 
     init(
-        interactor: RegistrationInteractor,
+        interactor: LoginInteractor,
         viewModel: ViewModel
     ) {
         self.interactor = interactor
@@ -55,23 +53,27 @@ struct RegistrationView<ViewModel: RegistrationViewModel>: View {
                 .autocorrectionDisabled(true)
                 .textInputAutocapitalization(.never)
 
-                Picker("Pasirinkite rolę", selection: .init(
-                    get: { viewModel.roleSelection.selected },
-                    set: { [weak interactor] in interactor?.onRoleChange($0) }
-                )) {
-                    ForEach(viewModel.roleSelection.availableRoles, id: \.self) { role in
-                        Text(role.rawValue).textCase(.uppercase)
-                    }
+                HStack {
+                    Button(
+                        action: { [weak interactor] in interactor?.onRememberMeToggle() },
+                        label: {
+                            Image(systemName: viewModel.rememberMe ? "checkmark.square" : "square")
+                                .foregroundColor(.accentColor)
+                            Text("Prisiminti mane")
+                        }
+                    )
+                    .buttonStyle(.plain)
+                    .padding(.top, 8)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
-                .pickerStyle(.segmented)
 
                 Button(
                     action: { [weak interactor] in
                         focusedField = false
-                        interactor?.onRegisterTap()
+                        interactor?.onLoginTap()
                     },
                     label: {
-                        Text(viewModel.isDisabled ? "Negali būti tuščia !" : "Registruotis")
+                        Text(viewModel.isDisabled ? "Negali būti tuščia !" : "Prisijungti")
                             .frame(maxWidth: .infinity)
                     }
                 )

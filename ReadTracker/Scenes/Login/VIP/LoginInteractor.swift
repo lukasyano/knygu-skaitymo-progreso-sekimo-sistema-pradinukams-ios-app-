@@ -3,47 +3,48 @@ import FirebaseAuth
 import Foundation
 import Resolver
 
-protocol RegistrationInteractor: AnyObject {
+protocol LoginInteractor: AnyObject {
     func viewDidChange(_ type: ViewDidChangeType)
     func onEmailChange(_ email: String)
     func onPasswordChange(_ password: String)
-    func onRoleChange(_ role: Role)
-    func onRegisterTap()
+    func onRememberMeToggle()
+    func onLoginTap()
 }
 
-final class DefaultRegistrationInteractor {
+final class DefaultLoginInteractor {
     // VIP
-    private weak var presenter: RegistrationPresenter?
-    private weak var coordinator: RegistrationCoordinator?
+    private weak var presenter: LoginPresenter?
+    private weak var coordinator: LoginCoordinator?
 
     // Properties
     private(set) var email: String = MockCredentials.email()
     private(set) var password: String = MockCredentials.password()
-    private(set) var roleSelection = RegistrationModels.RoleSelection(
-        selected: .child,
-        availableRoles: [.child, .parent]
-    )
+    private(set) var rememberMe: Bool = false
+
     private lazy var cancelBag = Set<AnyCancellable>()
 
     // Repositories
     private let authRepository: AuthenticationRepository
 
     // MARK: - Lifecycle
-
     init(
-        coordinator: (any RegistrationCoordinator)?,
-        presenter: RegistrationPresenter?,
-        authRepository: AuthenticationRepository = Resolver.resolve()
+        coordinator: (any LoginCoordinator)?,
+        presenter: LoginPresenter?,
+        authRepository: AuthenticationRepository = Resolver.resolve(),
+        email: String?
     ) {
         self.coordinator = coordinator
         self.presenter = presenter
         self.authRepository = authRepository
+        if let email = email {
+            self.email = email
+        }
     }
 }
 
 // MARK: - Business Logic
 
-extension DefaultRegistrationInteractor: RegistrationInteractor {
+extension DefaultLoginInteractor: LoginInteractor {
     func onEmailChange(_ email: String) {
         self.email = email
         presenter?.presentEmail(email)
@@ -54,9 +55,9 @@ extension DefaultRegistrationInteractor: RegistrationInteractor {
         presenter?.presentPassword(password)
     }
 
-    func onRoleChange(_ role: Role) {
-        roleSelection.selected = role
-        presenter?.presentRoleSelection(roleSelection)
+    func onRememberMeToggle() {
+        rememberMe.toggle()
+        presenter?.presentRememberMe(rememberMe)
     }
 
     // MARK: - View Did Change
@@ -74,30 +75,27 @@ extension DefaultRegistrationInteractor: RegistrationInteractor {
         }
     }
 
-    func onRegisterTap() {
-        authRepository.signUp(email: email, password: password, role: roleSelection.selected)
+    func onLoginTap() {
+        authRepository.signIn(email: email, password: password, remember: rememberMe)
             .receive(on: DispatchQueue.main)
             .sink(
-                receiveCompletion: { [weak self] in self?.handleRegistrationCompletion($0) },
-                receiveValue: { [weak self] in self?.handleRegistrationSuccess($0) }
+                receiveCompletion: { [weak self] in self?.handleLoginCompletion($0) },
+                receiveValue: { [weak self] in self?.handleLoginSuccess($0) }
             )
             .store(in: &cancelBag)
     }
 
-    private func handleRegistrationSuccess(_ user: User) {
-        coordinator?.presentRegistrationComplete(
-            message: RegistrationModels.registrationSuccessMessage,
-            onDismiss: { [weak self] in
-                guard let self else { return }
-                coordinator?.navigateToLogin(email: email)
-            }
-        )
+    private func handleLoginSuccess(_ user: User) {
+        coordinator?.presentLoginComplete("Prisijungimas sėkmingas. Atidaromas pagrindinis langas.")
+        coordinator?.navigateToMain()
+
+//        coordinator?.presentLoginComplete(LoginModels.LoginSuccessMessage)
     }
 
-    private func handleRegistrationCompletion(_ completion: Subscribers.Completion<AuthUIError>) {
+    private func handleLoginCompletion(_ completion: Subscribers.Completion<AuthUIError>) {
         if case let .failure(error) = completion {
             guard let errorMessage = error.errorDescription else { return }
-            
+
             coordinator?.presentError(errorMessage)
         }
     }
