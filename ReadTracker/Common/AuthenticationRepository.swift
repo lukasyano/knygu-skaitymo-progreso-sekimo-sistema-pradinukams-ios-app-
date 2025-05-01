@@ -2,7 +2,7 @@ import Combine
 import FirebaseAuth
 import Resolver
 
-public protocol AuthenticationRepository {
+protocol AuthenticationRepository {
     func signUp(email: String, password: String, role: Role) -> AnyPublisher<User, AuthUIError>
     func signIn(email: String, password: String, remember: Bool) -> AnyPublisher<User, AuthUIError>
     func getRememberedEmail() -> AnyPublisher<String, Never>
@@ -12,15 +12,15 @@ public protocol AuthenticationRepository {
     func shouldRememberUser() -> Bool
 }
 
-public class DefaultAuthenticationRepository {
-    private let firebaseAuthService: FirebaseAuthService
+class DefaultAuthenticationRepository {
+    private let firebaseAuthService: AuthenticationService
     private var credentialsStore: CredentialsStore
-    private let userProfileService: UserProfileService
+    private let userProfileService: UserService
 
-    public init(
-        firebaseAuthService: FirebaseAuthService = Resolver.resolve(),
+    init(
+        firebaseAuthService: AuthenticationService = Resolver.resolve(),
         credentialsStore: CredentialsStore = Resolver.resolve(),
-        userProfileService: UserProfileService = Resolver.resolve()
+        userProfileService: UserService = Resolver.resolve()
     ) {
         self.firebaseAuthService = firebaseAuthService
         self.credentialsStore = credentialsStore
@@ -29,7 +29,7 @@ public class DefaultAuthenticationRepository {
 }
 
 extension DefaultAuthenticationRepository: AuthenticationRepository {
-    public func signUp(email: String, password: String, role: Role) -> AnyPublisher<User, AuthUIError> {
+    func signUp(email: String, password: String, role: Role) -> AnyPublisher<User, AuthUIError> {
         firebaseAuthService.createUser(email: email, password: password)
             .flatMap { [weak self] user -> AnyPublisher<User, AuthUIError> in
                 guard let self = self else {
@@ -45,12 +45,12 @@ extension DefaultAuthenticationRepository: AuthenticationRepository {
             .eraseToAnyPublisher()
     }
 
-    public func getRememberedEmail() -> AnyPublisher<String, Never> {
+    func getRememberedEmail() -> AnyPublisher<String, Never> {
         let email = credentialsStore.savedEmail ?? ""
         return Just(email).eraseToAnyPublisher()
     }
 
-    public func signIn(email: String, password: String, remember: Bool) -> AnyPublisher<User, AuthUIError> {
+    func signIn(email: String, password: String, remember: Bool) -> AnyPublisher<User, AuthUIError> {
         firebaseAuthService.signIn(email: email, password: password)
             .handleEvents(receiveOutput: { [weak self] (_: User) in
                 if remember {
@@ -63,20 +63,20 @@ extension DefaultAuthenticationRepository: AuthenticationRepository {
             .eraseToAnyPublisher()
     }
 
-    public func getCurrentUser() -> User? {
+    func getCurrentUser() -> User? {
         firebaseAuthService.getCurrentUser()
     }
 
-    public func signOut() throws {
+    func signOut() throws {
         try firebaseAuthService.signOut()
         credentialsStore.clear()
     }
 
-    public func savedEmail() -> String? {
+    func savedEmail() -> String? {
         credentialsStore.savedEmail
     }
 
-    public func shouldRememberUser() -> Bool {
+    func shouldRememberUser() -> Bool {
         credentialsStore.rememberUser
     }
 }

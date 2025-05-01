@@ -4,9 +4,13 @@ extension Resolver {
     static func registerServices() {
         Resolver.register { DefaultCredentialsStore() }
             .implements(CredentialsStore.self)
-        Resolver.register { DefaultFirebaseAuthService() }
-            .implements(FirebaseAuthService.self)
+        Resolver.register { DefaultAuthenticationService() }
+            .implements(AuthenticationService.self)
         Resolver.register { DefaultUserProfileService() }
-            .implements(UserProfileService.self)
+            .implements(UserService.self)
+        Resolver.register { DefaultBookFirestoreService() }
+            .implements(BookFirestoreService.self)
+        Resolver.register { DefaultBookDownloadService() }
+            .implements(BookDownloadService.self)
     }
 }

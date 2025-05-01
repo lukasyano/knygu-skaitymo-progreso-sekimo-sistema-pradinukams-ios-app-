@@ -2,11 +2,11 @@ import Combine
 import FirebaseFirestore
 import Foundation
 
-public protocol BookService {
+public protocol BookFirestoreService {
     func fetchBooks(for role: Role) -> AnyPublisher<[Book], Error>
 }
 
-public class DefaultBookService: BookService {
+public class DefaultBookFirestoreService: BookFirestoreService {
     private let firestore = Firestore.firestore()
 
     public init() {}

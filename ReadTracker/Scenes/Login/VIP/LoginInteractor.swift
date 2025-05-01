@@ -86,8 +86,8 @@ extension DefaultLoginInteractor: LoginInteractor {
     }
 
     private func handleLoginSuccess(_ user: User) {
-        coordinator?.presentLoginComplete("Prisijungimas sėkmingas. Atidaromas pagrindinis langas.")
-        coordinator?.navigateToMain()
+        //coordinator?.presentLoginComplete("Prisijungimas sėkmingas. Atidaromas pagrindinis langas.")
+        coordinator?.navigateToHome()
 
 //        coordinator?.presentLoginComplete(LoginModels.LoginSuccessMessage)
     }

@@ -12,14 +12,14 @@ public enum AuthUIError: LocalizedError {
     }
 }
 
-public protocol FirebaseAuthService {
+public protocol AuthenticationService {
     func createUser(email: String, password: String) -> AnyPublisher<User, AuthUIError>
     func signIn(email: String, password: String) -> AnyPublisher<User, AuthUIError>
     func signOut() throws
     func getCurrentUser() -> User?
 }
 
-public final class DefaultFirebaseAuthService: FirebaseAuthService {
+public final class DefaultAuthenticationService: AuthenticationService {
     public init() {}
 
     public func createUser(email: String, password: String) -> AnyPublisher<User, AuthUIError> {
@@ -57,7 +57,7 @@ public final class DefaultFirebaseAuthService: FirebaseAuthService {
     }
 }
 
-extension DefaultFirebaseAuthService {
+extension DefaultAuthenticationService {
     private static func mapFirebaseError(_ error: Error) -> AuthUIError {
         guard
             let error = error as NSError?,

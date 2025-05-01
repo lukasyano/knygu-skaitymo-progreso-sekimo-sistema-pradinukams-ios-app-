@@ -1,11 +1,11 @@
 import Foundation
 
 enum LoginCoordinatorRoute: Identifiable, Equatable {
-    case main
+    case home
 
     var id: String {
         switch self {
-        case .main: "main"
+        case .home: "home"
         }
     }
 

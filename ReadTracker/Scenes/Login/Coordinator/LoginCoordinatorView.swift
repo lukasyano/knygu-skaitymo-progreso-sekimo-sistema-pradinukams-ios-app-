@@ -33,7 +33,7 @@ extension LoginCoordinatorView {
                 delay: 10,
                 dismiss: {
                     coordinator.presentedView = .none
-                    coordinator.navigateToMain()
+                    coordinator.navigateToHome()
                 },
                 toastState: .info
             )
@@ -48,8 +48,8 @@ extension LoginCoordinatorView {
     @ViewBuilder
     private func routeView(for route: LoginCoordinatorRoute) -> some View {
         switch route {
-        case .main:
-            Text("MainView")
+        case .home:
+            HomeCoordinatorView(coordinator: .init(parent: coordinator))
         }
     }
 }
