@@ -4,12 +4,10 @@ struct HomeCoordinatorView: View {
     @ObservedObject var coordinator: DefaultHomeCoordinator
 
     var body: some View {
-        NavigationView {
-            coordinator.start()
-                .navigation(item: $coordinator.route, destination: routeView(for:))
-                .presentedView($coordinator.presentedView, content: presentedViewContent)
-        }
-        .navigationBarBackButtonHidden()
+        coordinator.start()
+            .navigation(item: $coordinator.route, destination: routeView(for:))
+            .presentedView($coordinator.presentedView, content: presentedViewContent)
+            .navigationBarBackButtonHidden()
     }
 }
 

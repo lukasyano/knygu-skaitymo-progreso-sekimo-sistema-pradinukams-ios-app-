@@ -14,7 +14,7 @@ protocol RegistrationInteractor: AnyObject {
 final class DefaultRegistrationInteractor {
     // VIP
     private weak var presenter: RegistrationPresenter?
-    private weak var coordinator: RegistrationCoordinator?
+    private weak var coordinator: (any RegistrationCoordinator)?
 
     // Properties
     private(set) var email: String = MockCredentials.email()
@@ -75,6 +75,8 @@ extension DefaultRegistrationInteractor: RegistrationInteractor {
     }
 
     func onRegisterTap() {
+        presenter?.presentLoading(true)
+
         authRepository.signUp(email: email, password: password, role: roleSelection.selected)
             .receive(on: DispatchQueue.main)
             .sink(
@@ -97,8 +99,8 @@ extension DefaultRegistrationInteractor: RegistrationInteractor {
     private func handleRegistrationCompletion(_ completion: Subscribers.Completion<AuthUIError>) {
         if case let .failure(error) = completion {
             guard let errorMessage = error.errorDescription else { return }
-            
-            coordinator?.presentError(errorMessage)
+
+            coordinator?.presentError(error: errorMessage, onDismiss: { self.presenter?.presentLoading(false) })
         }
     }
 }

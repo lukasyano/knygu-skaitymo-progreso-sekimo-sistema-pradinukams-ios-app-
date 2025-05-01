@@ -84,6 +84,7 @@
 		AA3BC0CF2DC3336900B14271 /* BookThumbnailWorker.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA3BC0CE2DC3335F00B14271 /* BookThumbnailWorker.swift */; };
 		AA3BC0D12DC3355100B14271 /* BookDownloadService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA3BC0D02DC3354500B14271 /* BookDownloadService.swift */; };
 		AA3BC0D42DC339E400B14271 /* HomeDependencyInjection.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA3BC0D32DC339DC00B14271 /* HomeDependencyInjection.swift */; };
+		AA3BC0D62DC3549800B14271 /* LoadingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA3BC0D52DC3549400B14271 /* LoadingView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -191,6 +192,7 @@
 		AA3BC0CE2DC3335F00B14271 /* BookThumbnailWorker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookThumbnailWorker.swift; sourceTree = "<group>"; };
 		AA3BC0D02DC3354500B14271 /* BookDownloadService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookDownloadService.swift; sourceTree = "<group>"; };
 		AA3BC0D32DC339DC00B14271 /* HomeDependencyInjection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeDependencyInjection.swift; sourceTree = "<group>"; };
+		AA3BC0D52DC3549400B14271 /* LoadingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadingView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -317,6 +319,7 @@
 		120DDE122DC1098A00D3329D /* ReusableViews */ = {
 			isa = PBXGroup;
 			children = (
+				AA3BC0D52DC3549400B14271 /* LoadingView.swift */,
 				120DDE132DC1099200D3329D /* ToastMessage.swift */,
 			);
 			path = ReusableViews;
@@ -850,6 +853,7 @@
 				AA3BBF8B2DC2656D00B14271 /* LoginPresenter.swift in Sources */,
 				120DDE0B2DC101BE00D3329D /* ClearBackgroundView.swift in Sources */,
 				AA3BBF8A2DC2656D00B14271 /* LoginCoordinator.swift in Sources */,
+				AA3BC0D62DC3549800B14271 /* LoadingView.swift in Sources */,
 				120DDD902DC0D3DE00D3329D /* RegistrationModels.swift in Sources */,
 				120DDD912DC0D3DE00D3329D /* RegistrationDependencyInjection.swift in Sources */,
 				1245C7252DC21991000A6933 /* Role.swift in Sources */,

@@ -25,6 +25,6 @@ extension DefaultHomeViewModel: HomeDisplayLogic {
 
     func displayBooks(_ books: [HomeModels.BooksPresentable]) {
         self.books = books
-        self.isLoading = false
+        isLoading = false
     }
 }

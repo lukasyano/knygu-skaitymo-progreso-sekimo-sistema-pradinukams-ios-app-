@@ -17,6 +17,7 @@ final class DefaultHomePresenter {
 // MARK: - Presentation Logic
 extension DefaultHomePresenter: HomePresenter {
     func presentBooks(_ books: [HomeModels.BooksPresentable]) {
+        print("presentBooks: \(books.count)")
         displayLogic?.displayBooks(books)
     }
 

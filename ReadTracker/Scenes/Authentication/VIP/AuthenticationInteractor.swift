@@ -4,7 +4,7 @@ import SwiftData
 import SwiftUI
 
 protocol AuthenticationInteractor: AnyObject {
-    func viewDidChange(_ type: ViewDidChangeType)
+//    func viewDidChange(_ type: ViewDidChangeType)
     func tapLogin()
     func tapRegister()
 }
@@ -17,11 +17,11 @@ final class DefaultAuthenticationInteractor {
     // Workers
 
     // Properties
-    private lazy var cancelBag = Set<AnyCancellable>()
+//    private lazy var cancelBag = Set<AnyCancellable>()
 
     // MARK: - Lifecycle
 
-    init(coordinator: DefaultAuthenticationCoordinator) {
+    init(coordinator: DefaultAuthenticationCoordinator = Resolver.resolve()) {
         self.coordinator = coordinator
     }
 }
@@ -39,12 +39,13 @@ extension DefaultAuthenticationInteractor: AuthenticationInteractor {
 
     // MARK: - View Did Change
 
-    func viewDidChange(_ type: ViewDidChangeType) {
-        switch type {
-        case .onAppear:
-            cancelBag.removeAll()
-
-        case .onDisappear: break
-        }
-    }
+//    func viewDidChange(_ type: ViewDidChangeType) {
+//        switch type {
+//        case .onAppear: break
+//            cancelBag.removeAll()
+//
+//        case .onDisappear: break
+//            cancelBag.removeAll()
+//        }
+//    }
 }

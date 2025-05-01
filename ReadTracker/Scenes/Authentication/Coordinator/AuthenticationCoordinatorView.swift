@@ -3,13 +3,14 @@ import SwiftUI
 struct AuthenticationCoordinatorView: View {
     @ObservedObject var coordinator: DefaultAuthenticationCoordinator
 
+    init(coordinator: DefaultAuthenticationCoordinator) {
+        self.coordinator = coordinator
+    }
+
     var body: some View {
-        NavigationStack {
-            coordinator.start()
-                .navigation(item: $coordinator.route, destination: navigationViewContent)
-                .presentedView($coordinator.presentedView, content: presentedViewContent)
-        }
-        .navigationBarBackButtonHidden()
+        coordinator.start()
+            .navigation(item: $coordinator.route, destination: navigationViewContent)
+            .presentedView($coordinator.presentedView, content: presentedViewContent)
     }
 }
 

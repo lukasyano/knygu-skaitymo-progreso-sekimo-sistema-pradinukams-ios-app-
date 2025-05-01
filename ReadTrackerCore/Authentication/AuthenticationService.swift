@@ -70,7 +70,7 @@ extension DefaultAuthenticationService {
         case .invalidEmail:
             return .message("Neteisingas el. pašto adresas.")
         case .emailAlreadyInUse:
-            return .message("Šis el. paštas jau registruotas! Prašome registuotis su kitais el. paštu.")
+            return .message("Šis el. paštas jau registruotas! Prašome registuotis su kitais el. paštu arba prisijungti.")
         case .weakPassword:
             return .message("Naudokite stipresnį slaptažodį (min. 6 simboliai).")
         case .wrongPassword, .invalidCredential:

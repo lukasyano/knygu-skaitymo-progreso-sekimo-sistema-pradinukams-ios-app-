@@ -23,11 +23,12 @@ struct LoginView<ViewModel: LoginViewModel>: View {
     var body: some View {
         ZStack {
             if viewModel.isLoading {
-                ProgressView()
+                LoadingView()
             } else {
                 contentView
             }
         }
+        .animation(.bouncy, value: viewModel.isLoading)
         .onAppear(perform: { [weak interactor] in interactor?.viewDidChange(.onAppear) })
         .onDisappear(perform: { [weak interactor] in interactor?.viewDidChange(.onDisappear) })
     }

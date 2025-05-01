@@ -8,9 +8,6 @@ protocol Coordinator: ObservableObject {
     var presentedView: PresentedView? { get set }
     var route: Route? { get set }
 
-//    func startNoInternet(_ action: (() -> Void)?)
-//    func startNoInternet()
-
     func dismissPresented()
     func popToStart()
     @discardableResult func popToParent() -> (any Coordinator)?
@@ -19,22 +16,8 @@ protocol Coordinator: ObservableObject {
 }
 
 extension Coordinator {
-    // MARK: - Navigation
-
-//    func startGenericError(_ config: GenericErrorConfig, action: @escaping () -> Void) {
-//        self.message = .genericError(config, action: action)
-//    }
-
-//    func startNoInternet(_ action: (() -> Void)? = nil) {
-//        message = .noInternet(action: action)
-//    }
-
-//    func startNoInternet() {
-//        startNoInternet(nil)
-//    }
 
     // MARK: - Dismissal
-
     func dismissPresented() {
         presentedView = nil
     }
@@ -45,12 +28,14 @@ extension Coordinator {
     }
 
     @discardableResult func popToParent() -> (any Coordinator)? {
+        print("  popToParent() on \(Self.self)")
         popToStart()
         parent?.popToStart()
         return parent
     }
 
     func popToRoot() {
+        print("popToRoot() on \(Self.self)")
         var parent = popToParent()
         while parent != nil {
             parent = parent?.popToParent()

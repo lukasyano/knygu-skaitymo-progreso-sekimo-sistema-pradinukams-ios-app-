@@ -1,11 +1,11 @@
 import Foundation
 
 enum HomeCoordinatorPresentedView: Identifiable, Equatable {
-    case error(error: String)
+    case error(error: String, dismiss: () -> Void)
 
     var id: String {
         switch self {
-        case let .error(message):
+        case let .error(message, _ ):
             "error:\(message)"
         }
     }

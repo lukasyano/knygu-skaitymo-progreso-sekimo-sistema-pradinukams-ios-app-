@@ -19,8 +19,8 @@ extension DefaultLoginPresenter: LoginPresenter {
     func presentLoading(_ isLoading: Bool) {
         displayLogic?.displayLoading(isLoading)
     }
-    
-    func presentRememberMe(_ isRememberMe: Bool){
+
+    func presentRememberMe(_ isRememberMe: Bool) {
         displayLogic?.displayRememberMe(isRememberMe)
     }
 

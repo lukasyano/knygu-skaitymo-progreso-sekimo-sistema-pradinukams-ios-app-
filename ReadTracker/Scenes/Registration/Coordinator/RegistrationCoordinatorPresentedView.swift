@@ -1,12 +1,12 @@
 import Foundation
 
 enum RegistrationCoordinatorPresentedView: Identifiable, Equatable {
-    case validationError(error: String)
+    case validationError(error: String, onDismiss: () -> Void)
     case infoMessage(message: String, onDismiss: () -> Void)
     
     var id: String {
         switch self {
-        case let .validationError(error):
+        case let .validationError(error, _):
             "validationError_\(error)"
         case let .infoMessage(message, _):
             "infoMessage_\(message)"

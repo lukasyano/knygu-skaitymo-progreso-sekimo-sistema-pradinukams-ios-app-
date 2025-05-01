@@ -19,17 +19,24 @@ struct HomeView<ViewModel: HomeViewModel>: View {
     var body: some View {
         ZStack {
             if viewModel.isLoading {
-                Color.green.ignoresSafeArea()
-                    .blur(radius: 50)
-
-                ProgressView(label: { Text("Kraunama") })
-
+                LoadingView()
             } else {
-                contentView.navigationTitle(viewModel.title)
+                contentView
+                    .navigationTitle(viewModel.title)
+                    .navigationBarTitleDisplayMode(.large)
+                    .toolbar {
+                        ToolbarItem(placement: .navigationBarTrailing) {
+                            Button(
+                                action: { [weak interactor] in interactor?.onLogOutTap() },
+                                label: { Text("Atsijungti") }
+                            )
+                        }
+                    }
             }
         }
-        .onAppear(perform: { [weak interactor] in interactor?.viewDidChange(.onAppear) })
-        .onDisappear(perform: { [weak interactor] in interactor?.viewDidChange(.onDisappear) })
+        .animation(.bouncy, value: viewModel.isLoading)
+        .onAppear { [weak interactor] in interactor?.viewDidChange(.onAppear) }
+        .onDisappear { [weak interactor] in interactor?.viewDidChange(.onDisappear) }
     }
 
     @ViewBuilder
@@ -80,6 +87,8 @@ struct HomeView<ViewModel: HomeViewModel>: View {
 
     struct HomeView_Previews: PreviewProvider {
         class MockHomeInteractor: HomeInteractor {
+            func onLogOutTap() {}
+
             static let mockInstance = MockHomeInteractor()
             func viewDidChange(_ type: ViewDidChangeType) {}
             func tapConfirm() {}
@@ -89,7 +98,7 @@ struct HomeView<ViewModel: HomeViewModel>: View {
             @StateObject private var viewModel = DefaultHomeViewModel()
 
             var body: some View {
-                NavigationStack {
+                NavigationView {
                     HomeView(
                         interactor: MockHomeInteractor.mockInstance,
                         viewModel: viewModel
@@ -102,8 +111,8 @@ struct HomeView<ViewModel: HomeViewModel>: View {
                                 id: "book_\($0)",
                                 title: "Knyga \($0)",
                                 image:
-                                    UIImage(systemName: "book")
-                                ?? .init()
+                                UIImage(systemName: "book")
+                                    ?? .init()
                             )
                         }
                     )

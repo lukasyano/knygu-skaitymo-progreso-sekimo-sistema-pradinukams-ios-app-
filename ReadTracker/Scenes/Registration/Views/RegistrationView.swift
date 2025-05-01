@@ -6,7 +6,6 @@ private enum ViewConstants {
 
 struct RegistrationView<ViewModel: RegistrationViewModel>: View {
     // MARK: - Variables
-
     @Environment(\.dismiss) private var dismiss
     private unowned var interactor: RegistrationInteractor
     @ObservedObject private var viewModel: ViewModel
@@ -25,11 +24,12 @@ struct RegistrationView<ViewModel: RegistrationViewModel>: View {
     var body: some View {
         ZStack {
             if viewModel.isLoading {
-                ProgressView()
+                LoadingView()
             } else {
                 contentView
             }
         }
+        .animation(.bouncy, value: viewModel.isLoading)
         .onAppear(perform: { [weak interactor] in interactor?.viewDidChange(.onAppear) })
         .onDisappear(perform: { [weak interactor] in interactor?.viewDidChange(.onDisappear) })
     }
@@ -60,7 +60,7 @@ struct RegistrationView<ViewModel: RegistrationViewModel>: View {
                     set: { [weak interactor] in interactor?.onRoleChange($0) }
                 )) {
                     ForEach(viewModel.roleSelection.availableRoles, id: \.self) { role in
-                        Text(role.rawValue).textCase(.uppercase)
+                        Text(role.localized)
                     }
                 }
                 .pickerStyle(.segmented)

@@ -1,12 +1,12 @@
 import SwiftUI
 
-protocol LoginCoordinator: AnyObject {
-    func presentError(_ error: String)
-    func presentLoginComplete(_ message: String)
+protocol LoginCoordinator: Coordinator {
+    func presentError(_ error: String, onClose: @escaping () -> Void)
+    func presentLoginComplete(_ message: String, onClose: @escaping () -> Void)
     func navigateToHome()
 }
 
-final class DefaultLoginCoordinator: Coordinator, LoginCoordinator {
+final class DefaultLoginCoordinator: LoginCoordinator {
     private var interactor: LoginInteractor!
     private var presenter: LoginPresenter!
     @Published private var viewModel: DefaultLoginViewModel!
@@ -33,12 +33,12 @@ final class DefaultLoginCoordinator: Coordinator, LoginCoordinator {
 // MARK: - Presentation
 
 extension DefaultLoginCoordinator {
-    func presentError(_ error: String) {
-        presentedView = .validationError(error: error)
+    func presentError(_ error: String, onClose: @escaping () -> Void){
+        presentedView = .validationError(error: error, onClose: onClose)
     }
 
-    func presentLoginComplete(_ message: String) {
-        presentedView = .infoMessage(message: message)
+    func presentLoginComplete(_ message: String, onClose: @escaping () -> Void) {
+        presentedView = .infoMessage(message: message, onClose: onClose)
     }
 }
 

@@ -30,6 +30,7 @@ extension DefaultAuthenticationCoordinator {
     }
 
     func navigateToRegister() {
+        dismissPresented()
         route = .registration
     }
 }

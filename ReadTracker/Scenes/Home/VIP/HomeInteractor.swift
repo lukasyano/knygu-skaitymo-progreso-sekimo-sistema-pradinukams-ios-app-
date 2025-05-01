@@ -4,7 +4,7 @@ import Resolver
 
 protocol HomeInteractor: AnyObject {
     func viewDidChange(_ type: ViewDidChangeType)
-    func tapConfirm()
+    func onLogOutTap()
 }
 
 final class DefaultHomeInteractor {
@@ -16,24 +16,27 @@ final class DefaultHomeInteractor {
     private let bookRepository: BookRepository
     private let bookThumbnailWorker: BookThumbnailWorker
     private let bookDownloadService: BookDownloadService
+    private let authenticationService: AuthenticationService
 
     // MARK: - Properties
     private lazy var cancelBag = Set<AnyCancellable>()
-    private var books: [Book]? // saugoma jei reikia naudoti vėliau
+    private var books: [Book]?
 
     // MARK: - Init
     init(
         coordinator: any HomeCoordinator,
-        presenter: HomePresenter,
+        presenter: HomePresenter?,
         bookRepository: BookRepository = Resolver.resolve(),
         bookThumbnailWorker: BookThumbnailWorker = Resolver.resolve(),
-        bookDownloadService: BookDownloadService = Resolver.resolve()
+        bookDownloadService: BookDownloadService = Resolver.resolve(),
+        authenticationService: AuthenticationService = Resolver.resolve()
     ) {
         self.coordinator = coordinator
         self.presenter = presenter
         self.bookRepository = bookRepository
         self.bookThumbnailWorker = bookThumbnailWorker
         self.bookDownloadService = bookDownloadService
+        self.authenticationService = authenticationService
     }
 }
 
@@ -46,13 +49,14 @@ extension DefaultHomeInteractor: HomeInteractor {
             fetchBooks()
 
         case .onDisappear:
+            cancelBag.removeAll()
             presenter?.presentLoading(false)
         }
     }
 
     private func fetchBooks() {
         bookRepository.fetchBooks()
-            .receive(on: DispatchQueue.main)
+           // .receive(on: DispatchQueue.main)
             .sink(
                 receiveCompletion: { _ in },
                 receiveValue: { [weak self] books in
@@ -71,10 +75,20 @@ extension DefaultHomeInteractor: HomeInteractor {
         bookThumbnailWorker
             .generateThumbnails(for: books, size: CGSize(width: 150, height: 200))
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] books in
-                self?.presenter?.presentBooks(books)
-            }
+            .sink(
+                receiveCompletion: { completion in
+                    if case let .failure(error) = completion {
+                        print("Failed to generate thumbnails:", error)
+                    }
+                },
+                receiveValue: { [weak self] in self?.receiveThumbnails($0) }
+            )
             .store(in: &cancelBag)
+    }
+
+    private func receiveThumbnails(_ books: [HomeModels.BooksPresentable]) {
+        print("Received thumbnails : \(books.count)")
+        presenter?.presentBooks(books)
     }
 
     private func downloadBooksToDisk(_ books: [Book]) {
@@ -85,6 +99,17 @@ extension DefaultHomeInteractor: HomeInteractor {
             .store(in: &cancelBag)
     }
 
-    func tapConfirm() {
+    func onLogOutTap() {
+        do {
+            try authenticationService.signOut()
+            coordinator?.popToRoot()
+        } catch {
+            coordinator?.presentError(
+                message: "Atsijungimas nepavyko",
+                onDismiss: { exit(0) }
+            )
+        }
     }
+
+    func tapConfirm() {}
 }

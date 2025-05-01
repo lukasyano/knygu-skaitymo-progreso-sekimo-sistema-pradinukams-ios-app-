@@ -4,12 +4,9 @@ struct RegistrationCoordinatorView: View {
     @ObservedObject var coordinator: DefaultRegistrationCoordinator
 
     var body: some View {
-        NavigationStack {
-            coordinator.start()
-                .blur(radius: coordinator.presentedView != nil ? 5 : 0, opaque: false)
-                .presentedView($coordinator.presentedView, content: presentedViewContent)
-                .navigation(item: $coordinator.route, destination: routeView(for:))
-        }
+        coordinator.start()
+            .presentedView($coordinator.presentedView, content: presentedViewContent)
+            .navigation(item: $coordinator.route, destination: routeView(for:))
     }
 }
 
@@ -19,10 +16,13 @@ extension RegistrationCoordinatorView {
     @ViewBuilder
     private func presentedViewContent(_ presentedView: RegistrationCoordinatorPresentedView) -> some View {
         switch presentedView {
-        case let .validationError(error):
+        case let .validationError(error, onDismiss):
             ToastMessage(
                 message: error,
-                dismiss: { coordinator.presentedView = .none },
+                dismiss: {
+                    coordinator.dismissPresented()
+                    onDismiss()
+                },
                 toastState: .error
             )
             .clearModalBackground()
@@ -31,11 +31,8 @@ extension RegistrationCoordinatorView {
             ToastMessage(
                 message: message,
                 delay: 10,
-                dismiss: {
-                    coordinator.presentedView = .none
-                    onDismiss()
-                },
-                toastState: .info
+                dismiss: onDismiss,
+                toastState: .error
             )
             .clearModalBackground()
         }

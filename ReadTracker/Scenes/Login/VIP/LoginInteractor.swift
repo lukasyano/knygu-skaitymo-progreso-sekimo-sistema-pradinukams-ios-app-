@@ -14,7 +14,7 @@ protocol LoginInteractor: AnyObject {
 final class DefaultLoginInteractor {
     // VIP
     private weak var presenter: LoginPresenter?
-    private weak var coordinator: LoginCoordinator?
+    private weak var coordinator: (any LoginCoordinator)?
 
     // Properties
     private(set) var email: String = MockCredentials.email()
@@ -43,7 +43,6 @@ final class DefaultLoginInteractor {
 }
 
 // MARK: - Business Logic
-
 extension DefaultLoginInteractor: LoginInteractor {
     func onEmailChange(_ email: String) {
         self.email = email
@@ -61,7 +60,6 @@ extension DefaultLoginInteractor: LoginInteractor {
     }
 
     // MARK: - View Did Change
-
     func viewDidChange(_ type: ViewDidChangeType) {
         switch type {
         case .onAppear:
@@ -76,27 +74,22 @@ extension DefaultLoginInteractor: LoginInteractor {
     }
 
     func onLoginTap() {
+        presenter?.presentLoading(true)
+
         authRepository.signIn(email: email, password: password, remember: rememberMe)
             .receive(on: DispatchQueue.main)
             .sink(
                 receiveCompletion: { [weak self] in self?.handleLoginCompletion($0) },
-                receiveValue: { [weak self] in self?.handleLoginSuccess($0) }
+                receiveValue: { [weak coordinator] _ in coordinator?.navigateToHome() }
             )
             .store(in: &cancelBag)
-    }
-
-    private func handleLoginSuccess(_ user: User) {
-        //coordinator?.presentLoginComplete("Prisijungimas sėkmingas. Atidaromas pagrindinis langas.")
-        coordinator?.navigateToHome()
-
-//        coordinator?.presentLoginComplete(LoginModels.LoginSuccessMessage)
     }
 
     private func handleLoginCompletion(_ completion: Subscribers.Completion<AuthUIError>) {
         if case let .failure(error) = completion {
             guard let errorMessage = error.errorDescription else { return }
 
-            coordinator?.presentError(errorMessage)
+            coordinator?.presentError(errorMessage, onClose: { self.presenter?.presentLoading(false) })
         }
     }
 }

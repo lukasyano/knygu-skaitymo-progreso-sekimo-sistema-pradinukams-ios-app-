@@ -1,7 +1,10 @@
 import SwiftUI
 
-protocol RegistrationCoordinator: AnyObject {
-    func presentError(_ error: String)
+protocol RegistrationCoordinator: Coordinator {
+    func presentError(
+        error: String,
+        onDismiss: @escaping () -> Void
+    )
     func presentRegistrationComplete(
         message: String,
         onDismiss: @escaping () -> Void
@@ -9,7 +12,7 @@ protocol RegistrationCoordinator: AnyObject {
     func navigateToLogin(email: String)
 }
 
-final class DefaultRegistrationCoordinator: Coordinator, RegistrationCoordinator {
+final class DefaultRegistrationCoordinator: RegistrationCoordinator {
     private var interactor: RegistrationInteractor!
     private var presenter: RegistrationPresenter!
     @Published private var viewModel: DefaultRegistrationViewModel!
@@ -35,8 +38,11 @@ final class DefaultRegistrationCoordinator: Coordinator, RegistrationCoordinator
 // MARK: - Presentation
 
 extension DefaultRegistrationCoordinator {
-    func presentError(_ error: String) {
-        presentedView = .validationError(error: error)
+    func presentError(
+        error: String,
+        onDismiss: @escaping () -> Void
+    ) {
+        presentedView = .validationError(error: error, onDismiss: onDismiss)
     }
 
     func presentRegistrationComplete(

@@ -4,12 +4,9 @@ struct LoginCoordinatorView: View {
     @ObservedObject var coordinator: DefaultLoginCoordinator
 
     var body: some View {
-        NavigationStack {
-            coordinator.start()
-                .blur(radius: coordinator.presentedView != nil ? 5 : 0, opaque: false)
-                .presentedView($coordinator.presentedView, content: presentedViewContent)
-                .navigation(item: $coordinator.route, destination: routeView(for:))
-        }
+        coordinator.start()
+            .presentedView($coordinator.presentedView, content: presentedViewContent)
+            .navigation(item: $coordinator.route, destination: routeView(for:))
     }
 }
 
@@ -19,21 +16,24 @@ extension LoginCoordinatorView {
     @ViewBuilder
     private func presentedViewContent(_ presentedView: LoginCoordinatorPresentedView) -> some View {
         switch presentedView {
-        case let .validationError(error):
+        case let .validationError(error, onClose):
             ToastMessage(
                 message: error,
-                dismiss: { coordinator.presentedView = .none },
+                dismiss: {
+                    coordinator.dismissPresented()
+                    onClose()
+                },
                 toastState: .error
             )
             .clearModalBackground()
 
-        case let .infoMessage(message):
+        case let .infoMessage(message, onClose):
             ToastMessage(
                 message: message,
                 delay: 10,
                 dismiss: {
-                    coordinator.presentedView = .none
-                    coordinator.navigateToHome()
+                    onClose()
+                    coordinator.presentedView = nil
                 },
                 toastState: .info
             )

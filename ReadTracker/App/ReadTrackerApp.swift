@@ -29,7 +29,9 @@ struct ReadTrackerApp: App {
 
     var body: some Scene {
         WindowGroup {
-            AuthenticationCoordinatorView(coordinator: .init())
+            NavigationStack {
+                AuthenticationCoordinatorView(coordinator: Resolver.resolve())
+            }
         }
         //  .modelContainer(sharedModelContainer)
     }

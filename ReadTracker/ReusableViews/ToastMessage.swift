@@ -1,5 +1,5 @@
-import Combine
 import SwiftUI
+import Combine
 
 struct ToastMessage: View {
     enum ToastState: Equatable {
@@ -22,27 +22,27 @@ struct ToastMessage: View {
 
     @State private var remainingTime: Double = 0
     @State private var dismissTask: DispatchWorkItem?
-    @State private var timerSubscription: Cancellable?
+    @StateObject private var timerManager = TimerManager()
 
     private func cancelButton() -> some View {
         Button(
             action: {
-                dismiss()
-                dismissTask?.cancel()
-                timerSubscription?.cancel()
+                cancelToast()
             },
             label: {
-                Image(systemName:
-                    toastState == .info ?
-                        "checkmark.circle.fill" :
-                        "xmark.circle.fill"
-                )
-                .font(.title)
-                .foregroundStyle(.white, .black)
-                .contentShape(Rectangle())
+                Image(systemName: toastState == .info ? "checkmark.circle.fill" : "xmark.circle.fill")
+                    .font(.title)
+                    .foregroundStyle(.white, .black)
+                    .contentShape(Rectangle())
             }
         )
         .padding(2)
+    }
+
+    private func cancelToast() {
+        dismissTask?.cancel()
+        timerManager.cancel()
+        dismiss()
     }
 
     var body: some View {
@@ -57,6 +57,7 @@ struct ToastMessage: View {
                     .font(.caption)
                     .foregroundColor(.white.opacity(0.7))
             }
+
             Text(message)
                 .font(.headline)
                 .foregroundColor(.white)
@@ -72,33 +73,39 @@ struct ToastMessage: View {
         .onAppear {
             remainingTime = delay
 
-            // Schedule automatic dismissal
+            // Cancel after delay
             let task = DispatchWorkItem {
-                timerSubscription?.cancel()
+                timerManager.cancel()
                 dismiss()
             }
             dismissTask = task
             DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: task)
 
-            // Start timer to update remainingTime
-            timerSubscription = Timer.publish(every: 0.016, on: .main, in: .common)
-                .autoconnect()
-                .sink { _ in
-                    guard remainingTime > 0 else {
-                        timerSubscription?.cancel()
-                        remainingTime = 0
-                        return
-                    }
+            // Start timer
+            timerManager.start(interval: 0.016) {
+                if remainingTime > 0 {
                     remainingTime = max(remainingTime - 0.016, 0)
                 }
+            }
         }
         .onDisappear {
-            dismissTask?.cancel()
-            timerSubscription?.cancel()
+            cancelToast()
         }
     }
 }
 
-#Preview {
-    ToastMessage(message: "Naudokite stipresnį slaptažodį (min. 6 simboliai)!", toastState: .error)
+final class TimerManager: ObservableObject {
+    private var subscription: AnyCancellable?
+
+    func start(interval: TimeInterval, tick: @escaping () -> Void) {
+        subscription = Timer
+            .publish(every: interval, on: .main, in: .common)
+            .autoconnect()
+            .sink { _ in tick() }
+    }
+
+    func cancel() {
+        subscription?.cancel()
+        subscription = nil
+    }
 }

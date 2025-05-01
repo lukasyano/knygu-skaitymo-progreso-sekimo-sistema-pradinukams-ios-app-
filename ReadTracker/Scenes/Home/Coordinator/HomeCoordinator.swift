@@ -1,6 +1,11 @@
 import SwiftUI
 
-protocol HomeCoordinator: Coordinator {}
+protocol HomeCoordinator: Coordinator {
+    func presentError(
+        message: String,
+        onDismiss: @escaping () -> Void
+    )
+}
 
 final class DefaultHomeCoordinator: HomeCoordinator {
     private var interactor: HomeInteractor!
@@ -26,7 +31,14 @@ final class DefaultHomeCoordinator: HomeCoordinator {
 }
 
 // MARK: - Presentation
-extension DefaultHomeCoordinator {}
+extension DefaultHomeCoordinator {
+    func presentError(
+        message: String,
+        onDismiss: @escaping () -> Void
+    ) {
+        presentedView = .error(error: message, dismiss: onDismiss)
+    }
+}
 
 // MARK: - Navigation
 extension DefaultHomeCoordinator {}
