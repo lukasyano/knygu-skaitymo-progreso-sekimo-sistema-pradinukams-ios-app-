@@ -12,8 +12,8 @@ protocol HomeViewModel: ObservableObject {
 }
 
 final class DefaultHomeViewModel: HomeViewModel {
-    @Published private(set) var title: String = ""
-    @Published private(set) var isLoading = false
+    @Published private(set) var title: String = "Tavo knygų sąrašas"
+    @Published private(set) var isLoading = true
     @Published private(set) var books: [HomeModels.BooksPresentable] = []
 }
 
@@ -25,5 +25,6 @@ extension DefaultHomeViewModel: HomeDisplayLogic {
 
     func displayBooks(_ books: [HomeModels.BooksPresentable]) {
         self.books = books
+        self.isLoading = false
     }
 }

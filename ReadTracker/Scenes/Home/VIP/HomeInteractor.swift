@@ -69,7 +69,7 @@ extension DefaultHomeInteractor: HomeInteractor {
 
     private func generateThumbnails(for books: [Book]) {
         bookThumbnailWorker
-            .generateThumbnails(for: books, size: CGSize(width: 100, height: 100))
+            .generateThumbnails(for: books, size: CGSize(width: 150, height: 200))
             .receive(on: DispatchQueue.main)
             .sink { [weak self] books in
                 self?.presenter?.presentBooks(books)
@@ -86,6 +86,5 @@ extension DefaultHomeInteractor: HomeInteractor {
     }
 
     func tapConfirm() {
-        // Vieta veiksmui, kai paspaudžiama „patvirtinti“
     }
 }

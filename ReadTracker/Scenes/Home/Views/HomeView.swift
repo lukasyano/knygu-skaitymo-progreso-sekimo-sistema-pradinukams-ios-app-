@@ -19,8 +19,13 @@ struct HomeView<ViewModel: HomeViewModel>: View {
     var body: some View {
         ZStack {
             if viewModel.isLoading {
+                Color.green.ignoresSafeArea()
+                    .blur(radius: 50)
+
+                ProgressView(label: { Text("Kraunama") })
+
             } else {
-                contentView
+                contentView.navigationTitle(viewModel.title)
             }
         }
         .onAppear(perform: { [weak interactor] in interactor?.viewDidChange(.onAppear) })
@@ -29,30 +34,86 @@ struct HomeView<ViewModel: HomeViewModel>: View {
 
     @ViewBuilder
     private var contentView: some View {
-        ScrollView {
-            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
+        booksGridView()
+    }
+
+    private func booksGridView() -> some View {
+        let columns = [
+            GridItem(.flexible(), spacing: 16),
+            GridItem(.flexible(), spacing: 16)
+        ]
+
+        return ScrollView {
+            LazyVGrid(columns: columns, spacing: 16) {
                 ForEach(viewModel.books) { book in
                     VStack(spacing: 8) {
                         Image(uiImage: book.image)
                             .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(height: 150)
-                            .cornerRadius(12)
-                            .shadow(radius: 4)
+                            .scaledToFill()
+                            .frame(width: 150, height: 200)
+                            .clipped()
+                            .cornerRadius(8)
 
                         Text(book.title)
                             .font(.headline)
                             .multilineTextAlignment(.center)
                             .lineLimit(2)
+                            .frame(maxWidth: .infinity)
                             .padding(.horizontal, 4)
+
+                        Spacer()
                     }
+                    .frame(maxWidth: .infinity)
                     .padding()
                     .background(Color(UIColor.secondarySystemBackground))
                     .cornerRadius(16)
-                    .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
+                    .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
                 }
             }
             .padding()
         }
     }
 }
+
+#if DEBUG
+    import SwiftUI
+
+    struct HomeView_Previews: PreviewProvider {
+        class MockHomeInteractor: HomeInteractor {
+            static let mockInstance = MockHomeInteractor()
+            func viewDidChange(_ type: ViewDidChangeType) {}
+            func tapConfirm() {}
+        }
+
+        struct PreviewContainer: View {
+            @StateObject private var viewModel = DefaultHomeViewModel()
+
+            var body: some View {
+                NavigationStack {
+                    HomeView(
+                        interactor: MockHomeInteractor.mockInstance,
+                        viewModel: viewModel
+                    )
+                }
+                .onAppear {
+                    viewModel.displayBooks(
+                        (0 ..< 30).map {
+                            .init(
+                                id: "book_\($0)",
+                                title: "Knyga \($0)",
+                                image:
+                                    UIImage(systemName: "book")
+                                ?? .init()
+                            )
+                        }
+                    )
+                }
+            }
+        }
+
+        static var previews: some View {
+            PreviewContainer()
+        }
+    }
+
+#endif
