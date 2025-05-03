@@ -8,7 +8,9 @@ struct ReadTrackerApp: App {
 
     var body: some Scene {
         WindowGroup {
-            NavigationStack(root: { RootCoordinatorView(coordinator: .init()) })
+            NavigationStack {
+                PreRootView()
+            }
         }
         .modelContainer(for: BookEntity.self)
     }

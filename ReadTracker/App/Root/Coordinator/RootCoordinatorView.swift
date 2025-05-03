@@ -1,29 +1,41 @@
+import Lottie
+import Resolver
 import SwiftUI
 
 struct RootCoordinatorView: View {
-    @ObservedObject var coordinator: DefaultRootCoordinator
     @Environment(\.modelContext) private var modelContext
 
-    init(coordinator: DefaultRootCoordinator) {
+    @ObservedObject var coordinator: DefaultRootCoordinator
+    private let interactor: RootInteractor
+
+    init(
+        coordinator: DefaultRootCoordinator,
+        interactor: DefaultRootInteractor
+    ) {
         self.coordinator = coordinator
+        self.interactor = interactor
     }
 
     var body: some View {
-        contentView
+        ZStack {
+            Constants.mainScreenColor.ignoresSafeArea()
+
+            contentView
+                .transition(.slide)
+                .onAppDidBecomeActive { [weak interactor] in interactor?.onAppDidBecomeActive() }
+        }
+        .animation(.easeInOut(duration: 0.3), value: coordinator.route)
     }
-    
+
     @ViewBuilder
     private var contentView: some View {
         switch coordinator.route {
         case .splash:
             EmptyView()
-        case .carousel: EmptyView()
-           /// LottieAnimationView(animation: .named("StarAnimation"))
-//                .configure { lottieAnimationView in
-//                    lottieAnimationView.loopMode = .loop
-//                }
-                //.playing()
-                //.frame(width: 200, height: 200)
+        case .authentication:
+            AuthenticationCoordinatorView(coordinator: .init(modelContext: modelContext))
+        case .carousel:
+            LoadingIndicator(animation: .text, size: .large)
         case .login:
             LoginCoordinatorView(coordinator: .init(parent: coordinator, email: .none))
         case .register:
@@ -35,4 +47,3 @@ struct RootCoordinatorView: View {
         }
     }
 }
-

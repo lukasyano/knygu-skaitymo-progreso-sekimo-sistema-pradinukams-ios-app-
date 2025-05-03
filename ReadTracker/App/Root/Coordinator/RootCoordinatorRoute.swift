@@ -4,8 +4,9 @@ enum RootCoordinatorRoute: Identifiable, Equatable {
     case splash
     case carousel
     case login
+    case authentication
     case register
-    case home
+    case home(String)
 
     var id: String {
         switch self {
@@ -17,8 +18,10 @@ enum RootCoordinatorRoute: Identifiable, Equatable {
             "login"
         case .register:
             "register"
-        case .home:
-            "home"
+        case let .home(userID):
+            "home\(userID)"
+        case .authentication:
+            "authentication"
         }
     }
 

@@ -3,6 +3,10 @@ import Resolver
 import SwiftData
 import SwiftUI
 
+protocol RootInteractor: AnyObject {
+    func onAppDidBecomeActive()
+}
+
 final class DefaultRootInteractor {
     private weak var coordinator: DefaultRootCoordinator?
 
@@ -10,19 +14,33 @@ final class DefaultRootInteractor {
     private static let syncLock = NSLock()
 
     private let modelContext: ModelContext
+    private let auhenticationService: AuthenticationService
 
     init(
-        coordinator: DefaultRootCoordinator,
-        modelContext: ModelContext
+        coordinator: DefaultRootCoordinator = Resolver.resolve(),
+        modelContext: ModelContext,
+        authenticationService: AuthenticationService = Resolver.resolve()
     ) {
         self.coordinator = coordinator
         self.modelContext = modelContext
+        self.auhenticationService = authenticationService
     }
 }
 
 // MARK: - Business Logic
 
-extension DefaultRootInteractor {
+extension DefaultRootInteractor: RootInteractor {
+    func onAppDidBecomeActive() {
+        performFullBookSync()
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            if let user = self.auhenticationService.getCurrentUser() {
+                self.coordinator?.navigateToHome(userID: user.uid)
+            }
+            self.coordinator?.navigateToAuthentication()
+        }
+    }
+
     private func performFullBookSync() {
         Self.syncLock.lock()
         defer { Self.syncLock.unlock() }
@@ -41,24 +59,5 @@ extension DefaultRootInteractor {
         syncService.syncBooks { newBooks in
             downloadService.downloadBooksIfNeeded(newBooks)
         }
-    }
-
-//    func tapLogin() {
-//        coordinator?.navigateToLogin()
-//    }
-//
-//    func tapRegister() {
-//        coordinator?.navigateToRegister()
-//    }
-
-    // MARK: - View Did Change
-
-    func viewDidChange(_ type: ViewDidChangeType) {
-        switch type {
-        case .onAppear:
-            performFullBookSync()
-
-        case .onDisappear: break
-        } 
     }
 }

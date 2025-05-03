@@ -18,6 +18,8 @@ struct HomeView<ViewModel: HomeViewModel>: View {
 
     var body: some View {
         ZStack {
+            Constants.mainScreenColor.ignoresSafeArea()
+
             if viewModel.isLoading {
                 LoadingView()
             } else {
