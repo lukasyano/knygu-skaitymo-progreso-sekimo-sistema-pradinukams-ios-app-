@@ -23,7 +23,7 @@ class DefaultBookRepository {
 
 extension DefaultBookRepository: BookRepository {
     func fetchBooks() -> AnyPublisher<[Book], Error> {
-        guard let userId = authenticationService.getCurrentUser()?.uid else { return .empty() }
+        guard let userId = authenticationService.getUserID() else { return .empty() }
 
         return userService.getUserRole(userID: userId)
             .flatMap { [weak self] userRole -> AnyPublisher<[Book], Error> in

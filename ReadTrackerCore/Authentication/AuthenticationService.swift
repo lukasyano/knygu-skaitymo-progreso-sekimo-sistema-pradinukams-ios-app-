@@ -16,7 +16,7 @@ public protocol AuthenticationService {
     func createUser(email: String, password: String) -> AnyPublisher<User, AuthUIError>
     func signIn(email: String, password: String) -> AnyPublisher<User, AuthUIError>
     func signOut() throws
-    func getCurrentUser() -> User?
+    func getUserID() -> String?
 }
 
 public final class DefaultAuthenticationService: AuthenticationService {
@@ -52,8 +52,10 @@ public final class DefaultAuthenticationService: AuthenticationService {
         try Auth.auth().signOut()
     }
 
-    public func getCurrentUser() -> User? {
-        Auth.auth().currentUser
+    public func getUserID() -> String? {
+        let userID = Auth.auth().currentUser?.uid
+        print(String("UserID: \(userID ?? "Nera userID)")"))
+        return userID
     }
 }
 

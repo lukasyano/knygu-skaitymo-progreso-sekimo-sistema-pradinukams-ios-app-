@@ -4,7 +4,7 @@ import Foundation
 
 public protocol UserService {
     func saveUserProfile(userID: String, email: String, role: Role) -> AnyPublisher<Void, Error>
-    func getUserRole(userID: String) -> AnyPublisher<Role?, Error>
+    func getUserRole(userID: String) -> AnyPublisher<Role?, Never>
 }
 
 public class DefaultUserProfileService: UserService {
@@ -32,13 +32,12 @@ public class DefaultUserProfileService: UserService {
         .eraseToAnyPublisher()
     }
 
-    public func getUserRole(userID: String) -> AnyPublisher<Role?, Error> {
+    public func getUserRole(userID: String) -> AnyPublisher<Role?, Never> {
         Future { promise in
             let userReference = self.fireStoreReference.collection("users").document(userID)
             userReference.getDocument { snapshot, error in
                 if let error = error {
-                    print("❌ Failed to fetch user role: \(error.localizedDescription)")
-                    promise(.failure(error))
+                    promise(.success(nil))
                     return
                 }
 

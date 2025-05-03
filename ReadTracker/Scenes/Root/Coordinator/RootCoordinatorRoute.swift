@@ -1,7 +1,6 @@
 import Foundation
 
 enum RootCoordinatorRoute: Identifiable, Equatable {
-    case splash
     case carousel
     case login
     case authentication
@@ -10,8 +9,6 @@ enum RootCoordinatorRoute: Identifiable, Equatable {
 
     var id: String {
         switch self {
-        case .splash:
-            "splash"
         case .carousel:
             "carousel"
         case .login:

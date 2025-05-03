@@ -12,9 +12,6 @@ protocol AuthenticationInteractor: AnyObject {
 final class DefaultAuthenticationInteractor {
     private weak var coordinator: DefaultAuthenticationCoordinator?
 
-    private static var didPerformBookSync = false
-    private static let syncLock = NSLock()
-
     private let modelContext: ModelContext
 
     init(
@@ -29,26 +26,6 @@ final class DefaultAuthenticationInteractor {
 // MARK: - Business Logic
 
 extension DefaultAuthenticationInteractor: AuthenticationInteractor {
-    private func performFullBookSync() {
-        Self.syncLock.lock()
-        defer { Self.syncLock.unlock() }
-
-        guard !Self.didPerformBookSync else {
-            print("🔁 Skipping sync — already performed this session.")
-            return
-        }
-
-        Self.didPerformBookSync = true
-        print("📚 Performing initial full book sync...")
-
-        let syncService = BookSyncService(modelContext: modelContext)
-        let downloadService = DefaultBookDownloadService(modelContext: modelContext)
-
-        syncService.syncBooks { newBooks in
-            downloadService.downloadBooksIfNeeded(newBooks)
-        }
-    }
-
     func tapLogin() {
         coordinator?.navigateToLogin()
     }
@@ -62,9 +39,10 @@ extension DefaultAuthenticationInteractor: AuthenticationInteractor {
     func viewDidChange(_ type: ViewDidChangeType) {
         switch type {
         case .onAppear:
-            performFullBookSync()
+            break
 
-        case .onDisappear: break
+        case .onDisappear:
+            break
         }
     }
 }

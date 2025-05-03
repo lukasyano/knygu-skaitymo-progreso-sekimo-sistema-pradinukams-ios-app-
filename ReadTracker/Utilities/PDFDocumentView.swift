@@ -2,9 +2,7 @@ import PDFKit
 import SwiftUI
 
 public struct PDFDocumentView: UIViewRepresentable {
-    private let data: Data?
-    private let url: URL?
-    private let bottomGap: CGFloat?
+    private let url: URL
 
     @Binding private var isOnLastPage: Bool
 
@@ -12,23 +10,17 @@ public struct PDFDocumentView: UIViewRepresentable {
     public init(
         url: URL,
         isOnLastPage: Binding<Bool> = .constant(false),
-        bottomGap: CGFloat? = nil
     ) {
         self.url = url
-        self.data = nil
         self._isOnLastPage = isOnLastPage
-        self.bottomGap = bottomGap
     }
 
     public init(
-        _ data: Data,
+        _ url: URL,
         isOnLastPage: Binding<Bool> = .constant(false),
-        bottomGap: CGFloat? = nil
     ) {
-        self.url = nil
-        self.data = data
+        self.url = url
         self._isOnLastPage = isOnLastPage
-        self.bottomGap = bottomGap
     }
 
     // MARK: - UIViewRepresentable
@@ -40,11 +32,7 @@ public struct PDFDocumentView: UIViewRepresentable {
         pdfView.displayDirection = .vertical
         pdfView.usePageViewController(false)
 
-        if let data {
-            pdfView.document = PDFDocument(data: data)
-        } else if let url {
-            pdfView.document = PDFDocument(url: url)
-        }
+        pdfView.document = PDFDocument(url: url)
 
         context.coordinator.observer = NotificationCenter.default.addObserver(
             forName: .PDFViewPageChanged,
@@ -54,12 +42,10 @@ public struct PDFDocumentView: UIViewRepresentable {
             coordinator?.pdfViewPageDidChange(notification)
         }
 
-        if let bottomGap {
-            DispatchQueue.main.async {
-                if let scrollView = pdfView.subviews.compactMap({ $0 as? UIScrollView }).first {
-                    scrollView.contentInset.bottom = bottomGap
-                    scrollView.verticalScrollIndicatorInsets.bottom = bottomGap
-                }
+        DispatchQueue.main.async {
+            if let scrollView = pdfView.subviews.compactMap({ $0 as? UIScrollView }).first {
+                scrollView.contentInset.bottom = 40
+                scrollView.verticalScrollIndicatorInsets.bottom = 40
             }
         }
 

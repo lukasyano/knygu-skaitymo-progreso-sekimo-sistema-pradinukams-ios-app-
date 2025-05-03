@@ -4,75 +4,98 @@ import Resolver
 import SwiftData
 import SwiftUI
 
-struct BookWithLocalURL {
-    let book: Book
-    let localURL: URL
+protocol BookDownloadService {
+    /// Downloads all book files, optionally clearing entity paths but preserving files.
+    func downloadBooks(force: Bool)
 }
 
-protocol BookDownloadService {
-    func downloadBooksIfNeeded(_ books: [BookEntity])
+/// Holds a BookEntity and its local file URL after download.
+struct BookWithLocalURL {
+    let entity: BookEntity
+    let localURL: URL
 }
 
 final class DefaultBookDownloadService: BookDownloadService {
     private let modelContext: ModelContext
+    private let fileManager: FileManager = .default
+    private let cacheDirectoryName = "Books"
 
     init(modelContext: ModelContext) {
         self.modelContext = modelContext
     }
 
-    func downloadBooksIfNeeded(_ books: [BookEntity]) {
-        let booksToDownload = books.filter { $0.localFilePath == nil }
+    func downloadBooks(force: Bool) {
+        if force {
+            resetLocalPaths()
+        }
 
-        for book in booksToDownload {
-            guard let remoteURL = URL(string: book.pdfURL) else { continue }
+        let booksToDownload = (try? modelContext.fetch(FetchDescriptor<BookEntity>())) ?? []
+        for entity in booksToDownload {
+            guard entity.localFilePath == nil,
+                  let remoteURL = URL(string: entity.pdfURL)
+            else { continue }
 
-            downloadPDF(from: remoteURL) { localURL in
-                guard let localURL else {
-                    print("Failed to download \(book.title)")
+            downloadPDF(from: remoteURL) { [weak self] localURL in
+                guard let self = self, let localURL = localURL else {
+                    print("❌ Failed to download: \(entity.title)")
                     return
                 }
-
                 DispatchQueue.main.async {
-                    book.localFilePath = localURL.path
+                    entity.localFilePath = localURL.path
                     do {
                         try self.modelContext.save()
-                        print("✅ Downloaded and saved: \(book.title)")
+                        print("✅ Downloaded and saved: \(entity.title)")
                     } catch {
-                        print("❌ Failed to update SwiftData for \(book.title): \(error)")
+                        print("❌ SwiftData update error for \(entity.title): \(error)")
                     }
                 }
             }
         }
     }
 
-    private func downloadPDF(from url: URL, completion: @escaping (URL?) -> Void) {
-        let fileManager = FileManager.default
-        let dir = fileManager.urls(for: .cachesDirectory, in: .userDomainMask).first!
-        let booksDir = dir.appendingPathComponent("Books", isDirectory: true)
+    /// Clears only the localFilePath on all entities, preserving cached files.
+    private func resetLocalPaths() {
+        do {
+            let allEntities = try modelContext.fetch(FetchDescriptor<BookEntity>())
+            for entity in allEntities {
+                entity.localFilePath = nil
+            }
+            try modelContext.save()
+            print("🔄 Reset localFilePath on all entities.")
+        } catch {
+            print("⚠️ Error resetting entities: \(error)")
+        }
+    }
 
-        try? fileManager.createDirectory(at: booksDir, withIntermediateDirectories: true)
+    /// Downloads PDF to a caches directory, returns local URL on success.
+    private func downloadPDF(from url: URL, completion: @escaping (URL?) -> Void) {
+        let cachesDir = fileManager.urls(for: .cachesDirectory, in: .userDomainMask).first!
+        let booksDir = cachesDir.appendingPathComponent(cacheDirectoryName, isDirectory: true)
+
+        do {
+            try fileManager.createDirectory(at: booksDir, withIntermediateDirectories: true)
+        } catch {
+            print("⚠️ Could not create books cache dir: \(error)")
+        }
 
         let destinationURL = booksDir.appendingPathComponent(url.lastPathComponent)
-
         if fileManager.fileExists(atPath: destinationURL.path) {
             completion(destinationURL)
             return
         }
 
         URLSession.shared.downloadTask(with: url) { tempURL, _, error in
-            guard let tempURL, error == nil else {
+            guard let tempURL = tempURL, error == nil else {
                 completion(nil)
                 return
             }
-
             do {
-                try? fileManager.removeItem(at: destinationURL)
-                try fileManager.moveItem(at: tempURL, to: destinationURL)
+                try self.fileManager.moveItem(at: tempURL, to: destinationURL)
                 completion(destinationURL)
             } catch {
+                print("⚠️ Error moving downloaded file: \(error)")
                 completion(nil)
             }
-        }
-        .resume()
+        }.resume()
     }
 }

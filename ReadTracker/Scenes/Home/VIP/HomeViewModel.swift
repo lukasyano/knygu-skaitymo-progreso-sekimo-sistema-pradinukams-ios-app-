@@ -13,7 +13,7 @@ protocol HomeViewModel: ObservableObject {
 }
 
 final class DefaultHomeViewModel: HomeViewModel {
-    @Published private(set) var title: String = "Tavo knygų sąrašas"
+    @Published private(set) var title: String = "Tavo knygos"
     @Published private(set) var isLoading = true
     @Published private(set) var books: [HomeModels.BooksPresentable] = []
 }

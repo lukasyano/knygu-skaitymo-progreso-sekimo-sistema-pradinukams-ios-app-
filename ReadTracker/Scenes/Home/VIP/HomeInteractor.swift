@@ -18,6 +18,8 @@ final class DefaultHomeInteractor {
 
     private let bookThumbnailWorker: BookThumbnailWorker
     private let authenticationService: AuthenticationService
+    private let userService: UserService
+    private var userID: String?
 
     private var cancelBag = Set<AnyCancellable>()
 
@@ -26,13 +28,15 @@ final class DefaultHomeInteractor {
         presenter: HomePresenter?,
         modelContext: ModelContext,
         bookThumbnailWorker: BookThumbnailWorker = Resolver.resolve(),
-        authenticationService: AuthenticationService = Resolver.resolve()
+        authenticationService: AuthenticationService = Resolver.resolve(),
+        userService: UserService = Resolver.resolve(),
     ) {
         self.coordinator = coordinator
         self.presenter = presenter
         self.modelContext = modelContext
         self.bookThumbnailWorker = bookThumbnailWorker
         self.authenticationService = authenticationService
+        self.userService = userService
     }
 }
 
@@ -41,6 +45,7 @@ extension DefaultHomeInteractor: HomeInteractor {
         switch type {
         case .onAppear:
             cancelBag.removeAll()
+
             fetchBooks()
 
         case .onDisappear: break
@@ -48,15 +53,32 @@ extension DefaultHomeInteractor: HomeInteractor {
     }
 
     private func fetchBooks() {
-        do {
-            let entities = try modelContext.fetch(FetchDescriptor<BookEntity>())
-            presenter?.presentBooks(entities)
-            generateThumbnails(for: entities)
-        } catch {
-            coordinator?.presentError(message: "Nutiko klaida, pabandyk dar kartą.", onDismiss: {
-                self.presenter?.presentLoading(false)
-            })
-        }
+        guard let userID = authenticationService.getUserID() else { return }
+        self.userID = userID
+
+        userService.getUserRole(userID: userID)
+            .sink(
+                receiveValue: { [weak self] role in
+                    guard let self else { return }
+
+                    guard let role else {
+                        coordinator?.presentError(message: "Nutiko klaida, pabandyk dar kartą.", onDismiss: {})
+                        return
+                    }
+                    let predicate = #Predicate<BookEntity> { $0.role == role.rawValue }
+
+                    do {
+                        let entities = try modelContext.fetch(FetchDescriptor<BookEntity>(predicate: predicate))
+                        presenter?.presentBooks(entities)
+                        generateThumbnails(for: entities)
+                    } catch {
+                        coordinator?.presentError(message: "Nutiko klaida, pabandyk dar kartą.", onDismiss: {
+                            self.presenter?.presentLoading(false)
+                        })
+                    }
+                }
+            )
+            .store(in: &cancelBag)
     }
 
     private func generateThumbnails(for entities: [BookEntity]) {
@@ -69,9 +91,10 @@ extension DefaultHomeInteractor: HomeInteractor {
     }
 
     func onLogOutTap() {
+        coordinator?.popToRoot()
+        
         do {
             try authenticationService.signOut()
-            coordinator?.popToCoordinator(DefaultLoginCoordinator.self)
         } catch {
             coordinator?.presentError(
                 message: "Atsijungimas nepavyko",

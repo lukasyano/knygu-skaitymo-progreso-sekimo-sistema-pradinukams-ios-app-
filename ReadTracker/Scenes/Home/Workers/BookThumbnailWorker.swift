@@ -36,7 +36,7 @@ final class DefaultBookThumbnailWorker: BookThumbnailWorker {
         }
 
         return Publishers.MergeMany(publishers)
-            .receive(on: DispatchQueue.main) // emit updates on main thread
+            .receive(on: DispatchQueue.main)
             .eraseToAnyPublisher()
     }
 

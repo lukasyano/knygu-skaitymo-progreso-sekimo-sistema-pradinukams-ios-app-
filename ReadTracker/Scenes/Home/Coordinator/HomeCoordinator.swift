@@ -42,7 +42,7 @@ extension DefaultHomeCoordinator {
         presentedView = .error(error: message, dismiss: onDismiss)
     }
     func showBook(at url: URL) {
-        route = .book(url)
+        presentedView = .book(url: url)
     }
 }
 

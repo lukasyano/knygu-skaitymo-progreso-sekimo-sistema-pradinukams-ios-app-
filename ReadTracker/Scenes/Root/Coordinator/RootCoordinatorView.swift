@@ -21,27 +21,30 @@ struct RootCoordinatorView: View {
             Constants.mainScreenColor.ignoresSafeArea()
 
             contentView
-                .transition(.slide)
-                .onAppDidBecomeActive { [weak interactor] in interactor?.onAppDidBecomeActive() }
+                .transition(.opacity)
+                .onAppear { [weak interactor] in interactor?.onAppear() }
         }
-        .animation(.easeInOut(duration: 0.3), value: coordinator.route)
+        .animation(.bouncy, value: coordinator.route)
     }
 
     @ViewBuilder
     private var contentView: some View {
         switch coordinator.route {
-        case .splash:
-            EmptyView()
         case .authentication:
             AuthenticationCoordinatorView(coordinator: .init(modelContext: modelContext))
+
         case .carousel:
             LoadingIndicator(animation: .text, size: .large)
+
         case .login:
             LoginCoordinatorView(coordinator: .init(parent: coordinator, email: .none))
+
         case .register:
             RegistrationCoordinatorView(coordinator: .init(parent: coordinator))
+
         case .home:
             HomeCoordinatorView(coordinator: .init(parent: coordinator, modelContext: modelContext))
+
         case .none:
             EmptyView()
         }

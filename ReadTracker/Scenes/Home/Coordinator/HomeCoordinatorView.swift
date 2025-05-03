@@ -16,7 +16,11 @@ extension HomeCoordinatorView {
     @ViewBuilder
     private func presentedViewContent(_ presentedView: HomeCoordinatorPresentedView) -> some View {
         switch presentedView {
-        default: EmptyView()
+        case let .book(url):
+            ReadBookView(url: url)
+
+        case .error(error: let error, dismiss: let dismiss): EmptyView()
+            //Toa
         }
     }
 }
@@ -27,7 +31,7 @@ extension HomeCoordinatorView {
     private func routeView(for route: HomeCoordinatorRoute) -> some View {
         switch route {
         case let .book(url):
-            PDFKitView(url: url)
+            ReadBookView(url: url)
         }
     }
 }

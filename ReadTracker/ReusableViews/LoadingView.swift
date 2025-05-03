@@ -1,12 +1,12 @@
+import Lottie
 import SwiftUI
 
 struct LoadingView: View {
     var body: some View {
         ZStack {
-            Color.green.ignoresSafeArea()
-                .blur(radius: 50)
-            
-            ProgressView(label: { Text("Kraunama") })
+            Constants.mainScreenColor.ignoresSafeArea()
+
+            LottieView(animation: .named("loading.json")).playing().playing(loopMode: .autoReverse)
         }
     }
 }
