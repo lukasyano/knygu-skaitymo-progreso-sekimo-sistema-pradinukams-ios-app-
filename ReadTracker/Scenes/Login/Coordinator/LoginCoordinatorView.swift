@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct LoginCoordinatorView: View {
+    @Environment(\.modelContext) private var modelContext
     @ObservedObject var coordinator: DefaultLoginCoordinator
 
     var body: some View {
@@ -49,7 +50,7 @@ extension LoginCoordinatorView {
     private func routeView(for route: LoginCoordinatorRoute) -> some View {
         switch route {
         case .home:
-            HomeCoordinatorView(coordinator: .init(parent: coordinator))
+            HomeCoordinatorView(coordinator: .init(parent: coordinator, modelContext: modelContext))
         }
     }
 }

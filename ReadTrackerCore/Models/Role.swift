@@ -1,6 +1,7 @@
-public enum Role: String, CaseIterable {
+public enum Role: String, CaseIterable, Codable {
     case parent
     case child
+    
     case unknown
 }
 

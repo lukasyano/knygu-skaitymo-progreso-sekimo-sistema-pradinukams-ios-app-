@@ -35,7 +35,7 @@ struct HomeView<ViewModel: HomeViewModel>: View {
             }
         }
         .animation(.bouncy, value: viewModel.isLoading)
-        .onAppear { [weak interactor] in interactor?.viewDidChange(.onAppear) }
+        .onFirstAppear(perform: { [weak interactor] in interactor?.viewDidChange(.onAppear) }, resetOnDisappear: false)
         .onDisappear { [weak interactor] in interactor?.viewDidChange(.onDisappear) }
     }
 
@@ -54,12 +54,23 @@ struct HomeView<ViewModel: HomeViewModel>: View {
             LazyVGrid(columns: columns, spacing: 16) {
                 ForEach(viewModel.books) { book in
                     VStack(spacing: 8) {
-                        Image(uiImage: book.image)
-                            .resizable()
-                            .scaledToFill()
-                            .frame(width: 150, height: 200)
-                            .clipped()
-                            .cornerRadius(8)
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(Color(UIColor.secondarySystemBackground))
+                                .frame(width: 150, height: 200)
+
+                            if let image = book.image {
+                                Image(uiImage: image)
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(width: 150, height: 200)
+                                    .clipped()
+                                    .cornerRadius(8)
+                            } else {
+                                ProgressView()
+                                    .frame(width: 150, height: 200)
+                            }
+                        }
 
                         Text(book.title)
                             .font(.headline)
@@ -75,6 +86,7 @@ struct HomeView<ViewModel: HomeViewModel>: View {
                     .background(Color(UIColor.secondarySystemBackground))
                     .cornerRadius(16)
                     .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
+                    .onTapGesture { [weak interactor] in interactor?.onBookClicked(book.id) }
                 }
             }
             .padding()
@@ -87,8 +99,8 @@ struct HomeView<ViewModel: HomeViewModel>: View {
 
     struct HomeView_Previews: PreviewProvider {
         class MockHomeInteractor: HomeInteractor {
+            func onBookClicked(_ bookID: String) {}
             func onLogOutTap() {}
-
             static let mockInstance = MockHomeInteractor()
             func viewDidChange(_ type: ViewDidChangeType) {}
             func tapConfirm() {}

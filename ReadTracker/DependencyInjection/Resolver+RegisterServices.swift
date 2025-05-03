@@ -10,7 +10,7 @@ extension Resolver {
             .implements(UserService.self)
         Resolver.register { DefaultBookFirestoreService() }
             .implements(BookFirestoreService.self)
-        Resolver.register { DefaultBookDownloadService() }
-            .implements(BookDownloadService.self)
+//        Resolver.register { DefaultBookDownloadService() }
+//            .implements(BookDownloadService.self)
     }
 }

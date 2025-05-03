@@ -15,6 +15,8 @@ struct AuthenticationView: View {
     var body: some View {
         contentView
             .navigationTitle("Prisijungimo būdai")
+            .onAppear(perform: { [weak interactor] in interactor?.viewDidChange(.onAppear) })
+            .onDisappear(perform: { [weak interactor] in interactor?.viewDidChange(.onDisappear) })
     }
 
     @ViewBuilder

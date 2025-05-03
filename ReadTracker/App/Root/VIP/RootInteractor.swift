@@ -3,14 +3,8 @@ import Resolver
 import SwiftData
 import SwiftUI
 
-protocol AuthenticationInteractor: AnyObject {
-    func viewDidChange(_ type: ViewDidChangeType)
-    func tapLogin()
-    func tapRegister()
-}
-
-final class DefaultAuthenticationInteractor {
-    private weak var coordinator: DefaultAuthenticationCoordinator?
+final class DefaultRootInteractor {
+    private weak var coordinator: DefaultRootCoordinator?
 
     private static var didPerformBookSync = false
     private static let syncLock = NSLock()
@@ -18,7 +12,7 @@ final class DefaultAuthenticationInteractor {
     private let modelContext: ModelContext
 
     init(
-        coordinator: DefaultAuthenticationCoordinator,
+        coordinator: DefaultRootCoordinator,
         modelContext: ModelContext
     ) {
         self.coordinator = coordinator
@@ -28,7 +22,7 @@ final class DefaultAuthenticationInteractor {
 
 // MARK: - Business Logic
 
-extension DefaultAuthenticationInteractor: AuthenticationInteractor {
+extension DefaultRootInteractor {
     private func performFullBookSync() {
         Self.syncLock.lock()
         defer { Self.syncLock.unlock() }
@@ -49,13 +43,13 @@ extension DefaultAuthenticationInteractor: AuthenticationInteractor {
         }
     }
 
-    func tapLogin() {
-        coordinator?.navigateToLogin()
-    }
-
-    func tapRegister() {
-        coordinator?.navigateToRegister()
-    }
+//    func tapLogin() {
+//        coordinator?.navigateToLogin()
+//    }
+//
+//    func tapRegister() {
+//        coordinator?.navigateToRegister()
+//    }
 
     // MARK: - View Did Change
 
@@ -65,6 +59,6 @@ extension DefaultAuthenticationInteractor: AuthenticationInteractor {
             performFullBookSync()
 
         case .onDisappear: break
-        }
+        } 
     }
 }

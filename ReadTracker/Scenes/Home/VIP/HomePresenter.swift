@@ -3,7 +3,8 @@ import UIKit
 
 protocol HomePresenter: AnyObject {
     func presentLoading(_ isLoading: Bool)
-    func presentBooks(_ books: [HomeModels.BooksPresentable])
+    func presentBooks(_ entities: [BookEntity])
+    func presentBookThumbnail(_ presentable: HomeModels.BooksPresentable)
 }
 
 final class DefaultHomePresenter {
@@ -16,12 +17,17 @@ final class DefaultHomePresenter {
 
 // MARK: - Presentation Logic
 extension DefaultHomePresenter: HomePresenter {
-    func presentBooks(_ books: [HomeModels.BooksPresentable]) {
-        print("presentBooks: \(books.count)")
-        displayLogic?.displayBooks(books)
+    func presentBooks(_ entities: [BookEntity]) {
+        displayLogic?.displayBooks(entities.map {
+            .init(id: $0.id, title: $0.title, image: .none)
+        })
     }
 
     func presentLoading(_ isLoading: Bool) {
         displayLogic?.displayLoading(isLoading)
+    }
+
+    func presentBookThumbnail(_ presentable: HomeModels.BooksPresentable) {
+        displayLogic?.displayBookThumbnail(presentable)
     }
 }

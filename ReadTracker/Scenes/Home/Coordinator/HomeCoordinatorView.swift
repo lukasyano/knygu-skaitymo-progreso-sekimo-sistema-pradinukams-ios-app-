@@ -26,7 +26,8 @@ extension HomeCoordinatorView {
     @ViewBuilder
     private func routeView(for route: HomeCoordinatorRoute) -> some View {
         switch route {
-        default: EmptyView()
+        case let .book(url):
+            PDFKitView(url: url)
         }
     }
 }

@@ -1,46 +1,41 @@
 import Combine
 import Foundation
 import Resolver
+import SwiftData
+import SwiftUI
 
 protocol HomeInteractor: AnyObject {
     func viewDidChange(_ type: ViewDidChangeType)
     func onLogOutTap()
+    func onBookClicked(_ bookID: String)
 }
 
 final class DefaultHomeInteractor {
-    // MARK: - VIP
     private weak var presenter: HomePresenter?
     private weak var coordinator: (any HomeCoordinator)?
 
-    // MARK: - Dependencies
-    private let bookRepository: BookRepository
+    private var modelContext: ModelContext
+
     private let bookThumbnailWorker: BookThumbnailWorker
-    private let bookDownloadService: BookDownloadService
     private let authenticationService: AuthenticationService
 
-    // MARK: - Properties
-    private lazy var cancelBag = Set<AnyCancellable>()
-    private var books: [Book]?
+    private var cancelBag = Set<AnyCancellable>()
 
-    // MARK: - Init
     init(
         coordinator: any HomeCoordinator,
         presenter: HomePresenter?,
-        bookRepository: BookRepository = Resolver.resolve(),
+        modelContext: ModelContext,
         bookThumbnailWorker: BookThumbnailWorker = Resolver.resolve(),
-        bookDownloadService: BookDownloadService = Resolver.resolve(),
         authenticationService: AuthenticationService = Resolver.resolve()
     ) {
         self.coordinator = coordinator
         self.presenter = presenter
-        self.bookRepository = bookRepository
+        self.modelContext = modelContext
         self.bookThumbnailWorker = bookThumbnailWorker
-        self.bookDownloadService = bookDownloadService
         self.authenticationService = authenticationService
     }
 }
 
-// MARK: - Business Logic
 extension DefaultHomeInteractor: HomeInteractor {
     func viewDidChange(_ type: ViewDidChangeType) {
         switch type {
@@ -48,53 +43,27 @@ extension DefaultHomeInteractor: HomeInteractor {
             cancelBag.removeAll()
             fetchBooks()
 
-        case .onDisappear:
-            cancelBag.removeAll()
-            presenter?.presentLoading(false)
+        case .onDisappear: break
         }
     }
 
     private func fetchBooks() {
-        bookRepository.fetchBooks()
-           // .receive(on: DispatchQueue.main)
-            .sink(
-                receiveCompletion: { _ in },
-                receiveValue: { [weak self] books in
-                    guard let self else { return }
-                    self.books = books
-
-                    generateThumbnails(for: books)
-
-                    downloadBooksToDisk(books)
-                }
-            )
-            .store(in: &cancelBag)
+        do {
+            let entities = try modelContext.fetch(FetchDescriptor<BookEntity>())
+            presenter?.presentBooks(entities)
+            generateThumbnails(for: entities)
+        } catch {
+            coordinator?.presentError(message: "Nutiko klaida, pabandyk dar kartą.", onDismiss: {
+                self.presenter?.presentLoading(false)
+            })
+        }
     }
 
-    private func generateThumbnails(for books: [Book]) {
+    private func generateThumbnails(for entities: [BookEntity]) {
         bookThumbnailWorker
-            .generateThumbnails(for: books, size: CGSize(width: 150, height: 200))
-            .receive(on: DispatchQueue.main)
-            .sink(
-                receiveCompletion: { completion in
-                    if case let .failure(error) = completion {
-                        print("Failed to generate thumbnails:", error)
-                    }
-                },
-                receiveValue: { [weak self] in self?.receiveThumbnails($0) }
-            )
-            .store(in: &cancelBag)
-    }
-
-    private func receiveThumbnails(_ books: [HomeModels.BooksPresentable]) {
-        print("Received thumbnails : \(books.count)")
-        presenter?.presentBooks(books)
-    }
-
-    private func downloadBooksToDisk(_ books: [Book]) {
-        bookDownloadService.downloadBooks(books)
-            .sink { downloaded in
-                print("✅ PDF failai atsiųsti: \(downloaded.count)")
+            .generateThumbnails(for: entities, size: CGSize(width: 150, height: 200))
+            .sink { [weak self] singlePresentable in
+                self?.presenter?.presentBookThumbnail(singlePresentable)
             }
             .store(in: &cancelBag)
     }
@@ -102,7 +71,7 @@ extension DefaultHomeInteractor: HomeInteractor {
     func onLogOutTap() {
         do {
             try authenticationService.signOut()
-            coordinator?.popToRoot()
+            coordinator?.popToCoordinator(DefaultLoginCoordinator.self)
         } catch {
             coordinator?.presentError(
                 message: "Atsijungimas nepavyko",
@@ -111,5 +80,13 @@ extension DefaultHomeInteractor: HomeInteractor {
         }
     }
 
-    func tapConfirm() {}
+    func onBookClicked(_ bookID: String) {
+        guard let entity = try? modelContext.fetch(FetchDescriptor<BookEntity>()).first(where: { $0.id == bookID }),
+              let path = entity.localFilePath else {
+            coordinator?.presentError(message: "Nepavyko rasti pasirinktos knygos.", onDismiss: {})
+            return
+        }
+
+        coordinator?.showBook(at: URL(fileURLWithPath: path))
+    }
 }

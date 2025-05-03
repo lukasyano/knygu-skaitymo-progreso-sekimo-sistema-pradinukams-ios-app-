@@ -1,10 +1,12 @@
 import SwiftUI
+import SwiftData
 
 protocol HomeCoordinator: Coordinator {
     func presentError(
         message: String,
         onDismiss: @escaping () -> Void
     )
+    func showBook(at url: URL)
 }
 
 final class DefaultHomeCoordinator: HomeCoordinator {
@@ -15,13 +17,14 @@ final class DefaultHomeCoordinator: HomeCoordinator {
     @Published var presentedView: HomeCoordinatorPresentedView?
     @Published var route: HomeCoordinatorRoute?
 
-    init(parent: (any Coordinator)?) {
+    init(parent: (any Coordinator)?, modelContext: ModelContext) {
         self.parent = parent
         self.viewModel = DefaultHomeViewModel()
         self.presenter = DefaultHomePresenter(displayLogic: viewModel)
         self.interactor = DefaultHomeInteractor(
             coordinator: self,
-            presenter: presenter
+            presenter: presenter,
+            modelContext: modelContext
         )
     }
 
@@ -37,6 +40,9 @@ extension DefaultHomeCoordinator {
         onDismiss: @escaping () -> Void
     ) {
         presentedView = .error(error: message, dismiss: onDismiss)
+    }
+    func showBook(at url: URL) {
+        route = .book(url)
     }
 }
 

@@ -1,15 +1,18 @@
 import Resolver
+import SwiftData
 import SwiftUI
 
 final class DefaultAuthenticationCoordinator: Coordinator {
     private var interactor: AuthenticationInteractor!
 
+    private let modelContext: ModelContext
     weak var parent: (any Coordinator)?
     @Published var presentedView: AuthenticationCoordinatorPresentedView?
     @Published var route: AuthenticationCoordinatorRoute?
 
-    init() {
-        interactor = DefaultAuthenticationInteractor(coordinator: self)
+    init(modelContext: ModelContext) {
+        self.modelContext = modelContext
+        self.interactor = DefaultAuthenticationInteractor(coordinator: self, modelContext: modelContext)
     }
 
     @ViewBuilder
