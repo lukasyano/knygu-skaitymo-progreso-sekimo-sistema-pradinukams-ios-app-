@@ -1,101 +1,125 @@
 import Combine
+import CryptoKit
 import Foundation
-import Resolver
 import SwiftData
-import SwiftUI
 
 protocol BookDownloadService {
-    /// Downloads all book files, optionally clearing entity paths but preserving files.
     func downloadBooks(force: Bool)
 }
 
-/// Holds a BookEntity and its local file URL after download.
 struct BookWithLocalURL {
     let entity: BookEntity
     let localURL: URL
 }
 
 final class DefaultBookDownloadService: BookDownloadService {
+    // MARK: – Dependencies
     private let modelContext: ModelContext
     private let fileManager: FileManager = .default
-    private let cacheDirectoryName = "Books"
 
-    init(modelContext: ModelContext) {
-        self.modelContext = modelContext
-    }
+    // MARK: – Persistent “Books” directory (Application Support)
+    private lazy var booksDirectory: URL = {
+        let appSupport = fileManager.urls(for: .applicationSupportDirectory,
+                                          in: .userDomainMask).first!
+        var dir = appSupport.appendingPathComponent("Books", isDirectory: true)
 
-    func downloadBooks(force: Bool) {
-        if force {
-            resetLocalPaths()
+        // Create once at startup.
+        if !fileManager.fileExists(atPath: dir.path) {
+            try? fileManager.createDirectory(
+                at: dir,
+                withIntermediateDirectories: true
+            )
         }
 
-        let booksToDownload = (try? modelContext.fetch(FetchDescriptor<BookEntity>())) ?? []
-        for entity in booksToDownload {
-            guard entity.localFilePath == nil,
-                  let remoteURL = URL(string: entity.pdfURL)
-            else { continue }
+        // Mark “do not back up” so the PDFs stay local but don’t inflate iCloud.
+        var resourceValues = URLResourceValues()
+        resourceValues.isExcludedFromBackup = true
+        _ = try? dir.setResourceValues(resourceValues)
 
-            downloadPDF(from: remoteURL) { [weak self] localURL in
-                guard let self = self, let localURL = localURL else {
-                    print("❌ Failed to download: \(entity.title)")
+        return dir
+    }()
+
+    // MARK: – Init
+    init(modelContext: ModelContext) {
+        self.modelContext = modelContext
+        _ = booksDirectory // eager creation
+    }
+
+    // MARK: – Public
+    func downloadBooks(force: Bool) {
+        let entities = (try? modelContext.fetch(FetchDescriptor<BookEntity>())) ?? []
+
+        for entity in entities {
+            guard let remoteURL = URL(string: entity.pdfURL) else { continue }
+
+            let destURL = localURL(for: remoteURL)
+
+            // Skip when we already have a local file unless `force == true`.
+            if !force, fileManager.fileExists(atPath: destURL.path) {
+                if entity.localFilePath == nil { // first launch after upgrade
+                    entity.localFilePath = destURL.path
+                    try? modelContext.save()
+                }
+                continue
+            }
+
+            downloadPDF(from: remoteURL, to: destURL) { [weak self] success in
+                guard let self, success else {
+                    print("❌ Failed to download \(entity.title)")
                     return
                 }
+
                 DispatchQueue.main.async {
-                    entity.localFilePath = localURL.path
+                    entity.localFilePath = destURL.path
                     do {
                         try self.modelContext.save()
-                        print("✅ Downloaded and saved: \(entity.title)")
+                        print("✅ Saved \(entity.title) → \(destURL.lastPathComponent)")
                     } catch {
-                        print("❌ SwiftData update error for \(entity.title): \(error)")
+                        print("❌ SwiftData save error: \(error)")
                     }
                 }
             }
         }
     }
 
-    /// Clears only the localFilePath on all entities, preserving cached files.
-    private func resetLocalPaths() {
-        do {
-            let allEntities = try modelContext.fetch(FetchDescriptor<BookEntity>())
-            for entity in allEntities {
-                entity.localFilePath = nil
-            }
-            try modelContext.save()
-            print("🔄 Reset localFilePath on all entities.")
-        } catch {
-            print("⚠️ Error resetting entities: \(error)")
-        }
+    // MARK: – Helpers
+    /// Generates a stable, collision‑free filename (SHA‑256 of the URL).
+    private func localURL(for remoteURL: URL) -> URL {
+        let filename = sha256(remoteURL.absoluteString) + ".pdf"
+        return booksDirectory.appendingPathComponent(filename)
     }
 
-    /// Downloads PDF to a caches directory, returns local URL on success.
-    private func downloadPDF(from url: URL, completion: @escaping (URL?) -> Void) {
-        let cachesDir = fileManager.urls(for: .cachesDirectory, in: .userDomainMask).first!
-        let booksDir = cachesDir.appendingPathComponent(cacheDirectoryName, isDirectory: true)
-
-        do {
-            try fileManager.createDirectory(at: booksDir, withIntermediateDirectories: true)
-        } catch {
-            print("⚠️ Could not create books cache dir: \(error)")
-        }
-
-        let destinationURL = booksDir.appendingPathComponent(url.lastPathComponent)
-        if fileManager.fileExists(atPath: destinationURL.path) {
-            completion(destinationURL)
-            return
-        }
-
-        URLSession.shared.downloadTask(with: url) { tempURL, _, error in
-            guard let tempURL = tempURL, error == nil else {
-                completion(nil)
-                return
+    private func downloadPDF(
+        from remoteURL: URL,
+        to destinationURL: URL,
+        completion: @escaping (Bool) -> Void
+    ) {
+        URLSession.shared.downloadTask(with: remoteURL) { tempURL, _, error in
+            guard let tempURL, error == nil else {
+                completion(false); return
             }
+
             do {
+                // Replace any stale file atomically.
+                if self.fileManager.fileExists(atPath: destinationURL.path) {
+                    try self.fileManager.removeItem(at: destinationURL)
+                }
                 try self.fileManager.moveItem(at: tempURL, to: destinationURL)
-                completion(destinationURL)
+                completion(true)
             } catch {
-                print("⚠️ Error moving downloaded file: \(error)")
-                completion(nil)
+                print("⚠️ Move file error: \(error)")
+                completion(false)
             }
         }.resume()
+    }
+
+    private func sha256(_ string: String) -> String {
+        let data = Data(string.utf8)
+        #if canImport(CryptoKit)
+            let hash = SHA256.hash(data: data)
+            return hash.compactMap { String(format: "%02x", $0) }.joined()
+        #else
+            return String(data.hashValue, radix: 16)
+        #endif
     }
 }

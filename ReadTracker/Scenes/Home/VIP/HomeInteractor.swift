@@ -84,9 +84,7 @@ extension DefaultHomeInteractor: HomeInteractor {
     private func generateThumbnails(for entities: [BookEntity]) {
         bookThumbnailWorker
             .generateThumbnails(for: entities, size: CGSize(width: 150, height: 200))
-            .sink { [weak self] singlePresentable in
-                self?.presenter?.presentBookThumbnail(singlePresentable)
-            }
+            .sink { [weak self] in self?.presenter?.presentBookThumbnails($0) }
             .store(in: &cancelBag)
     }
 

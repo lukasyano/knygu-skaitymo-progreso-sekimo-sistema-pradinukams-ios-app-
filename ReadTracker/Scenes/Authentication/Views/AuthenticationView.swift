@@ -28,10 +28,9 @@ struct WarmGradientButtonStyle: ButtonStyle {
 
 extension View {
     func warmButtonStyle() -> some View {
-        self.buttonStyle(WarmGradientButtonStyle())
+        buttonStyle(WarmGradientButtonStyle())
     }
 }
-
 
 struct AuthenticationView: View {
     // MARK: - Variables
@@ -47,7 +46,6 @@ struct AuthenticationView: View {
         contentView
             .navigationTitle("Prisijungimo būdai")
             .onAppear(perform: { [weak interactor] in interactor?.viewDidChange(.onAppear) })
-            .onDisappear(perform: { [weak interactor] in interactor?.viewDidChange(.onDisappear) })
     }
 
     @ViewBuilder

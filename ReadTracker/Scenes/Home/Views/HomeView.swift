@@ -20,7 +20,7 @@ struct HomeView<ViewModel: HomeViewModel>: View {
         ZStack {
             Constants.mainScreenColor.ignoresSafeArea()
 
-            if viewModel.isLoading {
+            if viewModel.books.isEmpty {
                 LoadingView()
             } else {
                 contentView

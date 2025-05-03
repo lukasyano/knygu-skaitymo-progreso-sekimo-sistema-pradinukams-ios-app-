@@ -91,7 +91,7 @@ extension DefaultRootInteractor: RootInteractor {
         let syncService = BookSyncService(modelContext: modelContext)
         let downloadService = DefaultBookDownloadService(modelContext: modelContext)
 
-        syncService.syncBooks { newBooks in
+        syncService.syncBooks { _ in
             downloadService.downloadBooks(force: false)
         }
     }

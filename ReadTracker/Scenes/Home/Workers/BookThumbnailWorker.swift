@@ -3,56 +3,73 @@ import PDFKit
 import UIKit
 
 protocol BookThumbnailWorker {
-    func generateThumbnails(for books: [BookEntity], size: CGSize) -> AnyPublisher<HomeModels.BooksPresentable, Never>
+    func generateThumbnails(for books: [BookEntity], size: CGSize) -> AnyPublisher<[HomeModels.BooksPresentable], Never>
 }
 
 final class DefaultBookThumbnailWorker: BookThumbnailWorker {
-    func generateThumbnails(for books: [BookEntity], size: CGSize) -> AnyPublisher<HomeModels.BooksPresentable, Never> {
-        let fallbackImage = UIImage(systemName: "book")!
 
-        let publishers = books.map { book -> AnyPublisher<HomeModels.BooksPresentable, Never> in
-            guard let path = book.localFilePath else {
-                return Just(makePresentable(book: book, image: fallbackImage))
-                    .eraseToAnyPublisher()
-            }
+    private static let fallbackImage = UIImage(
+        systemName: "book.closed.fill"
+    )!
 
-            return Future<HomeModels.BooksPresentable, Never> { promise in
-                DispatchQueue.global(qos: .userInitiated).async {
-                    let fileURL = URL(fileURLWithPath: path)
-                    let presentable: HomeModels.BooksPresentable
+    private let ioQueue = DispatchQueue(
+        label: "pdf.thumbnail.queue",
+        qos: .userInitiated
+    )
 
-                    if let data = try? Data(contentsOf: fileURL),
-                       let image = self.generatePdfThumbnail(of: size, from: data, atPage: 0) {
-                        presentable = self.makePresentable(book: book, image: image)
-                    } else {
-                        print("❌ Failed to generate thumbnail for \(book.title)")
-                        presentable = self.makePresentable(book: book, image: fallbackImage)
-                    }
+    func generateThumbnails(
+        for books: [BookEntity],
+        size: CGSize
+    ) -> AnyPublisher<[HomeModels.BooksPresentable], Never> {
 
-                    promise(.success(presentable))
-                }
-            }
-            .eraseToAnyPublisher()
+        let publishers = books.map { book in
+            thumbnail(for: book, size: size)
         }
 
         return Publishers.MergeMany(publishers)
+            .collect()                  // wait for all
             .receive(on: DispatchQueue.main)
             .eraseToAnyPublisher()
     }
 
-    private func makePresentable(book: BookEntity, image: UIImage) -> HomeModels.BooksPresentable {
-        HomeModels.BooksPresentable(
-            id: book.id,
-            title: book.title,
-            image: image
-        )
+    // MARK: - Private helpers
+
+    private func thumbnail(
+        for book: BookEntity,
+        size: CGSize
+    ) -> AnyPublisher<HomeModels.BooksPresentable, Never> {
+
+        guard let path = book.localFilePath else {
+            return Just(makePresentable(book, image: Self.fallbackImage))
+                   .eraseToAnyPublisher()
+        }
+
+        return Future<HomeModels.BooksPresentable, Never> { [weak self] promise in
+            guard let self else { return }
+            self.ioQueue.async {
+                do {
+                    let fileURL = URL(fileURLWithPath: path)
+                    guard
+                        let doc = PDFDocument(url: fileURL),
+                        let page = doc.page(at: 0)
+                    else {
+                        print("!!!PDF CORRUPTED")
+                        return
+                    }
+
+                    let image = page.thumbnail(of: size, for: .mediaBox)
+                    promise(.success(self.makePresentable(book, image: image)))
+
+                }
+            }
+        }
+        .eraseToAnyPublisher()
     }
 
-    private func generatePdfThumbnail(of size: CGSize, from data: Data, atPage index: Int) -> UIImage? {
-        guard let doc = PDFDocument(data: data),
-              let page = doc.page(at: index) else {
-            return nil
-        }
-        return page.thumbnail(of: size, for: .mediaBox)
+    private func makePresentable(
+        _ book: BookEntity,
+        image: UIImage
+    ) -> HomeModels.BooksPresentable {
+        .init(id: book.id, title: book.title, image: image)
     }
 }
