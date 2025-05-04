@@ -32,7 +32,7 @@ extension AuthenticationCoordinatorView {
     private func navigationViewContent(_ route: AuthenticationCoordinatorRoute) -> some View {
         switch route {
         case .login:
-            LoginCoordinatorView(coordinator: .init(parent: coordinator, email: .none))
+            LoginCoordinatorView(coordinator: .init(parent: coordinator, email: .none, shouldAutoNavigateToHome: false))
         case .registration:
             RegistrationCoordinatorView(coordinator: .init(parent: coordinator))
         }

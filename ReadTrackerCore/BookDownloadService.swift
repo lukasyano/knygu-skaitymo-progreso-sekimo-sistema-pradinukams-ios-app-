@@ -42,7 +42,7 @@ final class DefaultBookDownloadService: BookDownloadService {
     // MARK: – Init
     init(modelContext: ModelContext) {
         self.modelContext = modelContext
-        _ = booksDirectory // eager creation
+        _ = booksDirectory
     }
 
     // MARK: – Public

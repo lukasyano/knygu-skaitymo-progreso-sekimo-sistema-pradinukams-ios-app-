@@ -14,14 +14,15 @@ final class DefaultLoginCoordinator: LoginCoordinator {
     @Published var presentedView: LoginCoordinatorPresentedView?
     @Published var route: LoginCoordinatorRoute?
 
-    init(parent: (any Coordinator)?, email: String?) {
+    init(parent: (any Coordinator)?, email: String?, shouldAutoNavigateToHome: Bool) {
         self.parent = parent
         self.viewModel = DefaultLoginViewModel()
         self.presenter = DefaultLoginPresenter(displayLogic: viewModel)
         self.interactor = DefaultLoginInteractor(
             coordinator: self,
             presenter: presenter,
-            email: email
+            email: email,
+            shouldAutoNavigateToHome: shouldAutoNavigateToHome
         )
     }
 

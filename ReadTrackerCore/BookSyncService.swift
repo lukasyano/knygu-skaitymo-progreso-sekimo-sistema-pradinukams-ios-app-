@@ -40,13 +40,16 @@ class BookSyncService {
                     .filter { $0.name.hasSuffix(".pdf") }
                     .map {
                         let title = ($0.name.removingPercentEncoding ?? $0.name).replacingOccurrences(of: ".pdf", with: "")
-                        let id = UUID().uuidString
+                        let id = title.trimmingCharacters(in: .whitespacesAndNewlines).replacingOccurrences(of: " ", with: "")
                         return Book(id: id, title: title, role: role, pdfURL: $0.pdfURL)
                     }
 
                 DispatchQueue.main.async {
                     do {
-                        for book in books {
+                        let existing = try self.modelContext.fetch(FetchDescriptor<BookEntity>())
+                        let existingIDs = Set(existing.map { $0.id })
+
+                        for book in books where !existingIDs.contains(book.id) {
                             let entity = BookEntity(
                                 id: book.id,
                                 title: book.title,
@@ -72,7 +75,7 @@ class BookSyncService {
                         }
 
                         try self.modelContext.save()
-                        try print("🔎 Book count after \(role.rawValue): \(self.modelContext.fetch(FetchDescriptor<BookEntity>()).count)")
+                        print("🔎 Book count after \(role.rawValue): \(try self.modelContext.fetch(FetchDescriptor<BookEntity>()).count)")
                     } catch {
                         print("❌ SwiftData error: \(error)")
                     }

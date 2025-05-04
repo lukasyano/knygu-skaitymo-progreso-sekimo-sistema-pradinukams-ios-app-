@@ -16,10 +16,14 @@ final class DefaultAuthenticationInteractor {
 
     init(
         coordinator: DefaultAuthenticationCoordinator,
-        modelContext: ModelContext
+        modelContext: ModelContext,
+        shouldAutoNavigateToHome: Bool
     ) {
         self.coordinator = coordinator
         self.modelContext = modelContext
+        if shouldAutoNavigateToHome {
+            coordinator.navigateToLogin()
+        }
     }
 }
 

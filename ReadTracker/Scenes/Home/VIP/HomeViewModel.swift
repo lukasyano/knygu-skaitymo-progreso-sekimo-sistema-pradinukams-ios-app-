@@ -4,6 +4,7 @@ protocol HomeDisplayLogic: AnyObject {
     func displayLoading(_ isLoading: Bool)
     func displayBooks(_ books: [HomeModels.BooksPresentable])
     func displayBookThumbnails(_ presentable: [HomeModels.BooksPresentable])
+    func displayBookProgress(_ presentable: [HomeModels.BookProgressPreseentable])
 }
 
 protocol HomeViewModel: ObservableObject {
@@ -13,7 +14,7 @@ protocol HomeViewModel: ObservableObject {
 }
 
 final class DefaultHomeViewModel: HomeViewModel {
-    @Published private(set) var title: String = "Tavo knygos"
+    @Published private(set) var title: String = "Biblioteka"
     @Published private(set) var isLoading = true
     @Published private(set) var books: [HomeModels.BooksPresentable] = []
 }
@@ -26,11 +27,28 @@ extension DefaultHomeViewModel: HomeDisplayLogic {
 
     func displayBooks(_ books: [HomeModels.BooksPresentable]) {
         self.books = books
-        title = "Tavo knygos: \(books.count)"
+        title = "Bibliotekoje: \(books.count)"
         isLoading = false
     }
 
     func displayBookThumbnails(_ presentable: [HomeModels.BooksPresentable]) {
         books = presentable
     }
+    
+    func displayBookProgress(_ presentable: [HomeModels.BookProgressPreseentable]) {
+        for progress in presentable {
+            if let index = books.firstIndex(where: { $0.id == progress.id }) {
+                var updated = books[index]
+                updated = HomeModels.BooksPresentable(
+                    id: updated.id,
+                    title: updated.title,
+                    readedPages: progress.readedPages,
+                    totalPages: updated.totalPages,
+                    image: updated.image
+                )
+                books[index] = updated
+            }
+        }
+    }
+
 }

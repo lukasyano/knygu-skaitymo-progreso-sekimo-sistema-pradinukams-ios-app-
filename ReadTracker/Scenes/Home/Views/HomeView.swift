@@ -46,6 +46,22 @@ struct HomeView<ViewModel: HomeViewModel>: View {
         booksGridView()
     }
 
+    private func chipView(for book: HomeModels.BooksPresentable) -> some View {
+        var isStartedReading: Bool {
+            guard let readedPages = book.readedPages else { return false }
+            return readedPages > 0
+        }
+
+        return HStack {
+            Spacer()
+            Text(isStartedReading ? "Skaitoma" : "Nepradėta")
+                .padding(.vertical, 1)
+                .padding(.horizontal, 12)
+                .background(isStartedReading ? Color.green.gradient : Color.gray.gradient)
+                .clipShape(Capsule())
+        }
+    }
+
     private func booksGridView() -> some View {
         let columns = [
             GridItem(.flexible(), spacing: 16),
@@ -56,9 +72,11 @@ struct HomeView<ViewModel: HomeViewModel>: View {
             LazyVGrid(columns: columns, spacing: 16) {
                 ForEach(viewModel.books) { book in
                     VStack(spacing: 8) {
+                        chipView(for: book)
+
                         ZStack {
                             RoundedRectangle(cornerRadius: 8)
-                                .fill(Color(UIColor.secondarySystemBackground))
+                                .fill(Color.brown.gradient.opacity(0.5))
                                 .frame(width: 150, height: 200)
 
                             if let image = book.image {
@@ -79,15 +97,22 @@ struct HomeView<ViewModel: HomeViewModel>: View {
                             .multilineTextAlignment(.center)
                             .lineLimit(2)
                             .frame(maxWidth: .infinity)
-                            .padding(.horizontal, 4)
 
                         Spacer()
+
+                        if let totalPages = book.totalPages {
+                            let readedPages = book.readedPages ?? 0
+                            HStack {
+                                Spacer()
+                                Text("\(readedPages) / \(totalPages) psl.")
+                            }
+                        }
                     }
                     .frame(maxWidth: .infinity)
                     .padding()
-                    .background(Color(UIColor.secondarySystemBackground))
+                    .background(Color.brown.gradient.opacity(0.5))
                     .cornerRadius(16)
-                    .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
+                    .shadow(color: .white, radius: 2)
                     .onTapGesture { [weak interactor] in interactor?.onBookClicked(book.id) }
                 }
             }
@@ -124,6 +149,8 @@ struct HomeView<ViewModel: HomeViewModel>: View {
                             .init(
                                 id: "book_\($0)",
                                 title: "Knyga \($0)",
+                                readedPages: 10,
+                                totalPages: 20,
                                 image:
                                 UIImage(systemName: "book")
                                     ?? .init()

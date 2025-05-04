@@ -47,6 +47,7 @@ extension DefaultHomeInteractor: HomeInteractor {
             cancelBag.removeAll()
 
             fetchBooks()
+            fetchUserBookProgress()
 
         case .onDisappear: break
         }
@@ -81,6 +82,18 @@ extension DefaultHomeInteractor: HomeInteractor {
             .store(in: &cancelBag)
     }
 
+    private func fetchUserBookProgress() {
+        guard let userID = authenticationService.getUserID() else { return }
+
+        userService.getUserRole(userID: userID)
+            .sink(
+                receiveValue: { [weak self] role in
+                    guard let self else { return }
+                    guard let role else { return }
+                }
+            ).store(in: &cancelBag)
+    }
+
     private func generateThumbnails(for entities: [BookEntity]) {
         bookThumbnailWorker
             .generateThumbnails(for: entities, size: CGSize(width: 150, height: 200))
@@ -90,7 +103,6 @@ extension DefaultHomeInteractor: HomeInteractor {
 
     func onLogOutTap() {
         coordinator?.popToRoot()
-        
         do {
             try authenticationService.signOut()
         } catch {

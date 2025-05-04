@@ -10,9 +10,13 @@ final class DefaultAuthenticationCoordinator: Coordinator {
     @Published var presentedView: AuthenticationCoordinatorPresentedView?
     @Published var route: AuthenticationCoordinatorRoute?
 
-    init(modelContext: ModelContext) {
+    init(modelContext: ModelContext, shouldAutoNavigateToHome: Bool = false) {
         self.modelContext = modelContext
-        self.interactor = DefaultAuthenticationInteractor(coordinator: self, modelContext: modelContext)
+        self.interactor = DefaultAuthenticationInteractor(
+            coordinator: self,
+            modelContext: modelContext,
+            shouldAutoNavigateToHome: shouldAutoNavigateToHome
+        )
     }
 
     @ViewBuilder

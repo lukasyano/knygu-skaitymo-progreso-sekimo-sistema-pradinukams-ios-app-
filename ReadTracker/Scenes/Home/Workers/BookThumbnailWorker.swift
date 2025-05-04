@@ -40,7 +40,7 @@ final class DefaultBookThumbnailWorker: BookThumbnailWorker {
     ) -> AnyPublisher<HomeModels.BooksPresentable, Never> {
 
         guard let path = book.localFilePath else {
-            return Just(makePresentable(book, image: Self.fallbackImage))
+            return Just(makePresentable(book, totalPages: .none, image: Self.fallbackImage))
                    .eraseToAnyPublisher()
         }
 
@@ -58,8 +58,8 @@ final class DefaultBookThumbnailWorker: BookThumbnailWorker {
                     }
 
                     let image = page.thumbnail(of: size, for: .mediaBox)
-                    promise(.success(self.makePresentable(book, image: image)))
-
+                    let totalPages = doc.pageCount
+                    promise(.success(self.makePresentable(book, totalPages: totalPages, image: image)))
                 }
             }
         }
@@ -68,8 +68,9 @@ final class DefaultBookThumbnailWorker: BookThumbnailWorker {
 
     private func makePresentable(
         _ book: BookEntity,
+        totalPages: Int?,
         image: UIImage
     ) -> HomeModels.BooksPresentable {
-        .init(id: book.id, title: book.title, image: image)
+        .init(id: book.id, title: book.title, readedPages: .none, totalPages: totalPages, image: image)
     }
 }

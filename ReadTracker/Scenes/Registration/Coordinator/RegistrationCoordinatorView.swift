@@ -46,7 +46,7 @@ extension RegistrationCoordinatorView {
     private func routeView(for route: RegistrationCoordinatorRoute) -> some View {
         switch route {
         case let .login(email):
-            LoginCoordinatorView(coordinator: .init(parent: coordinator, email: email))
+            LoginCoordinatorView(coordinator: .init(parent: coordinator, email: email, shouldAutoNavigateToHome: false))
         }
     }
 }

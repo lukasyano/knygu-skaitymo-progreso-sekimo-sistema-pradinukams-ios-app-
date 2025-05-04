@@ -31,13 +31,17 @@ final class DefaultLoginInteractor {
         coordinator: (any LoginCoordinator)?,
         presenter: LoginPresenter?,
         authRepository: AuthenticationRepository = Resolver.resolve(),
-        email: String?
+        email: String?,
+        shouldAutoNavigateToHome: Bool
     ) {
         self.coordinator = coordinator
         self.presenter = presenter
         self.authRepository = authRepository
         if let email = email {
             self.email = email
+        }
+        if shouldAutoNavigateToHome {
+            coordinator?.navigateToHome()
         }
     }
 }

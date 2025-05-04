@@ -37,13 +37,13 @@ struct RootCoordinatorView: View {
             LoadingIndicator(animation: .text, size: .large)
 
         case .login:
-            LoginCoordinatorView(coordinator: .init(parent: coordinator, email: .none))
+            LoginCoordinatorView(coordinator: .init(parent: coordinator, email: .none, shouldAutoNavigateToHome: false))
 
         case .register:
             RegistrationCoordinatorView(coordinator: .init(parent: coordinator))
 
         case .home:
-            HomeCoordinatorView(coordinator: .init(parent: coordinator, modelContext: modelContext))
+            LoginCoordinatorView(coordinator: .init(parent: coordinator, email: .none, shouldAutoNavigateToHome: true))
 
         case .none:
             EmptyView()

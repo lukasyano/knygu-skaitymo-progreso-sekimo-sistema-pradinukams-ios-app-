@@ -170,6 +170,8 @@
 		AA43A4C42DC62AFE00109467 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AA43A4B92DC62AFE00109467 /* Assets.xcassets */; };
 		AA43A4C62DC62B0B00109467 /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA43A4C52DC62B0B00109467 /* Launch Screen.storyboard */; };
 		AA8DBE142DC63D03000C3803 /* HoldToDismissButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8DBE132DC63D00000C3803 /* HoldToDismissButton.swift */; };
+		AA8DBE162DC69BAC000C3803 /* ReadingProgress.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8DBE152DC69BAC000C3803 /* ReadingProgress.swift */; };
+		AA8DBE182DC69BC1000C3803 /* ReadingProgressEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8DBE172DC69BC1000C3803 /* ReadingProgressEntity.swift */; };
 		AAD516A02DC62483002C7529 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAD5169F2DC62481002C7529 /* Constants.swift */; };
 		AAD516A22DC624DF002C7529 /* View+ApplicationLifeCycle.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAD516A12DC624DF002C7529 /* View+ApplicationLifeCycle.swift */; };
 		AAD516AC2DC62646002C7529 /* complete.json in Resources */ = {isa = PBXBuildFile; fileRef = AAD516A62DC62646002C7529 /* complete.json */; };
@@ -323,6 +325,8 @@
 		AA43A4BC2DC62AFE00109467 /* ReadTrackerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadTrackerApp.swift; sourceTree = "<group>"; };
 		AA43A4C52DC62B0B00109467 /* Launch Screen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = "Launch Screen.storyboard"; sourceTree = "<group>"; };
 		AA8DBE132DC63D00000C3803 /* HoldToDismissButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HoldToDismissButton.swift; sourceTree = "<group>"; };
+		AA8DBE152DC69BAC000C3803 /* ReadingProgress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadingProgress.swift; sourceTree = "<group>"; };
+		AA8DBE172DC69BC1000C3803 /* ReadingProgressEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadingProgressEntity.swift; sourceTree = "<group>"; };
 		AAD5169F2DC62481002C7529 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		AAD516A12DC624DF002C7529 /* View+ApplicationLifeCycle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+ApplicationLifeCycle.swift"; sourceTree = "<group>"; };
 		AAD516A62DC62646002C7529 /* complete.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = complete.json; sourceTree = "<group>"; };
@@ -366,7 +370,7 @@
 		120DDD632DC0D36400D3329D /* Scenes */ = {
 			isa = PBXGroup;
 			children = (
-				AA3BC12D2DC3D1EC00B14271 /* ReadBookView */,
+				AA3BC12D2DC3D1EC00B14271 /* ReadBook */,
 				AA3BBFC62DC2987A00B14271 /* Home */,
 				AA3BBF862DC2656D00B14271 /* Login */,
 				120DDD8F2DC0D3DE00D3329D /* Registration */,
@@ -492,6 +496,8 @@
 		1245C7292DC219B2000A6933 /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				AA8DBE172DC69BC1000C3803 /* ReadingProgressEntity.swift */,
+				AA8DBE152DC69BAC000C3803 /* ReadingProgress.swift */,
 				AA3BC13A2DC4F95F00B14271 /* BookEntity.swift */,
 				AA3BBF972DC2878A00B14271 /* Book.swift */,
 				1245C71F2DC21914000A6933 /* Role.swift */,
@@ -761,13 +767,13 @@
 			path = DependencyInjection;
 			sourceTree = "<group>";
 		};
-		AA3BC12D2DC3D1EC00B14271 /* ReadBookView */ = {
+		AA3BC12D2DC3D1EC00B14271 /* ReadBook */ = {
 			isa = PBXGroup;
 			children = (
 				AA8DBE132DC63D00000C3803 /* HoldToDismissButton.swift */,
 				AA3BC12E2DC3D20800B14271 /* ReadBookView.swift */,
 			);
-			path = ReadBookView;
+			path = ReadBook;
 			sourceTree = "<group>";
 		};
 		AA3BC1582DC5E27100B14271 /* Animations */ = {
@@ -1084,6 +1090,7 @@
 				AA3BC1772DC5E27100B14271 /* LoadingFiveLinesChronological.swift in Sources */,
 				AA3BC1782DC5E27100B14271 /* LoadingFiveLines.swift in Sources */,
 				AA3BC1792DC5E27100B14271 /* LoadingPulseOutlineRepeater.swift in Sources */,
+				AA8DBE162DC69BAC000C3803 /* ReadingProgress.swift in Sources */,
 				AA3BC17A2DC5E27100B14271 /* LoadingPulse.swift in Sources */,
 				AA3BC17B2DC5E27100B14271 /* LoadingThreeBallsTriangle.swift in Sources */,
 				AA3BC17C2DC5E27100B14271 /* LoadingCircleBlinks.swift in Sources */,
@@ -1137,6 +1144,7 @@
 				AA43A4BF2DC62AFE00109467 /* AppDelegate+Application.swift in Sources */,
 				AA43A4C02DC62AFE00109467 /* MockCredentials.swift in Sources */,
 				AA43A4C12DC62AFE00109467 /* AppDelegate.swift in Sources */,
+				AA8DBE182DC69BC1000C3803 /* ReadingProgressEntity.swift in Sources */,
 				AA43A4C22DC62AFE00109467 /* PreRootView.swift in Sources */,
 				AA3BBF8A2DC2656D00B14271 /* LoginCoordinator.swift in Sources */,
 				AA3BC0D62DC3549800B14271 /* LoadingView.swift in Sources */,
@@ -1380,6 +1388,7 @@
 				INFOPLIST_KEY_UILaunchStoryboardName = "Launch Screen";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UIUserInterfaceStyle = Light;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1411,6 +1420,7 @@
 				INFOPLIST_KEY_UILaunchStoryboardName = "Launch Screen";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UIUserInterfaceStyle = Light;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

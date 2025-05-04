@@ -5,6 +5,7 @@ protocol HomePresenter: AnyObject {
     func presentLoading(_ isLoading: Bool)
     func presentBooks(_ entities: [BookEntity])
     func presentBookThumbnails(_ presentable: [HomeModels.BooksPresentable])
+    func presentBookProgress(_ presentable: [HomeModels.BookProgressPreseentable])
 }
 
 final class DefaultHomePresenter {
@@ -19,7 +20,7 @@ final class DefaultHomePresenter {
 extension DefaultHomePresenter: HomePresenter {
     func presentBooks(_ entities: [BookEntity]) {
         displayLogic?.displayBooks(entities.map {
-            .init(id: $0.id, title: $0.title, image: .none)
+            .init(id: $0.id, title: $0.title, readedPages: .none, totalPages: .none, image: .none)
         })
     }
 
@@ -29,5 +30,9 @@ extension DefaultHomePresenter: HomePresenter {
 
     func presentBookThumbnails(_ presentable: [HomeModels.BooksPresentable]) {
         displayLogic?.displayBookThumbnails(presentable)
+    }
+    
+    func presentBookProgress(_ presentable: [HomeModels.BookProgressPreseentable]){
+        displayLogic?.displayBookProgress(presentable)
     }
 }
