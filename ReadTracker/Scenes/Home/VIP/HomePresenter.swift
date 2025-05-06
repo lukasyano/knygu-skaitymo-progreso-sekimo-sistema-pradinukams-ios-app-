@@ -4,7 +4,7 @@ import UIKit
 protocol HomePresenter: AnyObject {
     func presentLoading(_ isLoading: Bool)
     func presentBooks(_ entities: [BookEntity])
-    func presentBookThumbnails(_ presentable: [HomeModels.BooksPresentable])
+    func presentBookThumbnails(_ presentable: [HomeModels.BooksPresentable]?)
     func presentBookProgress(_ presentable: [HomeModels.BookProgressPreseentable])
 }
 
@@ -28,7 +28,8 @@ extension DefaultHomePresenter: HomePresenter {
         displayLogic?.displayLoading(isLoading)
     }
 
-    func presentBookThumbnails(_ presentable: [HomeModels.BooksPresentable]) {
+    func presentBookThumbnails(_ presentable: [HomeModels.BooksPresentable]?) {
+        guard let presentable else { return }
         displayLogic?.displayBookThumbnails(presentable)
     }
 

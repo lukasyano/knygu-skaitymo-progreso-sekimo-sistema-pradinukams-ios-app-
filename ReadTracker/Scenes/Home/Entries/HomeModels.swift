@@ -1,7 +1,7 @@
 import UIKit
 
 enum HomeModels {
-    struct BooksPresentable: Identifiable {
+    struct BooksPresentable: Identifiable, Equatable {
         let id: String
         let title: String
         let readedPages: Int?

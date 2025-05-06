@@ -51,6 +51,7 @@ struct HomeView<ViewModel: HomeViewModel>: View {
                 }
         }
         .animation(.bouncy, value: viewModel.isLoading)
+        .animation(.bouncy, value: viewModel.books)
         .toolbarBackground(Constants.mainScreenColor, for: .navigationBar)
         .onAppear(perform: { [weak interactor] in interactor?.viewDidAppear() })
     }
