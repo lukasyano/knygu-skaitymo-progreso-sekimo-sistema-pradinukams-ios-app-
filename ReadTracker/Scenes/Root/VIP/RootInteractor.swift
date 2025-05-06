@@ -14,11 +14,7 @@ final class DefaultRootInteractor {
     private let bookRepository: BookRepository
     private let userRepository: UserRepository
 
-    private var hasPerformedInitialRefresh = false
-
-    // Combine bag
     private var cancelBag = Set<AnyCancellable>()
-    private var authStatecancelBag = Set<AnyCancellable>()
 
     init(
         coordinator: DefaultRootCoordinator = Resolver.resolve(),
@@ -45,21 +41,26 @@ extension DefaultRootInteractor: RootInteractor {
     }
 
     func onAppear() {
-        let logOutDelay: DispatchQueue.SchedulerTimeType.Stride = .milliseconds(200)
-
-        userRepository.authStatePublisher
+        let authPublisher = userRepository.authStatePublisher
             .removeDuplicates()
-            .subscribe(on: DispatchQueue.global())
-            .delay(for: logOutDelay, scheduler: DispatchQueue.main)
-            .sink { [weak coordinator] userId in
+            .first()
+            .eraseToAnyPublisher()
 
-                guard userId != .none else {
-                    coordinator?.route = .authentication
-                    return
+        let refreshPublisher = bookRepository.refreshIfNeeded()
+            .replaceError(with: ())
+            .eraseToAnyPublisher()
+
+        Publishers.Zip(authPublisher, refreshPublisher)
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { _ in },
+                receiveValue: { [weak coordinator] userId, _ in
+                    userId != nil
+                        ? coordinator?.navigateToHome()
+                        : coordinator?.navigateToAuthentication()
                 }
-                coordinator?.route = .home
-            }
-            .store(in: &authStatecancelBag)
+            )
+            .store(in: &cancelBag)
     }
 
     func onDisappear() {

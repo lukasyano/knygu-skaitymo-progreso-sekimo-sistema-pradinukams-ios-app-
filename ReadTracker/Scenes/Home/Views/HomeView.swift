@@ -4,6 +4,7 @@ private enum ViewConstants {}
 
 struct HomeView<ViewModel: HomeViewModel>: View {
     // MARK: - Variables
+    @State private var showLogoutConfirmation: Bool = false
     private unowned var interactor: HomeInteractor
     @ObservedObject private var viewModel: ViewModel
 
@@ -20,25 +21,38 @@ struct HomeView<ViewModel: HomeViewModel>: View {
         ZStack {
             Constants.mainScreenColor.ignoresSafeArea()
 
-//            if viewModel.books.isEmpty {
-//                LoadingView()
-//            } else {
-                contentView
-                    .navigationTitle(viewModel.title)
-                    .navigationBarTitleDisplayMode(.large)
-                    .toolbar {
-                        ToolbarItem(placement: .navigationBarTrailing) {
-                            Button(
-                                action: { [weak interactor] in interactor?.onLogOutTap() },
-                                label: { Text("Atsijungti") }
-                            )
+            contentView
+                .navigationTitle(viewModel.title)
+                .navigationBarTitleDisplayMode(.large)
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button(
+                            action: { showLogoutConfirmation.toggle() },
+                            label: {
+                                HStack {
+                                    Text("Atsijungti")
+                                    Image(systemName: "rectangle.portrait.and.arrow.right")
+                                }
+                            }
+                        )
+                        .buttonStyle(.bordered)
+                        .buttonBorderShape(.roundedRectangle)
+                        .tint(.black)
+                        .controlSize(.small)
+                        .alert("Atsijungti", isPresented: $showLogoutConfirmation) {
+                            Button("Atšaukti", role: .cancel) {}
+                            Button("Atsijungti", role: .destructive) {
+                                interactor.onLogOutTap()
+                            }
+                        } message: {
+                            Text("Ar tikrai norite atsijungti?")
                         }
                     }
-           // 
+                }
         }
         .animation(.bouncy, value: viewModel.isLoading)
+        .toolbarBackground(Constants.mainScreenColor, for: .navigationBar)
         .onAppear(perform: { [weak interactor] in interactor?.viewDidAppear() })
-//        .onDisappear { [weak interactor] in interactor?.viewDidChange(.onDisappear) }
     }
 
     @ViewBuilder
@@ -52,14 +66,11 @@ struct HomeView<ViewModel: HomeViewModel>: View {
             return readedPages > 0
         }
 
-        return HStack {
-            Spacer()
-            Text(isStartedReading ? "Skaitoma" : "Nepradėta")
-                .padding(.vertical, 1)
-                .padding(.horizontal, 12)
-                .background(isStartedReading ? Color.green.gradient : Color.gray.gradient)
-                .clipShape(Capsule())
-        }
+        return Text(isStartedReading ? "Skaitoma" : "Nepradėta")
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 1)
+            .background(isStartedReading ? Color.green.gradient : Color.gray.gradient)
+            .clipShape(Capsule())
     }
 
     private func booksGridView() -> some View {
@@ -109,10 +120,13 @@ struct HomeView<ViewModel: HomeViewModel>: View {
                         }
                     }
                     .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.brown.gradient.opacity(0.5))
+                    .padding(8)
+                    .background(Color.clear.opacity(0.5))
                     .cornerRadius(16)
-                    .shadow(color: .white, radius: 2)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16)
+                            .stroke(Color.brown.opacity(0.8), lineWidth: 2)
+                    )
                     .onTapGesture { [weak interactor] in interactor?.onBookClicked(book.id) }
                 }
             }
@@ -120,50 +134,3 @@ struct HomeView<ViewModel: HomeViewModel>: View {
         }
     }
 }
-
-#if DEBUG
-    import SwiftUI
-
-    struct HomeView_Previews: PreviewProvider {
-        class MockHomeInteractor: HomeInteractor {
-            func onBookClicked(_ bookID: String) {}
-            func onLogOutTap() {}
-            static let mockInstance = MockHomeInteractor()
-            func viewDidAppear() {}
-            func tapConfirm() {}
-        }
-
-        struct PreviewContainer: View {
-            @StateObject private var viewModel = DefaultHomeViewModel()
-
-            var body: some View {
-                NavigationView {
-                    HomeView(
-                        interactor: MockHomeInteractor.mockInstance,
-                        viewModel: viewModel
-                    )
-                }
-                .onAppear {
-                    viewModel.displayBooks(
-                        (0 ..< 30).map {
-                            .init(
-                                id: "book_\($0)",
-                                title: "Knyga \($0)",
-                                readedPages: 10,
-                                totalPages: 20,
-                                image:
-                                UIImage(systemName: "book")
-                                    ?? .init()
-                            )
-                        }
-                    )
-                }
-            }
-        }
-
-        static var previews: some View {
-            PreviewContainer()
-        }
-    }
-
-#endif
