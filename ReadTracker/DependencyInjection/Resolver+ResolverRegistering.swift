@@ -5,6 +5,8 @@ extension Resolver: @retroactive ResolverRegistering {
         
         Resolver.register { DefaultRootCoordinator() }
             .scope(.shared)
+        Resolver.register { DefaultAuthenticationCoordinator() }
+            .scope(.shared)
 //        Resolver.register { DefaultAuthenticationInteractor() }
 //            .implements(AuthenticationInteractor.self)
 //            .scope(.shared)

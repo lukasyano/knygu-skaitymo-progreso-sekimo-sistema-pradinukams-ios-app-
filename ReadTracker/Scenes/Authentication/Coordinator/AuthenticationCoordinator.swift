@@ -5,16 +5,13 @@ import SwiftUI
 final class DefaultAuthenticationCoordinator: Coordinator {
     private var interactor: AuthenticationInteractor!
 
-    private let modelContext: ModelContext
     weak var parent: (any Coordinator)?
     @Published var presentedView: AuthenticationCoordinatorPresentedView?
     @Published var route: AuthenticationCoordinatorRoute?
 
-    init(modelContext: ModelContext, shouldAutoNavigateToHome: Bool = false) {
-        self.modelContext = modelContext
+    init(shouldAutoNavigateToHome: Bool = false) {
         self.interactor = DefaultAuthenticationInteractor(
             coordinator: self,
-            modelContext: modelContext,
             shouldAutoNavigateToHome: shouldAutoNavigateToHome
         )
     }
@@ -37,7 +34,6 @@ extension DefaultAuthenticationCoordinator {
     }
 
     func navigateToRegister() {
-        dismissPresented()
         route = .registration
     }
 }

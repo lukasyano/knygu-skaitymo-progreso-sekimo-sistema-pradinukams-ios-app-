@@ -1,7 +1,7 @@
 protocol RegistrationPresenter: AnyObject {
     func presentEmail(_ email: String)
+    func presentName(_ name: String)
     func presentPassword(_ password: String)
-    func presentRoleSelection(_ selection: RegistrationModels.RoleSelection)
     func presentLoading(_ isLoading: Bool)
 }
 
@@ -24,11 +24,11 @@ extension DefaultRegistrationPresenter: RegistrationPresenter {
         displayLogic?.displayEmail(email)
     }
 
-    func presentPassword(_ password: String) {
-        displayLogic?.displayPassword(password)
+    func presentName(_ name: String) {
+        displayLogic?.displayName(name)
     }
 
-    func presentRoleSelection(_ selection: RegistrationModels.RoleSelection) {
-        displayLogic?.displayRoleSelection(selection)
+    func presentPassword(_ password: String) {
+        displayLogic?.displayPassword(password)
     }
 }

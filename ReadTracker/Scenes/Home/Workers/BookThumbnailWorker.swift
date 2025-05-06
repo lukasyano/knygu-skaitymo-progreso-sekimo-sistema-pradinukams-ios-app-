@@ -7,27 +7,19 @@ protocol BookThumbnailWorker {
 }
 
 final class DefaultBookThumbnailWorker: BookThumbnailWorker {
-
-    private static let fallbackImage = UIImage(
-        systemName: "book.closed.fill"
-    )!
-
-    private let ioQueue = DispatchQueue(
-        label: "pdf.thumbnail.queue",
-        qos: .userInitiated
-    )
+    private static let fallbackImage = UIImage(systemName: "book.closed.fill") ?? .init()
+    private let ioQueue = DispatchQueue(label: "pdf.thumbnail.queue", qos: .userInitiated)
 
     func generateThumbnails(
         for books: [BookEntity],
         size: CGSize
     ) -> AnyPublisher<[HomeModels.BooksPresentable], Never> {
-
         let publishers = books.map { book in
             thumbnail(for: book, size: size)
         }
 
         return Publishers.MergeMany(publishers)
-            .collect()                  // wait for all
+            .collect()
             .receive(on: DispatchQueue.main)
             .eraseToAnyPublisher()
     }
@@ -38,17 +30,15 @@ final class DefaultBookThumbnailWorker: BookThumbnailWorker {
         for book: BookEntity,
         size: CGSize
     ) -> AnyPublisher<HomeModels.BooksPresentable, Never> {
-
-        guard let path = book.localFilePath else {
+        guard let fileURL = book.fileURL else {
             return Just(makePresentable(book, totalPages: .none, image: Self.fallbackImage))
-                   .eraseToAnyPublisher()
+                .eraseToAnyPublisher()
         }
 
         return Future<HomeModels.BooksPresentable, Never> { [weak self] promise in
             guard let self else { return }
-            self.ioQueue.async {
+            ioQueue.async {
                 do {
-                    let fileURL = URL(fileURLWithPath: path)
                     guard
                         let doc = PDFDocument(url: fileURL),
                         let page = doc.page(at: 0)

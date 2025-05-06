@@ -1,37 +1,7 @@
 import Combine
+import Foundation
 import Resolver
 import SwiftData
-import SwiftUI
-
-// MARK: - Storage Service
-
-protocol BookStorageService {
-    var lastFullSyncDate: Date? { get }
-    func shouldPerformFullSync() -> Bool
-    func markFullSyncPerformed()
-}
-
-final class DefaultBookStorageService: BookStorageService {
-    private let defaults = UserDefaults.standard
-    private static let lastSyncKey = "DefaultRootInteractor.lastFullSyncDate"
-
-    var lastFullSyncDate: Date? {
-        defaults.object(forKey: Self.lastSyncKey) as? Date
-    }
-
-    func shouldPerformFullSync() -> Bool {
-        guard let last = lastFullSyncDate else {
-            return true 
-        }
-        return Date().timeIntervalSince(last) >= 24 * 60 * 60
-    }
-
-    func markFullSyncPerformed() {
-        defaults.set(Date(), forKey: Self.lastSyncKey)
-    }
-}
-
-// MARK: - Interactor
 
 protocol RootInteractor: AnyObject {
     func onAppear()
@@ -45,9 +15,12 @@ final class DefaultRootInteractor {
     private let authenticationService: AuthenticationService
     private let modelContext: ModelContext
 
+    // Combine bag
+    private var cancelBag = Set<AnyCancellable>()
+
     init(
         coordinator: DefaultRootCoordinator = Resolver.resolve(),
-        modelContext: ModelContext,
+        modelContext: ModelContext = Resolver.resolve(),
         storageService: BookStorageService = DefaultBookStorageService(),
         authenticationService: AuthenticationService = Resolver.resolve()
     ) {
@@ -77,8 +50,7 @@ extension DefaultRootInteractor: RootInteractor {
     }
 
     private func performFullBookSyncIfNeeded() {
-        Self.syncLock.lock()
-        defer { Self.syncLock.unlock() }
+        Self.syncLock.lock(); defer { Self.syncLock.unlock() }
 
         guard storageService.shouldPerformFullSync() else {
             print("🔁 Skipping sync — next sync in <24h.")
@@ -91,8 +63,18 @@ extension DefaultRootInteractor: RootInteractor {
         let syncService = BookSyncService(modelContext: modelContext)
         let downloadService = DefaultBookDownloadService(modelContext: modelContext)
 
-        syncService.syncBooks { _ in
-            downloadService.downloadBooks(force: false)
-        }
+        syncService.syncBooks()
+            .flatMap { _ in
+                downloadService.downloadBooks()
+            }
+            .sink(
+                receiveCompletion: { completion in
+                if case let .failure(error) = completion {
+                    print("Sync error: \(error)")
+                }
+            }, receiveValue: { results in
+                print("Downloaded \(results.count) books.")
+            })
+            .store(in: &cancelBag)
     }
 }

@@ -5,7 +5,7 @@ enum LoginCoordinatorRoute: Identifiable, Equatable {
 
     var id: String {
         switch self {
-        case .home: "home"
+        case .home: "home_\(UUID())"
         }
     }
 

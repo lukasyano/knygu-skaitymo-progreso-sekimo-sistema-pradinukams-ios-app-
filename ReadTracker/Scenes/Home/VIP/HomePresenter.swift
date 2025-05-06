@@ -31,8 +31,8 @@ extension DefaultHomePresenter: HomePresenter {
     func presentBookThumbnails(_ presentable: [HomeModels.BooksPresentable]) {
         displayLogic?.displayBookThumbnails(presentable)
     }
-    
-    func presentBookProgress(_ presentable: [HomeModels.BookProgressPreseentable]){
+
+    func presentBookProgress(_ presentable: [HomeModels.BookProgressPreseentable]) {
         displayLogic?.displayBookProgress(presentable)
     }
 }

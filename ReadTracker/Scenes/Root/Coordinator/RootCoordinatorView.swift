@@ -23,6 +23,11 @@ struct RootCoordinatorView: View {
             contentView
                 .transition(.opacity)
                 .onAppear { [weak interactor] in interactor?.onAppear() }
+                .task {
+                    Resolver.register { modelContext }
+                    Resolver.register { DefaultUsersSwiftDataService() }
+                        .implements(UsersSwiftDataService.self)
+                }
         }
         .animation(.bouncy, value: coordinator.route)
     }
@@ -31,7 +36,7 @@ struct RootCoordinatorView: View {
     private var contentView: some View {
         switch coordinator.route {
         case .authentication:
-            AuthenticationCoordinatorView(coordinator: .init(modelContext: modelContext))
+            AuthenticationCoordinatorView(coordinator: Resolver.resolve())
 
         case .carousel:
             LoadingIndicator(animation: .text, size: .large)

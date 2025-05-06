@@ -4,7 +4,7 @@ import Foundation
 import Resolver
 
 protocol LoginInteractor: AnyObject {
-    func viewDidChange(_ type: ViewDidChangeType)
+    func viewDidAppear()
     func onEmailChange(_ email: String)
     func onPasswordChange(_ password: String)
     func onRememberMeToggle()
@@ -24,19 +24,19 @@ final class DefaultLoginInteractor {
     private lazy var cancelBag = Set<AnyCancellable>()
 
     // Repositories
-    private let authRepository: AuthenticationRepository
+    private let userRepository: UserRepository
 
     // MARK: - Lifecycle
     init(
         coordinator: (any LoginCoordinator)?,
         presenter: LoginPresenter?,
-        authRepository: AuthenticationRepository = Resolver.resolve(),
+        userRepository: UserRepository = Resolver.resolve(),
         email: String?,
         shouldAutoNavigateToHome: Bool
     ) {
         self.coordinator = coordinator
         self.presenter = presenter
-        self.authRepository = authRepository
+        self.userRepository = userRepository
         if let email = email {
             self.email = email
         }
@@ -64,23 +64,16 @@ extension DefaultLoginInteractor: LoginInteractor {
     }
 
     // MARK: - View Did Change
-    func viewDidChange(_ type: ViewDidChangeType) {
-        switch type {
-        case .onAppear:
-            cancelBag.removeAll()
-            presenter?.presentEmail(email)
-            presenter?.presentPassword(password)
-
-        case .onDisappear:
-            presenter?.presentLoading(false)
-            cancelBag.removeAll()
-        }
+    func viewDidAppear() {
+        cancelBag.removeAll()
+        presenter?.presentEmail(email)
+        presenter?.presentPassword(password)
     }
 
     func onLoginTap() {
         presenter?.presentLoading(true)
 
-        authRepository.signIn(email: email, password: password, remember: rememberMe)
+        userRepository.logIn(email: email, password: password)
             .receive(on: DispatchQueue.main)
             .sink(
                 receiveCompletion: { [weak self] in self?.handleLoginCompletion($0) },
@@ -89,11 +82,11 @@ extension DefaultLoginInteractor: LoginInteractor {
             .store(in: &cancelBag)
     }
 
-    private func handleLoginCompletion(_ completion: Subscribers.Completion<AuthUIError>) {
-        if case let .failure(error) = completion {
-            guard let errorMessage = error.errorDescription else { return }
-
-            coordinator?.presentError(errorMessage, onClose: { self.presenter?.presentLoading(false) })
+    private func handleLoginCompletion(_ completion: Subscribers.Completion<UserError>) {
+        presenter?.presentLoading(false)
+        
+        if case let .failure(.message(message)) = completion {
+            coordinator?.presentError(message, onClose: {})
         }
     }
 }

@@ -1,13 +1,13 @@
 import Foundation
 
-enum AuthenticationCoordinatorRoute: Identifiable, Equatable {
+enum AuthenticationCoordinatorRoute: Identifiable, Equatable, Hashable {
     case login
     case registration
 
     var id: String {
         switch self {
-        case .login: "login"
-        case .registration: "registration"
+        case .login: "login_\(UUID())"
+        case .registration: "registration_\(UUID())"
         }
     }
 

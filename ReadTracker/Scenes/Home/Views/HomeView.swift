@@ -37,8 +37,8 @@ struct HomeView<ViewModel: HomeViewModel>: View {
             }
         }
         .animation(.bouncy, value: viewModel.isLoading)
-        .onFirstAppear(perform: { [weak interactor] in interactor?.viewDidChange(.onAppear) }, resetOnDisappear: false)
-        .onDisappear { [weak interactor] in interactor?.viewDidChange(.onDisappear) }
+        .onAppear(perform: { [weak interactor] in interactor?.viewDidAppear() })
+//        .onDisappear { [weak interactor] in interactor?.viewDidChange(.onDisappear) }
     }
 
     @ViewBuilder
@@ -129,7 +129,7 @@ struct HomeView<ViewModel: HomeViewModel>: View {
             func onBookClicked(_ bookID: String) {}
             func onLogOutTap() {}
             static let mockInstance = MockHomeInteractor()
-            func viewDidChange(_ type: ViewDidChangeType) {}
+            func viewDidAppear() {}
             func tapConfirm() {}
         }
 

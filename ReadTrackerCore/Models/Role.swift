@@ -1,7 +1,8 @@
-public enum Role: String, CaseIterable, Codable {
+import SwiftData
+
+enum Role: String, Codable, Equatable {
     case parent
     case child
-    
     case unknown
 }
 

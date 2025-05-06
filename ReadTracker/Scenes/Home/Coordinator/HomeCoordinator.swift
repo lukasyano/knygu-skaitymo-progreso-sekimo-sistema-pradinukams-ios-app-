@@ -17,14 +17,13 @@ final class DefaultHomeCoordinator: HomeCoordinator {
     @Published var presentedView: HomeCoordinatorPresentedView?
     @Published var route: HomeCoordinatorRoute?
 
-    init(parent: (any Coordinator)?, modelContext: ModelContext) {
+    init(parent: (any Coordinator)?) {
         self.parent = parent
         self.viewModel = DefaultHomeViewModel()
         self.presenter = DefaultHomePresenter(displayLogic: viewModel)
         self.interactor = DefaultHomeInteractor(
             coordinator: self,
             presenter: presenter,
-            modelContext: modelContext
         )
     }
 

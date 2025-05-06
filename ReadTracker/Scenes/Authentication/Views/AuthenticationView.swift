@@ -1,40 +1,10 @@
 import Lottie
 import SwiftUI
 
-struct WarmGradientButtonStyle: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        let background = LinearGradient(
-            gradient: Gradient(colors: [
-                .red,
-                .yellow,
-                .red
-            ]),
-            startPoint: .leading,
-            endPoint: .trailing
-        )
-
-        configuration.label
-            .padding()
-            .frame(maxWidth: .infinity)
-            .background(background)
-            .cornerRadius(.infinity)
-            .scaleEffect(configuration.isPressed ? 0.90 : 1.0)
-            .shadow(color: .black.opacity(0.4), radius: 6, x: 0, y: 4)
-            .foregroundColor(.white)
-            .font(.title2)
-            .animation(.easeOut(duration: 0.2), value: configuration.isPressed)
-    }
-}
-
-extension View {
-    func warmButtonStyle() -> some View {
-        buttonStyle(WarmGradientButtonStyle())
-    }
-}
-
 struct AuthenticationView: View {
     // MARK: - Variables
     private unowned var interactor: AuthenticationInteractor
+    @State private var showRefreshAlert = false
 
     // MARK: - Init
 
@@ -44,8 +14,52 @@ struct AuthenticationView: View {
 
     var body: some View {
         contentView
-            .navigationTitle("Prisijungimo būdai")
-            .onAppear(perform: { [weak interactor] in interactor?.viewDidChange(.onAppear) })
+            .navigationTitle("Sveikas atvykęs!")
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button(
+                        action: { [weak interactor] in interactor?.tapRegister() },
+                        label: {
+                            HStack(alignment: .bottom) {
+                                Text("Registracija tėvams")
+                                Image(systemName: "figure.and.child.holdinghands")
+                            }
+                        }
+                    )
+                    .buttonStyle(.bordered)
+                    .buttonBorderShape(.roundedRectangle)
+                    .tint(.black)
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Menu {
+                        Button(
+                            action: { showRefreshAlert.toggle() },
+                            label: { Label("Perkrauti", systemImage: "books.vertical") }
+                        )
+                    } label: {
+                        Image(systemName: "gearshape")
+                            .font(.title2)
+                    }
+                    .tint(.gray)
+                    .alert(
+                        "Dėmesio",
+                        isPresented: $showRefreshAlert,
+                        actions: {
+                            Button("Taip") { [weak interactor] in interactor?.tapReload() }
+                            Button("Ne", role: .cancel) {}
+                        },
+                        message: {
+                            Text("""
+                            Šis veiksmas ištrins esamą knygų saugyklą ir užpildys ją iš naujo. \
+                            Ar tikrai norite ištrinti ir perkrauti? Pastaba: tai yra atliekama \
+                            automatiškai kartą per dieną.
+                            """)
+                            .fixedSize(horizontal: false, vertical: true)
+                        }
+                    )
+                }
+            }
+            .onAppear(perform: { [weak interactor] in interactor?.viewDidAppear() })
     }
 
     @ViewBuilder
@@ -63,10 +77,6 @@ struct AuthenticationView: View {
                         action: { [weak interactor] in interactor?.tapLogin() },
                         label: { Text("Prisijungti") }
                     )
-                    Button(
-                        action: { [weak interactor] in interactor?.tapRegister() },
-                        label: { Text("Registruotis") }
-                    )
                 }
                 .warmButtonStyle()
                 .padding(.horizontal)
@@ -77,29 +87,34 @@ struct AuthenticationView: View {
     }
 }
 
-#if DEBUG
-    import Lottie
-    import SwiftUI
-
-    struct AuthenticationPreview: PreviewProvider {
-        class MockAuthenticationInteractor: AuthenticationInteractor {
-            func viewDidChange(_ type: ViewDidChangeType) {}
-            func tapLogin() {}
-            func tapRegister() {}
-            static let mockInstance = MockAuthenticationInteractor()
-        }
-
-        struct PreviewContainer: View {
-            var body: some View {
-                NavigationView {
-                    AuthenticationView(interactor: MockAuthenticationInteractor.mockInstance)
-                }
-            }
-        }
-
-        static var previews: some View {
-            PreviewContainer()
-        }
-    }
-
-#endif
+//
+// #if DEBUG
+//    import Lottie
+//    import SwiftUI
+//
+//    struct AuthenticationPreview: PreviewProvider {
+//        class MockAuthenticationInteractor: AuthenticationInteractor {
+//            func tapReload() {
+//                <#code#>
+//            }
+//
+//            func viewDidAppear() {}
+//            func tapLogin() {}
+//            func tapRegister() {}
+//            static let mockInstance = MockAuthenticationInteractor()
+//        }
+//
+//        struct PreviewContainer: View {
+//            var body: some View {
+//                NavigationView {
+//                    AuthenticationView(interactor: MockAuthenticationInteractor.mockInstance)
+//                }
+//            }
+//        }
+//
+//        static var previews: some View {
+//            PreviewContainer()
+//        }
+//    }
+//
+// #endif

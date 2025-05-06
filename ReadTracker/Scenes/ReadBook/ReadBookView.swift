@@ -26,15 +26,15 @@ struct ReadBookView: View {
         let role = book.role
         let bookId = book.id
 
-        // Firestore + SwiftData sync here
-        let progress = ReadingProgress(
-            userId: userId,
-            role: role,
-            bookId: bookId,
-            currentPage: page,
-            totalPages: book.totalPages,
-            lastUpdated: Date()
-        )
+//        // Firestore + SwiftData sync here
+//        let progress = ReadingProgress(
+//            userId: userId,
+//            role: role,
+//            bookId: bookId,
+//            currentPage: page,
+//            totalPages: book.totalPages,
+//            lastUpdated: Date()
+//        )
 
         // 🔁 Save locally and remotely
 //        ProgressSyncManager.shared.save(progress)

@@ -10,7 +10,6 @@ struct AuthenticationCoordinatorView: View {
     var body: some View {
         coordinator.start()
             .navigation(item: $coordinator.route, destination: navigationViewContent)
-            .presentedView($coordinator.presentedView, content: presentedViewContent)
     }
 }
 

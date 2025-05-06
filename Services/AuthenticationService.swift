@@ -2,7 +2,7 @@ import Combine
 import FirebaseAuth
 import Foundation
 
-public enum AuthUIError: LocalizedError {
+enum UserError: LocalizedError {
     case message(String)
 
     public var errorDescription: String? {
@@ -12,19 +12,19 @@ public enum AuthUIError: LocalizedError {
     }
 }
 
-public protocol AuthenticationService {
-    func createUser(email: String, password: String) -> AnyPublisher<User, AuthUIError>
-    func signIn(email: String, password: String) -> AnyPublisher<User, AuthUIError>
+protocol AuthenticationService {
+    func createUser(email: String, password: String) -> AnyPublisher<User, UserError>
+    func signIn(email: String, password: String) -> AnyPublisher<User, UserError>
     func signOut() throws
     func getUserID() -> String?
 }
 
-public final class DefaultAuthenticationService: AuthenticationService {
-    public init() {}
+final class DefaultAuthenticationService: AuthenticationService {
+    private let instance = Auth.auth()
 
-    public func createUser(email: String, password: String) -> AnyPublisher<User, AuthUIError> {
-        Future { promise in
-            Auth.auth().createUser(withEmail: email, password: password) { result, error in
+    func createUser(email: String, password: String) -> AnyPublisher<User, UserError> {
+        Future { [weak instance] promise in
+            instance?.createUser(withEmail: email, password: password) { result, error in
                 if let error = error {
                     promise(.failure(Self.mapFirebaseError(error)))
                 } else if let user = result?.user {
@@ -35,9 +35,9 @@ public final class DefaultAuthenticationService: AuthenticationService {
         .eraseToAnyPublisher()
     }
 
-    public func signIn(email: String, password: String) -> AnyPublisher<User, AuthUIError> {
-        Future { promise in
-            Auth.auth().signIn(withEmail: email, password: password) { result, error in
+    func signIn(email: String, password: String) -> AnyPublisher<User, UserError> {
+        Future { [weak instance] promise in
+            instance?.signIn(withEmail: email, password: password) { result, error in
                 if let error = error {
                     promise(.failure(Self.mapFirebaseError(error)))
                 } else if let user = result?.user {
@@ -48,19 +48,19 @@ public final class DefaultAuthenticationService: AuthenticationService {
         .eraseToAnyPublisher()
     }
 
-    public func signOut() throws {
-        try Auth.auth().signOut()
+    func signOut() throws {
+        try instance.signOut()
     }
 
-    public func getUserID() -> String? {
-        let userID = Auth.auth().currentUser?.uid
+    func getUserID() -> String? {
+        let userID = instance.currentUser?.uid
         print(String("UserID: \(userID ?? "Nera userID)")"))
         return userID
     }
 }
 
 extension DefaultAuthenticationService {
-    private static func mapFirebaseError(_ error: Error) -> AuthUIError {
+    private static func mapFirebaseError(_ error: Error) -> UserError {
         guard
             let error = error as NSError?,
             let code = AuthErrorCode(rawValue: error.code)
@@ -72,7 +72,7 @@ extension DefaultAuthenticationService {
         case .invalidEmail:
             return .message("Neteisingas el. pašto adresas.")
         case .emailAlreadyInUse:
-            return .message("Šis el. paštas jau registruotas! Prašome registuotis su kitais el. paštu arba prisijungti.")
+            return .message("Šis el. paštas jau registruotas!")
         case .weakPassword:
             return .message("Naudokite stipresnį slaptažodį (min. 6 simboliai).")
         case .wrongPassword, .invalidCredential:

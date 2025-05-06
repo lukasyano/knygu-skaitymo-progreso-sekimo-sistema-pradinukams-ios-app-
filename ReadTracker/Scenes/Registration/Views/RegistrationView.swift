@@ -1,17 +1,15 @@
 import SwiftUI
 
-private enum ViewConstants {
-
-}
-
 struct RegistrationView<ViewModel: RegistrationViewModel>: View {
     // MARK: - Variables
     @Environment(\.dismiss) private var dismiss
     private unowned var interactor: RegistrationInteractor
     @ObservedObject private var viewModel: ViewModel
-    @FocusState private var focusedField: Bool
+    @FocusState private var focusedField: Field?
 
-    // MARK: - Init
+    enum Field: Hashable {
+        case name, email, password
+    }
 
     init(
         interactor: RegistrationInteractor,
@@ -23,63 +21,72 @@ struct RegistrationView<ViewModel: RegistrationViewModel>: View {
 
     var body: some View {
         ZStack {
+            Constants.mainScreenColor.ignoresSafeArea()
+
             if viewModel.isLoading {
                 LoadingView()
             } else {
-                contentView
+                NavigationView {
+                    formContent()
+                        .navigationTitle(viewModel.title)
+                        .navigationBarTitleDisplayMode(.inline)
+                        .onAppear { [weak interactor] in interactor?.viewDidAppear() }
+                }
             }
         }
-        .animation(.bouncy, value: viewModel.isLoading)
-        .onAppear(perform: { [weak interactor] in interactor?.viewDidChange(.onAppear) })
-        .onDisappear(perform: { [weak interactor] in interactor?.viewDidChange(.onDisappear) })
+        .animation(.easeInOut, value: viewModel.isLoading)
     }
 
     @ViewBuilder
-    private var contentView: some View {
-        ScrollView {
-            VStack {
-                Text(viewModel.title)
-                Group {
-                    TextField("El. paštas", text: .init(
-                        get: { viewModel.email },
-                        set: { [weak interactor] in interactor?.onEmailChange($0) }
-                    ))
+    private func formContent() -> some View {
+        Form {
+            Section(header: Text("Paskyros informacija")) {
+                TextField("Vardas", text: .init(
+                    get: { viewModel.name },
+                    set: { interactor.onNameChange($0) }
+                ))
+                .focused($focusedField, equals: .name)
+                .textContentType(.name)
+                .autocorrectionDisabled()
+                .textInputAutocapitalization(.words)
 
-                    SecureField("Slaptažodis", text: .init(
-                        get: { viewModel.password },
-                        set: { [weak interactor] in interactor?.onPasswordChange($0) }
-                    ))
-                }
-                .textFieldStyle(.roundedBorder)
-                .focused($focusedField)
-                .autocorrectionDisabled(true)
+                TextField("El. paštas", text: .init(
+                    get: { viewModel.email },
+                    set: { interactor.onEmailChange($0) }
+                ))
+                .keyboardType(.emailAddress)
+                .focused($focusedField, equals: .email)
+                .autocorrectionDisabled()
                 .textInputAutocapitalization(.never)
+                .textContentType(.emailAddress)
 
-                Picker("Pasirinkite rolę", selection: .init(
-                    get: { viewModel.roleSelection.selected },
-                    set: { [weak interactor] in interactor?.onRoleChange($0) }
-                )) {
-                    ForEach(viewModel.roleSelection.availableRoles, id: \.self) { role in
-                        Text(role.localized)
+                SecureField("Slaptažodis", text: .init(
+                    get: { viewModel.password },
+                    set: { interactor.onPasswordChange($0) }
+                ))
+                .focused($focusedField, equals: .password)
+                .textContentType(.newPassword)
+            }
+            Section {
+                Button {
+                    focusedField = nil
+                    interactor.onRegisterTap()
+                } label: {
+                    HStack {
+                        Spacer()
+                        Text("Registruotis")
+                            .bold()
+                        Spacer()
                     }
                 }
-                .pickerStyle(.segmented)
-
-                Button(
-                    action: { [weak interactor] in
-                        focusedField = false
-                        interactor?.onRegisterTap()
-                    },
-                    label: {
-                        Text(viewModel.isDisabled ? "Negali būti tuščia !" : "Registruotis")
-                            .frame(maxWidth: .infinity)
-                    }
-                )
-                .buttonStyle(.borderedProminent)
                 .disabled(viewModel.isDisabled)
-                .padding()
+            } footer: {
+                if viewModel.isDisabled {
+                    Text("Užpildykite visus laukus.")
+                        .foregroundColor(.red)
+                        .transition(.opacity)
+                }
             }
-            .padding()
         }
     }
 }

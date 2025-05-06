@@ -4,10 +4,10 @@ import Foundation
 import Resolver
 
 protocol RegistrationInteractor: AnyObject {
-    func viewDidChange(_ type: ViewDidChangeType)
+    func viewDidAppear()
     func onEmailChange(_ email: String)
+    func onNameChange(_ name: String)
     func onPasswordChange(_ password: String)
-    func onRoleChange(_ role: Role)
     func onRegisterTap()
 }
 
@@ -18,26 +18,23 @@ final class DefaultRegistrationInteractor {
 
     // Properties
     private(set) var email: String = MockCredentials.email()
+    private(set) var name: String = MockCredentials.name
     private(set) var password: String = MockCredentials.password()
-    private(set) var roleSelection = RegistrationModels.RoleSelection(
-        selected: .child,
-        availableRoles: [.child, .parent]
-    )
     private lazy var cancelBag = Set<AnyCancellable>()
 
     // Repositories
-    private let authRepository: AuthenticationRepository
+    private let userRepository: UserRepository
 
     // MARK: - Lifecycle
 
     init(
         coordinator: (any RegistrationCoordinator)?,
         presenter: RegistrationPresenter?,
-        authRepository: AuthenticationRepository = Resolver.resolve()
+        userRepository: UserRepository = Resolver.resolve()
     ) {
         self.coordinator = coordinator
         self.presenter = presenter
-        self.authRepository = authRepository
+        self.userRepository = userRepository
     }
 }
 
@@ -49,46 +46,46 @@ extension DefaultRegistrationInteractor: RegistrationInteractor {
         presenter?.presentEmail(email)
     }
 
+    func onNameChange(_ name: String) {
+        self.name = name
+        presenter?.presentName(name)
+    }
+
     func onPasswordChange(_ password: String) {
         self.password = password
         presenter?.presentPassword(password)
     }
 
-    func onRoleChange(_ role: Role) {
-        roleSelection.selected = role
-        presenter?.presentRoleSelection(roleSelection)
-    }
-
     // MARK: - View Did Change
 
-    func viewDidChange(_ type: ViewDidChangeType) {
-        switch type {
-        case .onAppear:
-            cancelBag.removeAll()
-            presenter?.presentEmail(email)
-            presenter?.presentPassword(password)
-
-        case .onDisappear:
-            presenter?.presentLoading(false)
-            cancelBag.removeAll()
-        }
+    func viewDidAppear() {
+        cancelBag.removeAll()
+        presenter?.presentEmail(email)
+        presenter?.presentPassword(password)
+        presenter?.presentName(name)
     }
 
     func onRegisterTap() {
         presenter?.presentLoading(true)
 
-        authRepository.signUp(email: email, password: password, role: roleSelection.selected)
+        userRepository.createUser(name: name, email: email, password: password, role: .parent)
             .receive(on: DispatchQueue.main)
             .sink(
-                receiveCompletion: { [weak self] in self?.handleRegistrationCompletion($0) },
-                receiveValue: { [weak self] in self?.handleRegistrationSuccess($0) }
+                receiveCompletion: { [weak self] in
+                    self?.handleRegistrationCompletion($0)
+                },
+                receiveValue: { [weak self] in
+                    self?.handleRegistrationSuccess(email: $0)
+                }
             )
             .store(in: &cancelBag)
     }
 
-    private func handleRegistrationSuccess(_ user: User) {
+    private func handleRegistrationSuccess(email: String) {
+        let registrationSuccessMessage = "Registracija sėkminga, šaunu! Dabar galėsite prisijungti."
+
         coordinator?.presentRegistrationComplete(
-            message: RegistrationModels.registrationSuccessMessage,
+            message: registrationSuccessMessage,
             onDismiss: { [weak self] in
                 guard let self else { return }
                 coordinator?.navigateToLogin(email: email)
@@ -96,11 +93,10 @@ extension DefaultRegistrationInteractor: RegistrationInteractor {
         )
     }
 
-    private func handleRegistrationCompletion(_ completion: Subscribers.Completion<AuthUIError>) {
-        if case let .failure(error) = completion {
-            guard let errorMessage = error.errorDescription else { return }
-
-            coordinator?.presentError(error: errorMessage, onDismiss: { self.presenter?.presentLoading(false) })
+    private func handleRegistrationCompletion(_ completion: Subscribers.Completion<UserError>) {
+        presenter?.presentLoading(false)
+        if case let .failure(.message(message)) = completion {
+            coordinator?.presentError(error: message, onDismiss: {})
         }
     }
 }

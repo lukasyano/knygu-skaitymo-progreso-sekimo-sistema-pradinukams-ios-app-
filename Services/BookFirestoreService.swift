@@ -2,18 +2,16 @@ import Combine
 import FirebaseFirestore
 import Foundation
 
-public protocol BookFirestoreService {
+protocol BookFirestoreService {
     func fetchBooks(for role: Role) -> AnyPublisher<[Book], Error>
 }
 
-public class DefaultBookFirestoreService: BookFirestoreService {
+class DefaultBookFirestoreService: BookFirestoreService {
     private let firestore = Firestore.firestore()
 
-    public init() {}
-
-    public func fetchBooks(for role: Role) -> AnyPublisher<[Book], Error> {
-        Future { promise in
-            self.firestore.collection("books")
+    func fetchBooks(for role: Role) -> AnyPublisher<[Book], Error> {
+        Future { [weak self] promise in
+            self?.firestore.collection("books")
                 .whereField("role", isEqualTo: role.rawValue)
                 .getDocuments { snapshot, error in
                     if let error = error {
