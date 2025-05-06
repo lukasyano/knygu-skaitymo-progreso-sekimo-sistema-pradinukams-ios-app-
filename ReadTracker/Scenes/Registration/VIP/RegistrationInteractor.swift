@@ -83,7 +83,7 @@ extension DefaultRegistrationInteractor: RegistrationInteractor {
 
     private func handleRegistrationSuccess(email: String) {
         let registrationSuccessMessage = "Registracija sėkminga, šaunu! Dabar galėsite prisijungti."
-
+        
         coordinator?.presentRegistrationComplete(
             message: registrationSuccessMessage,
             onDismiss: { [weak self] in

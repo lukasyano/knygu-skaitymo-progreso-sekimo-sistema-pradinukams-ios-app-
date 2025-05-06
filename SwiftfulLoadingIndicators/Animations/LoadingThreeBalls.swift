@@ -5,30 +5,29 @@
 //  Created by Nick Sarno on 1/12/21.
 //
 
-import SwiftUI
 import Combine
+import SwiftUI
 
 struct LoadingThreeBalls: View {
-    
     let timer: Publishers.Autoconnect<Timer.TimerPublisher>
     let timing: Double
-    
+
     let maxCounter = 3
     @State var counter = 0
-    
+
     let frame: CGSize
     let primaryColor: Color
-    
+
     init(color: Color = .black, size: CGFloat = 50, speed: Double = 0.5) {
-        timing = speed
-        timer = Timer.publish(every: timing, on: .main, in: .common).autoconnect()
-        frame = CGSize(width: size, height: size)
-        primaryColor = color
+        self.timing = speed
+        self.timer = Timer.publish(every: timing, on: .main, in: .common).autoconnect()
+        self.frame = CGSize(width: size, height: size)
+        self.primaryColor = color
     }
 
     var body: some View {
         HStack(spacing: 0) {
-            ForEach(0..<maxCounter) { index in
+            ForEach(0 ..< maxCounter) { index in
                 Circle()
                     .scale(counter == index ? 1.0 : 0.5)
                     .fill(primaryColor)

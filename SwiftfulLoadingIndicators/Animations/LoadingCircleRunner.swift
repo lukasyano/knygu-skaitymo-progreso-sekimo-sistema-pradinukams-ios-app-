@@ -8,17 +8,16 @@
 import SwiftUI
 
 struct LoadingCircleRunner: View {
-    
     @State var isAnimating: Bool = false
     let timing: Double
-    
+
     let frame: CGSize
     let primaryColor: Color
-    
+
     init(color: Color = .black, size: CGFloat = 50, speed: Double = 0.5) {
-        timing = speed * 4
-        frame = CGSize(width: size, height: size)
-        primaryColor = color
+        self.timing = speed * 4
+        self.frame = CGSize(width: size, height: size)
+        self.primaryColor = color
     }
 
     var body: some View {
@@ -27,8 +26,7 @@ struct LoadingCircleRunner: View {
             .stroke(primaryColor,
                     style: StrokeStyle(lineWidth:
                         isAnimating ? frame.height / 10 : frame.height / 20,
-                                       lineCap: .round, lineJoin: .round)
-            )
+                        lineCap: .round, lineJoin: .round))
             .animation(Animation.easeInOut(duration: timing / 2).repeatForever())
             .rotationEffect(
                 Angle(degrees: isAnimating ? 360 : 0)

@@ -5,90 +5,89 @@ import Foundation
 protocol UsersFirestoreService {
     func saveUserEntity(_ user: UserEntity) -> AnyPublisher<Void, Error>
     func getUserRole(userID: String) -> AnyPublisher<Role?, Never>
-   // func linkChildToParent(childID: String, parentID: String) -> AnyPublisher<Void, Error>
-    //func getChildrenForParent(parentID: String) -> AnyPublisher<[UserEntity], Error>
-    //func getAllParents() -> AnyPublisher<[UserEntity], Error>
+    // func linkChildToParent(childID: String, parentID: String) -> AnyPublisher<Void, Error>
+    // func getChildrenForParent(parentID: String) -> AnyPublisher<[UserEntity], Error>
+    // func getAllParents() -> AnyPublisher<[UserEntity], Error>
 }
 
 class DefaultUsersFirestoreService: UsersFirestoreService {
     private let fireStoreReference = Firestore.firestore()
-    
+
     func saveUserEntity(_ user: UserEntity) -> AnyPublisher<Void, Error> {
         let userRef = fireStoreReference.collection("users").document(user.id)
-        
+
         // 1) Build the top-level user payload
-        var payload: [String:Any] = [
+        var payload: [String: Any] = [
             "email": user.email,
-            "name":  user.name,
-            "role":  user.role.rawValue
+            "name": user.name,
+            "role": user.role.rawValue
         ]
-        
+
         switch user.role {
         case .parent:
             // only parents get a 'children' array
             payload["children"] = user.childrensID
-            
+
         case .child:
             // only children get 'parentId' + 'totalPoints'
             if let pid = user.parentID {
-                payload["parentId"]    = pid
+                payload["parentId"] = pid
                 payload["totalPoints"] = user.totalPoints
             }
-            
+
         case .unknown:
             break
         }
-        
+
         // 2) Wrap the top-level setData in a Future
-        let userWrite = Future<Void,Error> { promise in
+        let userWrite = Future<Void, Error> { promise in
             userRef.setData(payload, merge: true) { err in
                 err.map { promise(.failure($0)) }
-                ?? promise(.success(()))
+                    ?? promise(.success(()))
             }
         }
-            .eraseToAnyPublisher()
-        
+        .eraseToAnyPublisher()
+
         // 3) If this is a child, also write each Progress into /progress/{bookId}
-        let progressWrites: AnyPublisher<Void,Error>
+        let progressWrites: AnyPublisher<Void, Error>
         if user.role == .child {
             // Map each Progress → a Future write (skipping any entry without a linked book)
-            let writes = user.progressEntries.compactMap { entry -> AnyPublisher<Void,Error>? in
+            let writes = user.progressEntries.compactMap { entry -> AnyPublisher<Void, Error>? in
                 guard let book = entry.book else { return nil }
-                let pData: [String:Any] = [
-                    "pagesRead":    entry.pagesRead,
-                    "totalPages":   entry.totalPages,
-                    "finished":     entry.finished,
+                let pData: [String: Any] = [
+                    "pagesRead": entry.pagesRead,
+                    "totalPages": entry.totalPages,
+                    "finished": entry.finished,
                     "pointsEarned": entry.pointsEarned
                 ]
                 let pRef = userRef
                     .collection("progress")
                     .document(book.id)
-                
-                return Combine.Future<Void,Error> { promise in
+
+                return Combine.Future<Void, Error> { promise in
                     pRef.setData(pData, merge: true) { err in
                         err.map { promise(.failure($0)) }
-                        ?? promise(.success(()))
+                            ?? promise(.success(()))
                     }
                 }
                 .eraseToAnyPublisher()
             }
-            
+
             // Merge them all and wait for completion
             progressWrites = Publishers
                 .MergeMany(writes)
                 .collect()
-                .mapToVoid()// wait for _all_ of them
-            
+                .mapToVoid() // wait for _all_ of them
+
         } else {
             progressWrites = .just(())
         }
-        
+
         // 4) Chain top-level write → progress writes
         return userWrite
             .flatMap { progressWrites }
             .eraseToAnyPublisher()
     }
-
 
 //    func linkChildToParent(childID: String, parentID: String) -> AnyPublisher<Void, Error> {
 //        Future { [weak self] promise in

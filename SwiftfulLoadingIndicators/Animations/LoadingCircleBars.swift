@@ -5,29 +5,29 @@
 //  Created by Nick Sarno on 1/13/21.
 //
 
-import SwiftUI
 import Combine
+import SwiftUI
 
 struct LoadingCircleBars: View {
     let timer: Publishers.Autoconnect<Timer.TimerPublisher>
     let timing: Double
-    
+
     let maxCounter: Int = 10
     @State var counter = 0
 
     let frame: CGSize
     let primaryColor: Color
-    
+
     init(color: Color = .black, size: CGFloat = 50, speed: Double = 0.5) {
-        timing = speed / 4
-        timer = Timer.publish(every: timing, on: .main, in: .common).autoconnect()
-        frame = CGSize(width: size, height: size)
-        primaryColor = color
+        self.timing = speed / 4
+        self.timer = Timer.publish(every: timing, on: .main, in: .common).autoconnect()
+        self.frame = CGSize(width: size, height: size)
+        self.primaryColor = color
     }
 
     var body: some View {
         ZStack {
-            ForEach(0..<maxCounter) { index in
+            ForEach(0 ..< maxCounter) { index in
                 RoundedRectangle(cornerRadius: 5.0)
                     .fill(primaryColor)
                     .frame(height: frame.height / 3)
@@ -36,9 +36,9 @@ struct LoadingCircleBars: View {
                     .rotationEffect(Angle(degrees: 360 / Double(maxCounter) * Double(index)))
                     .opacity(
                         counter == index ? 1.0 :
-                        counter == index + 1 ? 0.5 :
-                        counter == (maxCounter - 1) && index == (maxCounter - 1) ? 0.5 :
-                        0.0)
+                            counter == index + 1 ? 0.5 :
+                            counter == (maxCounter - 1) && index == (maxCounter - 1) ? 0.5 :
+                            0.0)
             }
         }
         .frame(width: frame.width, height: frame.height, alignment: .center)

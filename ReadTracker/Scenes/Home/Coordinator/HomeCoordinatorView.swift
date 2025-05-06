@@ -5,11 +5,11 @@ struct HomeCoordinatorView: View {
 
     var body: some View {
 //        TabView {
-            coordinator.start()
-                .navigation(item: $coordinator.route, destination: routeView(for:))
-                .presentedView($coordinator.presentedView, content: presentedViewContent)
-                .navigationBarBackButtonHidden()
-        }
+        coordinator.start()
+            .navigation(item: $coordinator.route, destination: routeView(for:))
+            .presentedView($coordinator.presentedView, content: presentedViewContent)
+            .navigationBarBackButtonHidden()
+    }
 //    }
 }
 
@@ -21,8 +21,8 @@ extension HomeCoordinatorView {
         case let .book(url):
             ReadBookView(url: url)
 
-        case .error(error: let error, dismiss: let dismiss): EmptyView()
-            //Toa
+        case let .error(error: error, dismiss: dismiss): EmptyView()
+            // Toa
         }
     }
 }

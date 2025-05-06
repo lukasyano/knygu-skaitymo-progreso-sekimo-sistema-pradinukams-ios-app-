@@ -5,29 +5,28 @@
 //  Created by Nick Sarno on 1/13/21.
 //
 
-import SwiftUI
 import Combine
+import SwiftUI
 
 struct LoadingText: View {
-    
     let items: [String] = "Kraunama...".map { String($0) }
-    
+
     let timer: Publishers.Autoconnect<Timer.TimerPublisher>
     let timing: Double
-    
+
     let maxCounter: Int = 10
     @State var counter = 0
 
     let frame: CGSize
     let primaryColor: Color
-    
+
     init(color: Color = .black, size: CGFloat = 50, speed: Double = 0.5) {
-        timing = speed / 4
-        timer = Timer.publish(every: timing, on: .main, in: .common).autoconnect()
-        frame = CGSize(width: size, height: size)
-        primaryColor = color
+        self.timing = speed / 4
+        self.timer = Timer.publish(every: timing, on: .main, in: .common).autoconnect()
+        self.frame = CGSize(width: size, height: size)
+        self.primaryColor = color
     }
-    
+
     var body: some View {
         HStack(spacing: 0) {
             ForEach(items.indices) { index in
@@ -44,7 +43,6 @@ struct LoadingText: View {
             }
         })
     }
-    
 }
 
 struct LoadingText_Previews: PreviewProvider {

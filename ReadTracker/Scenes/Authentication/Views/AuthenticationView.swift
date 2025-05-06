@@ -70,51 +70,16 @@ struct AuthenticationView: View {
             VStack {
                 LottieView(animation: .named("walkingDog.json")).looping()
                     .animationSpeed(0.9)
-                    .frame(height: 500)
+                    .frame(height: 600)
 
-                Group {
-                    Button(
-                        action: { [weak interactor] in interactor?.tapLogin() },
-                        label: { Text("Prisijungti") }
-                    )
-                }
+                Button(
+                    action: { [weak interactor] in interactor?.tapLogin() },
+                    label: { Text("Prisijungti") }
+                )
                 .warmButtonStyle()
-                .padding(.horizontal)
 
                 Spacer()
             }
         }
     }
 }
-
-//
-// #if DEBUG
-//    import Lottie
-//    import SwiftUI
-//
-//    struct AuthenticationPreview: PreviewProvider {
-//        class MockAuthenticationInteractor: AuthenticationInteractor {
-//            func tapReload() {
-//                <#code#>
-//            }
-//
-//            func viewDidAppear() {}
-//            func tapLogin() {}
-//            func tapRegister() {}
-//            static let mockInstance = MockAuthenticationInteractor()
-//        }
-//
-//        struct PreviewContainer: View {
-//            var body: some View {
-//                NavigationView {
-//                    AuthenticationView(interactor: MockAuthenticationInteractor.mockInstance)
-//                }
-//            }
-//        }
-//
-//        static var previews: some View {
-//            PreviewContainer()
-//        }
-//    }
-//
-// #endif

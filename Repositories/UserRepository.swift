@@ -5,8 +5,8 @@ import SwiftData
 protocol UserRepository {
     func createUser(name: String, email: String, password: String, role: Role) -> AnyPublisher<String, UserError>
     func logIn(email: String, password: String) -> AnyPublisher<Void, UserError>
+    var authStatePublisher: AnyPublisher<String?, Never> { get }
     func signOut() throws
-    func getUserID() -> String?
 }
 
 class DefaultUserRepository {
@@ -29,6 +29,10 @@ class DefaultUserRepository {
 }
 
 extension DefaultUserRepository: UserRepository {
+    var authStatePublisher: AnyPublisher<String?, Never> {
+        firebaseAuthService.authStatePublisher
+    }
+
     func createUser(name: String, email: String, password: String, role: Role)
         -> AnyPublisher<String, UserError> {
         firebaseAuthService.createUser(email: email, password: password)
@@ -54,26 +58,9 @@ extension DefaultUserRepository: UserRepository {
             .eraseToAnyPublisher()
     }
 
-    func logIn(email: String, password: String) -> AnyPublisher<Void, UserError>{
+    func logIn(email: String, password: String) -> AnyPublisher<Void, UserError> {
         firebaseAuthService.signIn(email: email, password: password)
             .mapToVoid()
-//            .flatMap { [weak self] user -> AnyPublisher<UserEntity, UserError> in
-//                guard let self else {
-//                    return .fail(.message("Nežinoma klaida"))
-//                }
-//
-////                return usersFirestoreService.getUserRole(userID: user.uid)
-////                    .compactMap { role in
-////                        role.map { UserEntity(id: user.uid, email: email, role: $0, points: 0) }
-////                    }
-////                    .setFailureType(to: UserError.self)
-////                    .eraseToAnyPublisher()
-//            }
-            .eraseToAnyPublisher()
-    }
-
-    func getUserID() -> String? {
-        firebaseAuthService.getUserID()
     }
 
     func signOut() throws {

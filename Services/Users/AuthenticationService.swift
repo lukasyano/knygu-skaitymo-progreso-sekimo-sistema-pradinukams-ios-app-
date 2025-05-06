@@ -16,11 +16,23 @@ protocol AuthenticationService {
     func createUser(email: String, password: String) -> AnyPublisher<User, UserError>
     func signIn(email: String, password: String) -> AnyPublisher<User, UserError>
     func signOut() throws
-    func getUserID() -> String?
+    var authStatePublisher: AnyPublisher<String?, Never> { get }
 }
 
 final class DefaultAuthenticationService: AuthenticationService {
     private let instance = Auth.auth()
+    private let authStateSubject = CurrentValueSubject<String?, Never>(Auth.auth().currentUser?.uid)
+    private var authListenerHandle: AuthStateDidChangeListenerHandle?
+
+    init() {
+        setupAuthListener()
+    }
+
+    deinit {
+        if let handle = authListenerHandle {
+            Auth.auth().removeStateDidChangeListener(handle)
+        }
+    }
 
     func createUser(email: String, password: String) -> AnyPublisher<User, UserError> {
         Future { [weak instance] promise in
@@ -52,10 +64,14 @@ final class DefaultAuthenticationService: AuthenticationService {
         try instance.signOut()
     }
 
-    func getUserID() -> String? {
-        let userID = instance.currentUser?.uid
-        print(String("UserID: \(userID ?? "Nera userID)")"))
-        return userID
+    var authStatePublisher: AnyPublisher<String?, Never> {
+        authStateSubject.eraseToAnyPublisher()
+    }
+
+    private func setupAuthListener() {
+        authListenerHandle = instance.addStateDidChangeListener { [weak self] _, user in
+            self?.authStateSubject.send(user?.uid)
+        }
     }
 }
 

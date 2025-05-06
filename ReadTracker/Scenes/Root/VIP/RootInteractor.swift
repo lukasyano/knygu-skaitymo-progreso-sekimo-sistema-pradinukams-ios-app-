@@ -5,76 +5,64 @@ import SwiftData
 
 protocol RootInteractor: AnyObject {
     func onAppear()
+    func onDisappear()
 }
 
 final class DefaultRootInteractor {
     private weak var coordinator: DefaultRootCoordinator?
-    private static let syncLock = NSLock()
 
-    private let storageService: BookStorageService
-    private let authenticationService: AuthenticationService
-    private let modelContext: ModelContext
+    private let bookRepository: BookRepository
+    private let userRepository: UserRepository
+
+    private var hasPerformedInitialRefresh = false
 
     // Combine bag
     private var cancelBag = Set<AnyCancellable>()
+    private var authStatecancelBag = Set<AnyCancellable>()
 
     init(
         coordinator: DefaultRootCoordinator = Resolver.resolve(),
-        modelContext: ModelContext = Resolver.resolve(),
-        storageService: BookStorageService = DefaultBookStorageService(),
-        authenticationService: AuthenticationService = Resolver.resolve()
+        bookRepsitory: BookRepository = Resolver.resolve(),
+        userRepository: UserRepository = Resolver.resolve()
     ) {
         self.coordinator = coordinator
-        self.modelContext = modelContext
-        self.storageService = storageService
-        self.authenticationService = authenticationService
+        self.bookRepository = bookRepsitory
+        self.userRepository = userRepository
+        refreshBooksIfNeeded()
     }
 }
 
 // MARK: - Business Logic
 
 extension DefaultRootInteractor: RootInteractor {
-    func onAppear() {
-        performFullBookSyncIfNeeded()
-        checkForAuthentication()
-    }
-
-    private func checkForAuthentication() {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-            if let userId = self.authenticationService.getUserID() {
-                self.coordinator?.navigateToHome(userID: userId)
-            } else {
-                self.coordinator?.navigateToAuthentication()
-            }
-        }
-    }
-
-    private func performFullBookSyncIfNeeded() {
-        Self.syncLock.lock(); defer { Self.syncLock.unlock() }
-
-        guard storageService.shouldPerformFullSync() else {
-            print("🔁 Skipping sync — next sync in <24h.")
-            return
-        }
-
-        storageService.markFullSyncPerformed()
-        print("📚 Performing full book sync...")
-
-        let syncService = BookSyncService(modelContext: modelContext)
-        let downloadService = DefaultBookDownloadService(modelContext: modelContext)
-
-        syncService.syncBooks()
-            .flatMap { _ in
-                downloadService.downloadBooks()
-            }
+    private func refreshBooksIfNeeded() {
+        bookRepository.refreshIfNeeded()
             .sink(
-                receiveCompletion: { completion in
-                if case let .failure(error) = completion {
-                    print("Sync error: \(error)")
-                }
-            }, receiveValue: { results in
-                print("Downloaded \(results.count) books.")
-            })
+                receiveCompletion: { _ in },
+                receiveValue: {}
+            )
             .store(in: &cancelBag)
+    }
+
+    func onAppear() {
+        let logOutDelay: DispatchQueue.SchedulerTimeType.Stride = .milliseconds(200)
+
+        userRepository.authStatePublisher
+            .removeDuplicates()
+            .subscribe(on: DispatchQueue.global())
+            .delay(for: logOutDelay, scheduler: DispatchQueue.main)
+            .sink { [weak coordinator] userId in
+
+                guard userId != .none else {
+                    coordinator?.route = .authentication
+                    return
+                }
+                coordinator?.route = .home
+            }
+            .store(in: &authStatecancelBag)
+    }
+
+    func onDisappear() {
+        cancelBag.removeAll()
     }
 }

@@ -2,23 +2,17 @@ import Foundation
 
 enum RootCoordinatorRoute: Identifiable, Equatable {
     case carousel
-    case login
     case authentication
-    case register
-    case home(String)
+    case home
 
     var id: String {
         switch self {
         case .carousel:
             "carousel"
-        case .login:
-            "login"
-        case .register:
-            "register"
-        case let .home(userID):
-            "home\(userID)"
+        case .home:
+            "home"
         case .authentication:
-            "authentication"
+            "authentication)"
         }
     }
 

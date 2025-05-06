@@ -31,8 +31,11 @@ extension RegistrationCoordinatorView {
             ToastMessage(
                 message: message,
                 delay: 10,
-                dismiss: onDismiss,
-                toastState: .error
+                dismiss: {
+                    coordinator.dismissPresented()
+                    onDismiss()
+                },
+                toastState: .info
             )
             .clearModalBackground()
         }

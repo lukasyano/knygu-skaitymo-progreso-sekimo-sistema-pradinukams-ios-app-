@@ -8,17 +8,16 @@
 import SwiftUI
 
 struct LoadingHeart: View {
-    
     @State var isAnimating: Bool = false
     let timing: Double
-    
+
     let frame: CGSize
     let primaryColor: Color
-    
+
     init(color: Color = .black, size: CGFloat = 50, speed: Double = 0.5) {
-        timing = speed * 2
-        frame = CGSize(width: size, height: size)
-        primaryColor = color
+        self.timing = speed * 2
+        self.frame = CGSize(width: size, height: size)
+        self.primaryColor = color
     }
 
     var body: some View {

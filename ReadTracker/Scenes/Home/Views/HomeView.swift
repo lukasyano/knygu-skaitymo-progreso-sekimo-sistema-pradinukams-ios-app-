@@ -20,9 +20,9 @@ struct HomeView<ViewModel: HomeViewModel>: View {
         ZStack {
             Constants.mainScreenColor.ignoresSafeArea()
 
-            if viewModel.books.isEmpty {
-                LoadingView()
-            } else {
+//            if viewModel.books.isEmpty {
+//                LoadingView()
+//            } else {
                 contentView
                     .navigationTitle(viewModel.title)
                     .navigationBarTitleDisplayMode(.large)
@@ -34,7 +34,7 @@ struct HomeView<ViewModel: HomeViewModel>: View {
                             )
                         }
                     }
-            }
+           // 
         }
         .animation(.bouncy, value: viewModel.isLoading)
         .onAppear(perform: { [weak interactor] in interactor?.viewDidAppear() })

@@ -134,24 +134,23 @@ final class DefaultHomeInteractor {
     private weak var presenter: HomePresenter?
     private weak var coordinator: (any HomeCoordinator)?
 
-    private let authenticationRepository: UserRepository
+    private let userRepository: UserRepository
     private let bookRepository: BookRepository
     private let thumbnailWorker: BookThumbnailWorker
 
     private var cancelBag = Set<AnyCancellable>()
-    private var currentUserID: String? { authenticationRepository.getUserID() }
     private var books: [BookEntity]?
 
     init(
         coordinator: any HomeCoordinator,
         presenter: HomePresenter?,
-        authRepository: UserRepository = Resolver.resolve(),
+        userRepository: UserRepository = Resolver.resolve(),
         bookRepository: BookRepository = Resolver.resolve(),
         thumbnailWorker: BookThumbnailWorker = Resolver.resolve()
     ) {
         self.coordinator = coordinator
         self.presenter = presenter
-        self.authenticationRepository = authRepository
+        self.userRepository = userRepository
         self.bookRepository = bookRepository
         self.thumbnailWorker = thumbnailWorker
     }
@@ -160,12 +159,30 @@ final class DefaultHomeInteractor {
 extension DefaultHomeInteractor: HomeInteractor {
     func viewDidAppear() {
         cancelBag.removeAll()
+        observeUsserSession()
         fetchBooks()
         fetchUserProgress()
     }
 
+    private func observeUsserSession() {
+        let logOutDelay: DispatchQueue.SchedulerTimeType.Stride = .milliseconds(200)
+
+        userRepository.authStatePublisher
+            .removeDuplicates()
+            .subscribe(on: DispatchQueue.global())
+            .delay(for: logOutDelay, scheduler: DispatchQueue.main)
+            .sink { [weak coordinator] userId in
+
+                guard userId != .none else {
+                    coordinator?.popToParent()
+                    return
+                }
+            }
+            .store(in: &cancelBag)
+    }
+
     private func fetchBooks() {
-        bookRepository.fetchBooks()
+        bookRepository.fetchBooks(for: .child)
             .receive(on: DispatchQueue.main)
             .sink(
                 receiveCompletion: { [weak self] completion in
@@ -204,8 +221,7 @@ extension DefaultHomeInteractor: HomeInteractor {
 
     func onLogOutTap() {
         do {
-            try authenticationRepository.signOut()
-            coordinator?.popToRoot()
+            try userRepository.signOut()
         } catch {
             coordinator?.presentError(message: "Atsijungti nepavyko.", onDismiss: {})
         }

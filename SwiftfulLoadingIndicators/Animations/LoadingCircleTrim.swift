@@ -8,25 +8,23 @@
 import SwiftUI
 
 struct LoadingCircleTrim: View {
-    
     @State var isAnimating: Bool = false
     let timing: Double
-    
+
     let frame: CGSize
     let primaryColor: Color
-    
+
     init(color: Color = .black, size: CGFloat = 50, speed: Double = 0.5) {
-        timing = speed * 4
-        frame = CGSize(width: size, height: size)
-        primaryColor = color
+        self.timing = speed * 4
+        self.frame = CGSize(width: size, height: size)
+        self.primaryColor = color
     }
 
     var body: some View {
         Circle()
             .trim(from: 0.5, to: 1.0)
             .stroke(primaryColor,
-                    style: StrokeStyle(lineWidth: frame.height / 20, lineCap: .round, lineJoin: .round)
-            )
+                    style: StrokeStyle(lineWidth: frame.height / 20, lineCap: .round, lineJoin: .round))
             .rotationEffect(
                 Angle(degrees: isAnimating ? 360 : 0)
             )
@@ -34,8 +32,7 @@ struct LoadingCircleTrim: View {
                 Circle()
                     .trim(from: 0.5, to: 1.0)
                     .stroke(primaryColor,
-                            style: StrokeStyle(lineWidth: frame.height / 20, lineCap: .round, lineJoin: .round)
-                    )
+                            style: StrokeStyle(lineWidth: frame.height / 20, lineCap: .round, lineJoin: .round))
                     .frame(width: frame.width / 2, height: frame.height / 2, alignment: .center)
                     .rotationEffect(
                         Angle(degrees: isAnimating ? -360 : 0)
@@ -45,8 +42,8 @@ struct LoadingCircleTrim: View {
             .onAppear {
                 withAnimation(Animation.linear(duration: timing).repeatForever(autoreverses: false)) {
                     isAnimating.toggle()
+                }
             }
-        }
     }
 }
 

@@ -8,9 +8,8 @@
 import SwiftUI
 
 public struct LoadingShowcaseView: View {
-    
-    public init() { }
-    
+    public init() {}
+
     public var body: some View {
         ScrollView {
             if #available(iOS 14, *) {

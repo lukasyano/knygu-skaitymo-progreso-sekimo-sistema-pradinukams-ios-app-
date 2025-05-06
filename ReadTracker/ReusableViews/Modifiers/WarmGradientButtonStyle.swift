@@ -19,7 +19,7 @@ struct WarmGradientButtonStyle: ButtonStyle {
             configuration.label
                 .padding()
                 .frame(maxWidth: .infinity)
-                .frame(height: 110)
+                .frame(height: 90)
                 .background(background.opacity(0.9))
                 .cornerRadius(50)
                 .scaleEffect(configuration.isPressed ? 0.90 : 1.0)
@@ -34,6 +34,7 @@ struct WarmGradientButtonStyle: ButtonStyle {
                 .foregroundColor(.white)
                 .font(.title)
                 .sensoryFeedback(.selection, trigger: configuration.isPressed)
+                .padding(.horizontal)
                 .onAppear {
                     pulsate = true
                 }

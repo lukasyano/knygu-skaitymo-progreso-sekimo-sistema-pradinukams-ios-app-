@@ -1,6 +1,6 @@
 import Foundation
-import UIKit
 import SwiftData
+import UIKit
 
 @Model
 class BookEntity {
@@ -25,5 +25,13 @@ class BookEntity {
         self.pdfURL = pdfURL
         self.totalPages = totalPages
         self.fileURL = fileURL
+    }
+}
+
+extension BookEntity {
+    func update(from book: Book) {
+        title = book.title
+        role = book.role.rawValue
+        pdfURL = book.pdfURL
     }
 }

@@ -23,7 +23,7 @@ extension DefaultRootCoordinator {
         route = .authentication
     }
 
-    func navigateToHome(userID: String) {
-        route = .home(userID)
+    func navigateToHome() {
+        route = .home
     }
 }

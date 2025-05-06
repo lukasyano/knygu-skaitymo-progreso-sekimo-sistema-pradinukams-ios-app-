@@ -57,6 +57,7 @@ extension DefaultRegistrationCoordinator {
 
 extension DefaultRegistrationCoordinator {
     func navigateToLogin(email: String) {
+        popToParent()
         route = .login(email)
     }
 }

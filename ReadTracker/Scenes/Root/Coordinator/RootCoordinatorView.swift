@@ -1,10 +1,8 @@
-import Lottie
 import Resolver
+import SwiftData
 import SwiftUI
 
 struct RootCoordinatorView: View {
-    @Environment(\.modelContext) private var modelContext
-
     @ObservedObject var coordinator: DefaultRootCoordinator
     private let interactor: RootInteractor
 
@@ -23,11 +21,7 @@ struct RootCoordinatorView: View {
             contentView
                 .transition(.opacity)
                 .onAppear { [weak interactor] in interactor?.onAppear() }
-                .task {
-                    Resolver.register { modelContext }
-                    Resolver.register { DefaultUsersSwiftDataService() }
-                        .implements(UsersSwiftDataService.self)
-                }
+                .onDisappear { [weak interactor] in interactor?.onDisappear() }
         }
         .animation(.bouncy, value: coordinator.route)
     }
@@ -35,23 +29,17 @@ struct RootCoordinatorView: View {
     @ViewBuilder
     private var contentView: some View {
         switch coordinator.route {
-        case .authentication:
-            AuthenticationCoordinatorView(coordinator: Resolver.resolve())
+//        case .authentication:
+//            AuthenticationCoordinatorView(coordinator: Resolver.resolve())
 
         case .carousel:
             LoadingIndicator(animation: .text, size: .large)
 
-        case .login:
-            LoginCoordinatorView(coordinator: .init(parent: coordinator, email: .none, shouldAutoNavigateToHome: false))
-
-        case .register:
-            RegistrationCoordinatorView(coordinator: .init(parent: coordinator))
-
         case .home:
-            LoginCoordinatorView(coordinator: .init(parent: coordinator, email: .none, shouldAutoNavigateToHome: true))
+            HomeCoordinatorView(coordinator: .init(parent: coordinator))
 
-        case .none:
-            EmptyView()
+        default:
+            AuthenticationCoordinatorView(coordinator: Resolver.resolve())
         }
     }
 }

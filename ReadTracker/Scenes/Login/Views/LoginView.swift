@@ -30,6 +30,7 @@ struct LoginView<ViewModel: LoginViewModel>: View {
         }
         .animation(.bouncy, value: viewModel.isLoading)
         .onAppear(perform: { [weak interactor] in interactor?.viewDidAppear() })
+        .onDisappear(perform: { [weak interactor] in interactor?.viewDidDisappear() })
     }
 
     @ViewBuilder

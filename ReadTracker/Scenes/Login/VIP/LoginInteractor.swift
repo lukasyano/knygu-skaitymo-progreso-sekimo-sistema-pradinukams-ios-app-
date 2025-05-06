@@ -5,6 +5,7 @@ import Resolver
 
 protocol LoginInteractor: AnyObject {
     func viewDidAppear()
+    func viewDidDisappear()
     func onEmailChange(_ email: String)
     func onPasswordChange(_ password: String)
     func onRememberMeToggle()
@@ -70,6 +71,10 @@ extension DefaultLoginInteractor: LoginInteractor {
         presenter?.presentPassword(password)
     }
 
+    func viewDidDisappear() {
+        presenter?.presentLoading(false)
+    }
+
     func onLoginTap() {
         presenter?.presentLoading(true)
 
@@ -83,9 +88,8 @@ extension DefaultLoginInteractor: LoginInteractor {
     }
 
     private func handleLoginCompletion(_ completion: Subscribers.Completion<UserError>) {
-        presenter?.presentLoading(false)
-        
         if case let .failure(.message(message)) = completion {
+            presenter?.presentLoading(false)
             coordinator?.presentError(message, onClose: {})
         }
     }

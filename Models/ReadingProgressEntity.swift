@@ -10,7 +10,7 @@ class ReadingProgressEntity {
     var currentPage: Int
     var totalPages: Int?
     var lastUpdated: Date
-    
+
     // Link back to the child and the book
     @Relationship(deleteRule: .nullify)
     var child: UserEntity?
