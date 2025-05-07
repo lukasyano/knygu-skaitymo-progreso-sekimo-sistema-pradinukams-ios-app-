@@ -5,7 +5,6 @@ struct ProfileView<ViewModel: ProfileViewModel>: View {
     @Environment(\.dismiss) private var dismiss
     private unowned var interactor: ProfileInteractor
     @ObservedObject private var viewModel: ViewModel
-    @State private var showingCreateChild: Bool = false
 
     init(
         interactor: ProfileInteractor,
@@ -25,7 +24,7 @@ struct ProfileView<ViewModel: ProfileViewModel>: View {
                 Spacer()
 
                 Button {
-                    showingCreateChild = true
+                    viewModel.isUserCreationActive = true
                 } label: {
                     Image(systemName: "plus.circle.fill")
                         .font(.title2)
@@ -72,34 +71,29 @@ struct ProfileView<ViewModel: ProfileViewModel>: View {
     var body: some View {
         ZStack {
             Constants.mainScreenColor.ignoresSafeArea()
+            NavigationView {
+                ScrollView {
+                    VStack(spacing: 20) {
+                        userInfoSection
 
-            if viewModel.isLoading {
-                LoadingView()
-            } else {
-                NavigationView {
-                    ScrollView {
-                        VStack(spacing: 20) {
-                            userInfoSection
-
-                            if viewModel.user.role == .parent {
-                                childrenSection
-                            }
-                        }
-                        .padding()
-                    }
-                    .navigationTitle("Profilis")
-                    .navigationBarTitleDisplayMode(.inline)
-                    .toolbar {
-                        ToolbarItem(placement: .topBarTrailing) {
-                            Button("Uždaryti") {
-                                dismiss()
-                            }
+                        if viewModel.user.role == .parent {
+                            childrenSection
                         }
                     }
-                    .sheet(isPresented: $showingCreateChild) {
-                        CreateChildView { [weak interactor] name, email, password in
-                            interactor?.createChild(name: name, email: email, password: password)
+                    .padding()
+                }
+                .navigationTitle("Profilis")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button("Uždaryti") {
+                            dismiss()
                         }
+                    }
+                }
+                .sheet(isPresented: $viewModel.isUserCreationActive) {
+                    CreateChildView(isLoading: $viewModel.isLoading) { [weak interactor] name, email, password in
+                        interactor?.createChild(name: name, email: email, password: password)
                     }
                 }
             }

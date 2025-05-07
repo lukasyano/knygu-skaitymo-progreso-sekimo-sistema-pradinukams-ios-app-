@@ -5,6 +5,12 @@ import SwiftData
 
 protocol UserRepository {
     func createUser(name: String, email: String, password: String, role: Role) -> AnyPublisher<UserEntity, UserError>
+    func createChildUser(
+        name: String,
+        email: String,
+        password: String,
+        parent: UserEntity
+    ) -> AnyPublisher<UserEntity, UserError>
     func logIn(email: String, password: String) -> AnyPublisher<UserEntity, UserError>
     func getCurrentUser() -> AnyPublisher<UserEntity?, Never>
     var authStatePublisher: AnyPublisher<String?, Never> { get }
@@ -17,8 +23,6 @@ final class DefaultUserRepository: UserRepository {
     private let localUsersService: LocalUsersService
     private var cancellables = Set<AnyCancellable>()
 
-    @Published private var currentUser: UserEntity?
-
     init(
         firebaseAuthenticationService: AuthenticationService = Resolver.resolve(),
         usersFirestoreService: UsersFirestoreService = Resolver.resolve(),
@@ -30,7 +34,59 @@ final class DefaultUserRepository: UserRepository {
         setupAuthObserver()
     }
 
-    // MARK: - Public Interface
+    func createChildUser(name: String, email: String, password: String, parent: UserEntity) -> AnyPublisher<UserEntity, UserError> {
+        let parentID = parent.id
+
+        return firebaseAuthenticationService.createUser(email: email, password: password)
+            .flatMap { [weak self] firebaseUser -> AnyPublisher<UserEntity, UserError> in
+                guard let self else { return .fail(.message("System error")) }
+
+                let childEntity = UserEntity(
+                    id: firebaseUser.uid,
+                    email: email,
+                    name: name,
+                    role: .child,
+                    parentID: parentID,
+                    childrensID: [],
+                    points: 0
+                )
+
+                return self.saveAndLinkChild(childEntity, parentUID: parentID)
+                    .flatMap { child -> AnyPublisher<UserEntity, UserError> in
+                        self.firebaseAuthenticationService.reauthenticate()
+                            .map { _ in child }
+                            .eraseToAnyPublisher()
+                    }
+                    .eraseToAnyPublisher()
+            }
+            .eraseToAnyPublisher()
+    }
+
+    private func saveAndLinkChild(_ child: UserEntity, parentUID: String) -> AnyPublisher<UserEntity, UserError> {
+        // 1. Save child to Firestore first
+        let saveChildPublisher = usersFirestoreService.saveUserEntity(child)
+            .mapError { UserError.message($0.localizedDescription) }
+            .eraseToAnyPublisher()
+
+        let updateParentPublisher: AnyPublisher<Void, UserError> = saveChildPublisher
+            .flatMap { _ in
+                self.usersFirestoreService.updateParentWithChild(parentID: parentUID, childID: child.id)
+                    .mapError { UserError.message($0.localizedDescription) }
+            }
+            .eraseToAnyPublisher()
+
+//        let updateLocalPublisher: AnyPublisher<Void, UserError> = updateParentPublisher
+//            .flatMap { _ in
+//                self.localUsersService.addChildToParent(parentID: parentUID, childID: child.id)
+//                    .mapError { UserError.message($0.localizedDescription) }
+//            }
+//            .eraseToAnyPublisher()
+
+        return updateParentPublisher
+            .map { _ in child }
+            .eraseToAnyPublisher()
+    }
+
     func createUser(name: String, email: String, password: String, role: Role) -> AnyPublisher<UserEntity, UserError> {
         firebaseAuthenticationService.createUser(email: email, password: password)
             .flatMap { [weak self] firebaseUser -> AnyPublisher<UserEntity, UserError> in

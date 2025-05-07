@@ -1,4 +1,5 @@
 import Combine
+import Foundation
 import Resolver
 import SwiftData
 
@@ -6,6 +7,7 @@ protocol LocalUsersService {
     func saveUserEntity(_ user: UserEntity) -> AnyPublisher<Void, Error>
     func getCurrentUser() -> AnyPublisher<UserEntity?, Never>
     func clearAllUsers() -> AnyPublisher<Void, Error>
+ //   func addChildToParent(parentID: String, childID: String) -> AnyPublisher<Void, Error>
 }
 
 final class DefaultLocalUsersService: LocalUsersService {

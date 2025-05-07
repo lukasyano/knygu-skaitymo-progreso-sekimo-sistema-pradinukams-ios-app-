@@ -48,33 +48,37 @@ final class DefaultProfileInteractor {
 
 extension DefaultProfileInteractor: ProfileInteractor {
     func createChild(name: String, email: String, password: String) {
-        userRepository.createUser(name: name, email: email, password: password, role: .child)
-            .receive(on: DispatchQueue.main)
-            .sink(
-                receiveCompletion: { [weak self] in self?.handleRegistrationCompletion($0) },
-                receiveValue: { [weak self] in self?.handleRegistrationSuccess(email: $0.email) }
-            )
-            .store(in: &cancelBag)
+        presenter?.presentLoading(true)
+
+        let parent = user
+        userRepository.createChildUser(
+            name: name,
+            email: email,
+            password: password,
+            parent: parent
+        )
+        .receive(on: DispatchQueue.main)
+        .sink(
+            receiveCompletion: { [weak self] in self?.handleRegistrationCompletion($0) },
+            receiveValue: { [weak self] in self?.handleRegistrationSuccess($0) }
+        )
+        .store(in: &cancelBag)
     }
 
-    private func handleRegistrationSuccess(email: String) {
-        
-        
-        print("child created")
-//    let registrationSuccessMessage = "Registracija sėkminga, šaunu! Dabar galėsite prisijungti."
-
-//    coordinator?.presentRegistrationComplete(
-//        message: registrationSuccessMessage,
-//        onDismiss: { [weak self] in
-//            guard let self else { return }
-//            coordinator?.navigateToLogin(email: email)
-//        }
-//    )
+    private func handleRegistrationSuccess(_ user: UserEntity) {
+        coordinator?.presentProfileComplete(
+            message: "Vaikas sėkmingai sukurtas bei priskirtas prie jūsų",
+            onDismiss: { [weak self] in
+                self?.presenter?.presentLoading(false)
+                self?.presenter?.dismissChildCreateCompletion()
+            }
+        )
+        //  presenter?.refreshChildrenList()
     }
 
     private func handleRegistrationCompletion(_ completion: Subscribers.Completion<UserError>) {
-        presenter?.presentLoading(false)
         if case let .failure(.message(message)) = completion {
+            presenter?.presentLoading(false)
             coordinator?.presentError(error: message, onDismiss: {})
         }
     }

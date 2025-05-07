@@ -16,6 +16,7 @@ protocol AuthenticationService {
     func createUser(email: String, password: String) -> AnyPublisher<User, UserError>
     func signIn(email: String, password: String) -> AnyPublisher<User, UserError>
     func signOut() throws
+    func reauthenticate() -> AnyPublisher<Void, UserError>
     var authStatePublisher: AnyPublisher<String?, Never> { get }
 }
 
@@ -32,6 +33,24 @@ final class DefaultAuthenticationService: AuthenticationService {
         if let handle = authListenerHandle {
             instance.removeStateDidChangeListener(handle)
         }
+    }
+    
+    func reauthenticate() -> AnyPublisher<Void, UserError> {
+        Future<Void, UserError> { promise in
+            guard let user = Auth.auth().currentUser else {
+                promise(.failure(.message("Not authenticated")))
+                return
+            }
+            
+            user.getIDTokenResult(forcingRefresh: true) { result, error in
+                if let error = error {
+                    promise(.failure(Self.mapFirebaseError(error)))
+                } else {
+                    promise(.success(()))
+                }
+            }
+        }
+        .eraseToAnyPublisher()
     }
 
     func createUser(email: String, password: String) -> AnyPublisher<User, UserError> {

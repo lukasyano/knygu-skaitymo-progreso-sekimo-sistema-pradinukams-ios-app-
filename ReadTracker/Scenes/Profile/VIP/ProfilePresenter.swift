@@ -1,6 +1,7 @@
 protocol ProfilePresenter: AnyObject {
     func presentUser(_ user: UserEntity)
     func presentChilds(_ childs: [UserEntity])
+    func dismissChildCreateCompletion()
 //    func presentName(_ name: String)
 //    func presentPassword(_ password: String)
     func presentLoading(_ isLoading: Bool)
@@ -27,6 +28,10 @@ extension DefaultProfilePresenter: ProfilePresenter {
     
     func presentChilds(_ childs: [UserEntity]) {
         displayLogic?.displayChilds(childs)
+    }
+    
+    func dismissChildCreateCompletion(){
+        displayLogic?.dismissChildCreateCompletion()
     }
 
 //

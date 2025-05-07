@@ -4,11 +4,25 @@ import Foundation
 
 protocol UsersFirestoreService {
     func saveUserEntity(_ user: UserEntity) -> AnyPublisher<Void, Error>
+    func updateParentWithChild(parentID: String, childID: String) -> AnyPublisher<Void, Error>
     func getUserEntity(userID: String) -> AnyPublisher<UserEntity, Error>
 }
 
 class DefaultUsersFirestoreService: UsersFirestoreService {
     private let fireStoreReference = Firestore.firestore()
+
+    func updateParentWithChild(parentID: String, childID: String) -> AnyPublisher<Void, Error> {
+        let parentRef = fireStoreReference.collection("users").document(parentID)
+
+        return Future<Void, Error> { promise in
+            parentRef.updateData([
+                "childrensID": FieldValue.arrayUnion([childID])
+            ]) { error in
+                error.map { promise(.failure($0)) } ?? promise(.success(()))
+            }
+        }
+        .eraseToAnyPublisher()
+    }
 
     func getUserEntity(userID: String) -> AnyPublisher<UserEntity, Error> {
         Future<UserEntity, Error> { promise in

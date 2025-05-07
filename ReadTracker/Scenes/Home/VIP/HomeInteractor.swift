@@ -133,9 +133,10 @@ extension DefaultHomeInteractor: HomeInteractor {
         }
         coordinator?.showBook(at: url)
     }
-
+    
     func onProfileTap() {
         guard let user else { return }
         coordinator?.showProfile(with: user)
     }
+
 }
