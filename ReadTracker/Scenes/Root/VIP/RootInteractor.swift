@@ -24,21 +24,13 @@ final class DefaultRootInteractor {
         self.coordinator = coordinator
         self.bookRepository = bookRepsitory
         self.userRepository = userRepository
-        refreshBooksIfNeeded()
     }
 }
 
 // MARK: - Business Logic
 
 extension DefaultRootInteractor: RootInteractor {
-    private func refreshBooksIfNeeded() {
-        bookRepository.refreshIfNeeded()
-            .sink(
-                receiveCompletion: { _ in },
-                receiveValue: {}
-            )
-            .store(in: &cancelBag)
-    }
+
 
     func onAppear() {
         let authPublisher = userRepository.authStatePublisher
@@ -50,7 +42,8 @@ extension DefaultRootInteractor: RootInteractor {
             .replaceError(with: ())
             .eraseToAnyPublisher()
 
-        Publishers.Zip(authPublisher, refreshPublisher)
+        Publishers.CombineLatest(authPublisher, refreshPublisher)
+            .subscribe(on: DispatchQueue.global(qos: .userInteractive))
             .receive(on: DispatchQueue.main)
             .sink(
                 receiveCompletion: { _ in },

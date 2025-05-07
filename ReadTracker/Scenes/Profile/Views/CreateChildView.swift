@@ -30,6 +30,7 @@ struct CreateChildView: View {
     @Environment(\.dismiss) private var dismiss
     @Binding var isLoading: Bool
     let createChild: (String, String, String) -> Void
+    @State var mockedChildCounter: Int = 0
 
     @State private var name = ""
     @State private var email = ""
@@ -75,6 +76,15 @@ struct CreateChildView: View {
                     ToolbarItem(placement: .cancellationAction) {
                         Button("Atšaukti") {
                             dismiss()
+                        }
+                    }
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button("Demo") {
+
+                            name = MockCredentials.childName(index: mockedChildCounter)
+                            email = MockCredentials.childEmail(index: mockedChildCounter)
+                            password = MockCredentials.childPassword(index: mockedChildCounter)
+                            mockedChildCounter += 1
                         }
                     }
                 }

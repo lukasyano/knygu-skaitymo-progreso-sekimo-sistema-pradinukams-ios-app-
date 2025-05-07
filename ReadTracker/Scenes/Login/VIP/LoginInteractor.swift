@@ -8,7 +8,7 @@ protocol LoginInteractor: AnyObject {
     func viewDidDisappear()
     func onEmailChange(_ email: String)
     func onPasswordChange(_ password: String)
-    func onRememberMeToggle()
+    // func onRememberMeToggle()
     func onLoginTap()
 }
 
@@ -20,7 +20,6 @@ final class DefaultLoginInteractor {
     // Properties
     private(set) var email: String = MockCredentials.email()
     private(set) var password: String = MockCredentials.password()
-    private(set) var rememberMe: Bool = false
 
     private lazy var cancelBag = Set<AnyCancellable>()
 
@@ -38,12 +37,6 @@ final class DefaultLoginInteractor {
         self.coordinator = coordinator
         self.presenter = presenter
         self.userRepository = userRepository
-        if let email = email {
-            self.email = email
-        }
-        if shouldAutoNavigateToHome {
-            coordinator?.navigateToHome()
-        }
     }
 }
 
@@ -57,11 +50,6 @@ extension DefaultLoginInteractor: LoginInteractor {
     func onPasswordChange(_ password: String) {
         self.password = password
         presenter?.presentPassword(password)
-    }
-
-    func onRememberMeToggle() {
-        rememberMe.toggle()
-        presenter?.presentRememberMe(rememberMe)
     }
 
     // MARK: - View Did Change
@@ -89,8 +77,9 @@ extension DefaultLoginInteractor: LoginInteractor {
 
     private func handleLoginCompletion(_ completion: Subscribers.Completion<UserError>) {
         if case let .failure(.message(message)) = completion {
-            presenter?.presentLoading(false)
-            coordinator?.presentError(message, onClose: {})
+            coordinator?.presentError(message, onClose: { [weak presenter] in
+                presenter?.presentLoading(false)
+            })
         }
     }
 }

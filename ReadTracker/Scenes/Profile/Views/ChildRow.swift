@@ -15,7 +15,7 @@ struct ChildRow: View {
 
             Spacer()
 
-            Text("\(child.totalPoints) taškų")
+            Text("\(child.totalPoints) taškas (ai)")
                 .font(.subheadline)
                 .foregroundColor(.orange)
         }

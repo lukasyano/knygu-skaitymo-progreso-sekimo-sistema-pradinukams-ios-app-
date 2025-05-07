@@ -56,6 +56,7 @@ extension DefaultHomeInteractor: HomeInteractor {
     private func receiveCurrentUser(user: UserEntity?) {
         guard let user else { return }
         self.user = user
+        presenter?.presentUser(user)
         fetchBooks(for: user.role)
     }
 
@@ -114,6 +115,15 @@ extension DefaultHomeInteractor: HomeInteractor {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                     self?.presenter?.presentBookThumbnails(thumbs)
                 }
+
+                let updatedBooks = books
+                for book in updatedBooks {
+                    if let thumb = thumbs.first(where: { $0.id == book.id }) {
+                        book.totalPages = thumb.totalPages
+                    }
+                }
+                self?.books = updatedBooks
+
             })
             .store(in: &cancelBag)
     }
@@ -127,16 +137,16 @@ extension DefaultHomeInteractor: HomeInteractor {
     }
 
     func onBookClicked(_ bookID: String) {
-        guard let url = books?.first(where: { $0.id == bookID })?.fileURL else {
-            coordinator?.presentError(message: "Nepavyko atidaryti knygos.", onDismiss: {})
-            return
-        }
-        coordinator?.showBook(at: url)
+        guard let book = books?.first(where: { $0.id == bookID }),
+              let bookURL = book.fileURL,
+              let user
+        else { return }
+
+        coordinator?.showBook(at: bookURL, with: user, book: book)
     }
-    
+
     func onProfileTap() {
         guard let user else { return }
         coordinator?.showProfile(with: user)
     }
-
 }

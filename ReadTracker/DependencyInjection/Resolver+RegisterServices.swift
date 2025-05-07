@@ -7,8 +7,8 @@ extension Resolver {
             .implements(AuthenticationService.self)
         Resolver.register { DefaultUsersFirestoreService() }
             .implements(UsersFirestoreService.self)
-        Resolver.register { DefaultLocalUsersService() }
-            .implements(LocalUsersService.self)
+//        Resolver.register { DefaultLocalUsersService() }
+//            .implements(LocalUsersService.self)
 
         // BOOKS
         Resolver.register { DefaultBookDownloadService() }

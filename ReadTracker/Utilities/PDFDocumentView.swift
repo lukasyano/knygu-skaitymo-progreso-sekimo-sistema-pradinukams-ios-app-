@@ -3,7 +3,7 @@ import SwiftUI
 public struct PDFDocumentView: UIViewRepresentable {
     private let url: URL
     @Binding private var isOnLastPage: Bool
-    private var onPageChange: ((Int) -> Void)? // 👈 callback
+    private var onPageChange: ((Int) -> Void)?
 
     // MARK: - Initializers
     public init(

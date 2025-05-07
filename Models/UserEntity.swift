@@ -8,21 +8,9 @@ class UserEntity {
     var role: Role
     var parentID: String?
     var childrensID: [String]
-    var points: Int
-
-    // For parents: will hold their children
-    @Relationship(deleteRule: .cascade)
-    var children: [UserEntity] = []
-
-    // For children: points and a back–link to their parent
-    var totalPoints: Int = 0
-    @Relationship(deleteRule: .nullify)
-    var parent: UserEntity?
-
-    // For children: their reading progress entries
-    @Relationship(deleteRule: .cascade)
-    var progressEntries: [Progress] = []
-
+    var totalPoints: Int
+    var progressData: [ProgressData]  // Add this property
+    
     init(
         id: String,
         email: String,
@@ -30,7 +18,8 @@ class UserEntity {
         role: Role,
         parentID: String? = nil,
         childrensID: [String] = [],
-        points: Int = 0
+        totalPoints: Int = 0,
+        progressData: [ProgressData] = []
     ) {
         self.id = id
         self.email = email
@@ -38,6 +27,30 @@ class UserEntity {
         self.role = role
         self.parentID = parentID
         self.childrensID = childrensID
-        self.points = points
+        self.totalPoints = totalPoints
+        self.progressData = progressData
+    }
+}
+
+struct ProgressData: Codable {
+    var bookId: String
+    var pagesRead: Int
+    var totalPages: Int
+    var finished: Bool
+    var pointsEarned: Int
+}
+
+// Add this extension to your UserEntity class
+extension UserEntity {
+    func withAddedChild(childID: String) -> UserEntity {
+        UserEntity(
+            id: self.id,
+            email: self.email,
+            name: self.name,
+            role: self.role,
+            parentID: self.parentID,
+            childrensID: self.childrensID + [childID],
+            totalPoints: self.totalPoints
+        )
     }
 }

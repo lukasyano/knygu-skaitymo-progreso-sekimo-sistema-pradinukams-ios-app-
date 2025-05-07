@@ -1,3 +1,4 @@
+// UsersFirestoreService.swift
 import Combine
 import FirebaseFirestore
 import Foundation
@@ -6,19 +7,39 @@ protocol UsersFirestoreService {
     func saveUserEntity(_ user: UserEntity) -> AnyPublisher<Void, Error>
     func updateParentWithChild(parentID: String, childID: String) -> AnyPublisher<Void, Error>
     func getUserEntity(userID: String) -> AnyPublisher<UserEntity, Error>
+    func getChildrenForParent(parentID: String) -> AnyPublisher<[UserEntity], Error>
 }
 
-class DefaultUsersFirestoreService: UsersFirestoreService {
+final class DefaultUsersFirestoreService: UsersFirestoreService {
     private let fireStoreReference = Firestore.firestore()
-
-    func updateParentWithChild(parentID: String, childID: String) -> AnyPublisher<Void, Error> {
-        let parentRef = fireStoreReference.collection("users").document(parentID)
-
-        return Future<Void, Error> { promise in
-            parentRef.updateData([
-                "childrensID": FieldValue.arrayUnion([childID])
-            ]) { error in
-                error.map { promise(.failure($0)) } ?? promise(.success(()))
+    
+    
+    func getChildrenForParent(parentID: String) -> AnyPublisher<[UserEntity], Error> {
+        Future<QuerySnapshot, Error> { promise in
+            self.fireStoreReference.collection("users")
+                .whereField("parentId", isEqualTo: parentID)
+                .getDocuments { snapshot, error in
+                    error.map { promise(.failure($0)) } ?? promise(.success(snapshot!))
+                }
+        }
+        .flatMap { snapshot in
+            Publishers.MergeMany(
+                snapshot.documents.map { self.getUserEntity(document: $0) }
+            )
+            .collect()
+        }
+        .eraseToAnyPublisher()
+    }
+    
+    private func getUserEntity(document: QueryDocumentSnapshot) -> AnyPublisher<UserEntity, Error> {
+        Future<UserEntity, Error> { promise in
+            self.fetchCompleteUserData(document: document) { result in
+                switch result {
+                case .success(let user):
+                    promise(.success(user))
+                case .failure(let error):
+                    promise(.failure(error))
+                }
             }
         }
         .eraseToAnyPublisher()
@@ -26,42 +47,80 @@ class DefaultUsersFirestoreService: UsersFirestoreService {
 
     func getUserEntity(userID: String) -> AnyPublisher<UserEntity, Error> {
         Future<UserEntity, Error> { promise in
-            self.fireStoreReference.collection("users").document(userID).getDocument { snapshot, error in
+            let userRef = self.fireStoreReference.collection("users").document(userID)
+
+            userRef.getDocument { snapshot, error in
                 if let error = error {
                     promise(.failure(error))
                     return
                 }
 
                 guard let document = snapshot, document.exists else {
-                    promise(.failure(NSError(domain: "Toks vartotojas nerastas Firestore", code: 404)))
+                    promise(.failure(NSError(domain: "UserNotFound", code: 404)))
                     return
                 }
 
-                guard let data = document.data() else {
-                    promise(.failure(NSError(domain: "InvalidUserData", code: 400)))
-                    return
+                self.fetchCompleteUserData(document: document) { result in
+                    switch result {
+                    case let .success(user):
+                        promise(.success(user))
+                    case let .failure(error):
+                        promise(.failure(error))
+                    }
                 }
-
-                let user = UserEntity(
-                    id: document.documentID,
-                    email: data["email"] as? String ?? "",
-                    name: data["name"] as? String ?? "",
-                    role: Role(rawValue: data["role"] as? String ?? "") ?? .unknown,
-                    parentID: data["parentId"] as? String,
-                    childrensID: data["childrensID"] as? [String] ?? [],
-                    points: data["totalPoints"] as? Int ?? 0
-                )
-
-                promise(.success(user))
             }
         }
         .eraseToAnyPublisher()
     }
 
+    private func fetchCompleteUserData(document: DocumentSnapshot, completion: @escaping (Result<UserEntity, Error>) -> Void) {
+        guard let data = document.data() else {
+            completion(.failure(NSError(domain: "InvalidUserData", code: 400)))
+            return
+        }
+
+        let baseUser = UserEntity(
+            id: document.documentID,
+            email: data["email"] as? String ?? "",
+            name: data["name"] as? String ?? "",
+            role: Role(rawValue: data["role"] as? String ?? "") ?? .unknown,
+            parentID: data["parentId"] as? String,
+            childrensID: data["children"] as? [String] ?? [],
+            totalPoints: data["totalPoints"] as? Int ?? 0
+        )
+
+        fetchProgressData(userRef: document.reference) { progressData in
+            var user = baseUser
+            user.progressData = progressData
+            completion(.success(user))
+        }
+    }
+
+    private func fetchProgressData(userRef: DocumentReference, completion: @escaping ([ProgressData]) -> Void) {
+        userRef.collection("progress").getDocuments { snapshot, _ in
+            guard let documents = snapshot?.documents else {
+                completion([])
+                return
+            }
+
+            let progressData = documents.compactMap { doc -> ProgressData? in
+                let data = doc.data()
+                return ProgressData(
+                    bookId: doc.documentID,
+                    pagesRead: data["pagesRead"] as? Int ?? 0,
+                    totalPages: data["totalPages"] as? Int ?? 0,
+                    finished: data["finished"] as? Bool ?? false,
+                    pointsEarned: data["pointsEarned"] as? Int ?? 0
+                )
+            }
+
+            completion(progressData)
+        }
+    }
+
     func saveUserEntity(_ user: UserEntity) -> AnyPublisher<Void, Error> {
         let userRef = fireStoreReference.collection("users").document(user.id)
 
-        // 1) Build the top-level user payload
         var payload: [String: Any] = [
             "email": user.email,
             "name": user.name,
@@ -70,66 +129,64 @@ class DefaultUsersFirestoreService: UsersFirestoreService {
 
         switch user.role {
         case .parent:
-            // only parents get a 'children' array
             payload["children"] = user.childrensID
 
         case .child:
-            // only children get 'parentId' + 'totalPoints'
-            if let pid = user.parentID {
-                payload["parentId"] = pid
-                payload["totalPoints"] = user.totalPoints
-            }
+            payload["parentId"] = user.parentID
+            payload["totalPoints"] = user.totalPoints
 
-        case .unknown:
-            break
+        case .unknown: break
         }
 
-        // 2) Wrap the top-level setData in a Future
-        let userWrite = Future<Void, Error> { promise in
-            userRef.setData(payload, merge: true) { err in
-                err.map { promise(.failure($0)) } ?? promise(.success(()))
+        return Future<Void, Error> { promise in
+            userRef.setData(payload, merge: true) { error in
+                if let error = error {
+                    promise(.failure(error))
+                } else {
+                    self.saveProgressData(user: user, userRef: userRef) {
+                        promise(.success(()))
+                    }
+                }
             }
         }
         .eraseToAnyPublisher()
+    }
 
-        // 3) If this is a child, also write each Progress into /progress/{bookId}
-        let progressWrites: AnyPublisher<Void, Error>
-        if user.role == .child {
-            // Map each Progress → a Future write (skipping any entry without a linked book)
-            let writes = user.progressEntries.compactMap { entry -> AnyPublisher<Void, Error>? in
-                guard let book = entry.book else { return nil }
-                let pData: [String: Any] = [
-                    "pagesRead": entry.pagesRead,
-                    "totalPages": entry.totalPages,
-                    "finished": entry.finished,
-                    "pointsEarned": entry.pointsEarned
-                ]
-                let pRef = userRef
-                    .collection("progress")
-                    .document(book.id)
-
-                return Combine.Future<Void, Error> { promise in
-                    pRef.setData(pData, merge: true) { err in
-                        err.map { promise(.failure($0)) }
-                            ?? promise(.success(()))
-                    }
-                }
-                .eraseToAnyPublisher()
-            }
-
-            // Merge them all and wait for completion
-            progressWrites = Publishers
-                .MergeMany(writes)
-                .collect()
-                .mapToVoid() // wait for _all_ of them
-
-        } else {
-            progressWrites = .just(())
+    private func saveProgressData(user: UserEntity, userRef: DocumentReference, completion: @escaping () -> Void) {
+        guard user.role == .child else {
+            completion()
+            return
         }
 
-        // 4) Chain top-level write → progress writes
-        return userWrite
-            .flatMap { progressWrites }
-            .eraseToAnyPublisher()
+        let batch = fireStoreReference.batch()
+        let progressCollection = userRef.collection("progress")
+
+        for entry in user.progressData {
+            let docRef = progressCollection.document(entry.bookId)
+            let data: [String: Any] = [
+                "pagesRead": entry.pagesRead,
+                "totalPages": entry.totalPages,
+                "finished": entry.finished,
+                "pointsEarned": entry.pointsEarned
+            ]
+            batch.setData(data, forDocument: docRef)
+        }
+
+        batch.commit { _ in
+            completion()
+        }
+    }
+
+    func updateParentWithChild(parentID: String, childID: String) -> AnyPublisher<Void, Error> {
+        let parentRef = fireStoreReference.collection("users").document(parentID)
+
+        return Future<Void, Error> { promise in
+            parentRef.updateData([
+                "children": FieldValue.arrayUnion([childID])
+            ]) { error in
+                error.map { promise(.failure($0)) } ?? promise(.success(()))
+            }
+        }
+        .eraseToAnyPublisher()
     }
 }

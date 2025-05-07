@@ -6,10 +6,6 @@ import Resolver
 protocol ProfileInteractor: AnyObject {
     func viewDidAppear()
     func createChild(name: String, email: String, password: String)
-//    func onEmailChange(_ email: String)
-//    func onNameChange(_ name: String)
-//    func onPasswordChange(_ password: String)
-//    func onRegisterTap()
 }
 
 final class DefaultProfileInteractor {
@@ -18,9 +14,9 @@ final class DefaultProfileInteractor {
     private weak var coordinator: (any ProfileCoordinator)?
 
     // Properties
-    private(set) var email: String = MockCredentials.email()
-    private(set) var name: String = MockCredentials.name
-    private(set) var password: String = MockCredentials.password()
+    private(set) var email: String = ""
+    private(set) var name: String = ""
+    private(set) var password: String = ""
     private lazy var cancelBag = Set<AnyCancellable>()
 
     private(set) var user: UserEntity
@@ -67,13 +63,14 @@ extension DefaultProfileInteractor: ProfileInteractor {
 
     private func handleRegistrationSuccess(_ user: UserEntity) {
         coordinator?.presentProfileComplete(
-            message: "Vaikas sėkmingai sukurtas bei priskirtas prie jūsų",
+            message: "Vaikas sėkmingai sukurtas bei priskirtas prie jūsų profilio",
             onDismiss: { [weak self] in
                 self?.presenter?.presentLoading(false)
-                self?.presenter?.dismissChildCreateCompletion()
+                do {
+                    try self?.userRepository.signOut()
+                } catch {}
             }
         )
-        //  presenter?.refreshChildrenList()
     }
 
     private func handleRegistrationCompletion(_ completion: Subscribers.Completion<UserError>) {
@@ -87,43 +84,20 @@ extension DefaultProfileInteractor: ProfileInteractor {
 
     func viewDidAppear() {
         cancelBag.removeAll()
-//        presenter?.presentEmail(email)
-//        presenter?.presentPassword(password)
-//        presenter?.presentName(name)
+        fetchChildrends()
     }
 
-//    func onRegisterTap() {
-//        presenter?.presentLoading(true)
-//
-//        userRepository.createUser(name: name, email: email, password: password, role: .parent)
-//            .receive(on: DispatchQueue.main)
-//            .sink(
-//                receiveCompletion: { [weak self] in
-//                    self?.handleProfileCompletion($0)
-//                },
-//                receiveValue: { [weak self] in
-//                    self?.handleProfileSuccess(email: $0.email)
-//                }
-//            )
-//            .store(in: &cancelBag)
-//    }
-
-//    private func handleProfileSuccess(email: String) {
-//        let ProfileSuccessMessage = "Registracija sėkminga, šaunu! Dabar galėsite prisijungti."
-//
-//        coordinator?.presentProfileComplete(
-//            message: ProfileSuccessMessage,
-//            onDismiss: { [weak self] in
-//                guard let self else { return }
-//                coordinator?.navigateToLogin(email: email)
-//            }
-//        )
-//    }
-//
-//    private func handleProfileCompletion(_ completion: Subscribers.Completion<UserError>) {
-//        presenter?.presentLoading(false)
-//        if case let .failure(.message(message)) = completion {
-//            coordinator?.presentError(error: message, onDismiss: {})
-//        }
-//    }
+    private func fetchChildrends() {
+        userRepository.getChildrenForParent(parentID: user.id)
+            .receive(on: DispatchQueue.main)
+            .sink(receiveCompletion: { completion in
+                if case let .failure(error) = completion {
+                    print("Error fetching children: \(error)")
+                }
+            }, receiveValue: { [weak self] children in
+                self?.childrends = children
+                self?.presenter?.presentChilds(children)
+            })
+            .store(in: &cancelBag)
+    }
 }

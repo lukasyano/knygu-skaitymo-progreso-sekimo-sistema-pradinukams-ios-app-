@@ -98,6 +98,8 @@ struct ProfileView<ViewModel: ProfileViewModel>: View {
                 }
             }
         }
+        .onAppear { [weak interactor] in interactor?.viewDidAppear() }
+        .animation(.spring, value: viewModel.childs)
         .animation(.easeInOut, value: viewModel.isLoading)
     }
 }

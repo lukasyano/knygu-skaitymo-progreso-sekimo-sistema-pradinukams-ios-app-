@@ -107,8 +107,11 @@ struct HomeView<ViewModel: HomeViewModel>: View {
             LazyVGrid(columns: columns, spacing: 16) {
                 ForEach(viewModel.books) { book in
                     VStack(spacing: 8) {
-                        chipView(for: book)
-
+                        
+                        if viewModel.user.role == .child {
+                            chipView(for: book)
+                        }
+                        
                         ZStack {
                             RoundedRectangle(cornerRadius: 8)
                                 .fill(Color.brown.gradient.opacity(0.5))

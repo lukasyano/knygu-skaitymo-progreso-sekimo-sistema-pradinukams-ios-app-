@@ -1,66 +1,60 @@
+// LocalUsersService.swift
 import Combine
-import Foundation
-import Resolver
 import SwiftData
+import Resolver
 
 protocol LocalUsersService {
     func saveUserEntity(_ user: UserEntity) -> AnyPublisher<Void, Error>
     func getCurrentUser() -> AnyPublisher<UserEntity?, Never>
-    func clearAllUsers() -> AnyPublisher<Void, Error>
- //   func addChildToParent(parentID: String, childID: String) -> AnyPublisher<Void, Error>
 }
 
 final class DefaultLocalUsersService: LocalUsersService {
     private let context: ModelContext
     @Published private var currentUser: UserEntity?
-
+    
     init(context: ModelContext = Resolver.resolve()) {
         self.context = context
-        setupObserver()
+        loadInitialUser()
     }
-
+    
     func saveUserEntity(_ user: UserEntity) -> AnyPublisher<Void, Error> {
         Future { [weak self] promise in
+            self?.clearExistingUsers()
             self?.context.insert(user)
             self?.currentUser = user
-            do {
-                try self?.context.save()
-                promise(.success(()))
-            } catch {
-                promise(.failure(error))
-            }
+            self?.saveContext(promise: promise)
         }
         .eraseToAnyPublisher()
     }
-
+    
     func getCurrentUser() -> AnyPublisher<UserEntity?, Never> {
-        $currentUser
-            .eraseToAnyPublisher()
+        $currentUser.eraseToAnyPublisher()
     }
-
+    
     func clearAllUsers() -> AnyPublisher<Void, Error> {
         Future { [weak self] promise in
-            let descriptor = FetchDescriptor<UserEntity>()
-            do {
-                let users = try self?.context.fetch(descriptor) ?? []
-                users.forEach { self?.context.delete($0) }
-                try self?.context.save()
-                self?.currentUser = nil
-                promise(.success(()))
-            } catch {
-                promise(.failure(error))
-            }
+            self?.clearExistingUsers()
+            self?.currentUser = nil
+            self?.saveContext(promise: promise)
         }
         .eraseToAnyPublisher()
     }
-
-    private func setupObserver() {
+    
+    private func loadInitialUser() {
         let descriptor = FetchDescriptor<UserEntity>()
+        currentUser = try? context.fetch(descriptor).first
+    }
+    
+    private func clearExistingUsers() {
+        (try? context.fetch(FetchDescriptor<UserEntity>()))?.forEach { context.delete($0) }
+    }
+    
+    private func saveContext(promise: @escaping (Result<Void, Error>) -> Void) {
         do {
-            let users = try context.fetch(descriptor)
-            currentUser = users.first
+            try context.save()
+            promise(.success(()))
         } catch {
-            currentUser = nil
+            promise(.failure(error))
         }
     }
 }

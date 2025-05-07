@@ -17,9 +17,9 @@ final class DefaultRegistrationInteractor {
     private weak var coordinator: (any RegistrationCoordinator)?
 
     // Properties
-    private(set) var email: String = MockCredentials.email()
-    private(set) var name: String = MockCredentials.name
-    private(set) var password: String = MockCredentials.password()
+    private(set) var email: String = ""
+    private(set) var name: String = ""
+    private(set) var password: String = ""
     private lazy var cancelBag = Set<AnyCancellable>()
 
     // Repositories
@@ -60,9 +60,6 @@ extension DefaultRegistrationInteractor: RegistrationInteractor {
 
     func viewDidAppear() {
         cancelBag.removeAll()
-        presenter?.presentEmail(email)
-        presenter?.presentPassword(password)
-        presenter?.presentName(name)
     }
 
     func onRegisterTap() {
