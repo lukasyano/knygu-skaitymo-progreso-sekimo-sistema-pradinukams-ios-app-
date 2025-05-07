@@ -1,5 +1,6 @@
 import Combine
 import Foundation
+import Resolver
 import SwiftData
 
 enum UserServiceError: Error {
@@ -9,17 +10,25 @@ enum UserServiceError: Error {
 }
 
 protocol UsersSwiftDataService {
-    func saveUserEntity(_ user: UserEntity, context: ModelContext) -> AnyPublisher<Void, Error>
+    func saveUserEntity(_ user: UserEntity) -> AnyPublisher<Void, Error>
 
-    func getUserRole(userID: String, context: ModelContext) -> AnyPublisher<Role?, Never>
-    func linkChildToParent(childID: String, parentID: String, context: ModelContext) -> AnyPublisher<Void, Error>
-    func getChildrenForParent(parentID: String, context: ModelContext) -> AnyPublisher<[UserEntity], Error>
-    func getAllParents(context: ModelContext) -> AnyPublisher<[UserEntity], Error>
+    func getUserRole(userID: String) -> AnyPublisher<Role?, Never>
+    func linkChildToParent(childID: String, parentID: String) -> AnyPublisher<Void, Error>
+    func getChildrenForParent(parentID: String) -> AnyPublisher<[UserEntity], Error>
+    func getAllParents() -> AnyPublisher<[UserEntity], Error>
 }
 
 class DefaultUsersSwiftDataService: UsersSwiftDataService {
-    func saveUserEntity(_ user: UserEntity, context: ModelContext) -> AnyPublisher<Void, Error> {
-        Future { promise in
+    private let context: ModelContext
+
+    init(context: ModelContext = Resolver.resolve()) {
+        self.context = context
+    }
+
+    func saveUserEntity(_ user: UserEntity) -> AnyPublisher<Void, Error> {
+        Future { [weak self] promise in
+            guard let self else { return }
+
             do {
                 let userID = user.id
                 let descriptor = FetchDescriptor<UserEntity>(
@@ -49,22 +58,24 @@ class DefaultUsersSwiftDataService: UsersSwiftDataService {
         .eraseToAnyPublisher()
     }
 
-    func getUserRole(userID: String, context: ModelContext) -> AnyPublisher<Role?, Never> {
-        Future { promise in
+    func getUserRole(userID: String) -> AnyPublisher<Role?, Never> {
+        Future { [weak self] promise in
+            guard let self else { return }
+
             let fetch = FetchDescriptor<UserEntity>(predicate: #Predicate { $0.id == userID })
             do {
                 let user = try context.fetch(fetch).first
                 promise(.success(user?.role))
             } catch {
-                // In your original code this method does not return an error
                 promise(.success(nil))
             }
         }
         .eraseToAnyPublisher()
     }
 
-    func linkChildToParent(childID: String, parentID: String, context: ModelContext) -> AnyPublisher<Void, Error> {
-        Future { promise in
+    func linkChildToParent(childID: String, parentID: String) -> AnyPublisher<Void, Error> {
+        Future { [weak self] promise in
+            guard let self else { return }
             do {
                 let fetchChild = FetchDescriptor<UserEntity>(predicate: #Predicate { $0.id == childID })
                 let fetchParent = FetchDescriptor<UserEntity>(predicate: #Predicate { $0.id == parentID })
@@ -97,8 +108,9 @@ class DefaultUsersSwiftDataService: UsersSwiftDataService {
         .eraseToAnyPublisher()
     }
 
-    func getChildrenForParent(parentID: String, context: ModelContext) -> AnyPublisher<[UserEntity], Error> {
-        Future { promise in
+    func getChildrenForParent(parentID: String) -> AnyPublisher<[UserEntity], Error> {
+        Future { [weak self] promise in
+            guard let self else { return }
             do {
                 let fetchParent = FetchDescriptor<UserEntity>(predicate: #Predicate { $0.id == parentID })
                 guard let parent = try context.fetch(fetchParent).first else {
@@ -113,8 +125,9 @@ class DefaultUsersSwiftDataService: UsersSwiftDataService {
         .eraseToAnyPublisher()
     }
 
-    func getAllParents(context: ModelContext) -> AnyPublisher<[UserEntity], Error> {
-        Future { promise in
+    func getAllParents() -> AnyPublisher<[UserEntity], Error> {
+        Future { [weak self] promise in
+            guard let self else { return }
             do {
                 let allUsers = try context.fetch(FetchDescriptor<UserEntity>())
                 let parents = allUsers.filter { $0.role == .parent }

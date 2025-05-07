@@ -48,7 +48,7 @@ extension DefaultUserRepository: UserRepository {
                     .mapError { UserError.message($0.localizedDescription) }
                     .flatMap { _ -> AnyPublisher<String, UserError> in
                         self.localUserService
-                            .saveUserEntity(userEntity, context: self.modelContext)
+                            .saveUserEntity(userEntity)
                             .map { _ in userEntity.email }
                             .mapError { UserError.message("Klaida kuriant vartotoją: \($0.localizedDescription)") }
                             .eraseToAnyPublisher()

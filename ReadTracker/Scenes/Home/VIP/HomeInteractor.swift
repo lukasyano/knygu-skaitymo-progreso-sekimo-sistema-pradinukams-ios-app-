@@ -52,7 +52,6 @@ extension DefaultHomeInteractor: HomeInteractor {
             .subscribe(on: DispatchQueue.global())
             .delay(for: logOutDelay, scheduler: DispatchQueue.main)
             .sink { [weak coordinator] userId in
-
                 guard userId != .none else {
                     coordinator?.popToParent()
                     return
@@ -62,7 +61,7 @@ extension DefaultHomeInteractor: HomeInteractor {
     }
 
     private func fetchBooks() {
-        bookRepository.fetchBooks(for: .child)
+        bookRepository.fetchBooks(for: .parent)
             .receive(on: DispatchQueue.main)
             .sink(
                 receiveCompletion: { [weak self] completion in

@@ -17,48 +17,65 @@ struct HomeView<ViewModel: HomeViewModel>: View {
         self.viewModel = viewModel
     }
 
+    func profileButton() -> some View {
+        Button(
+            action: {},
+            label: {
+                HStack {
+                    Text("Tavo Profilis").frame(width: 120)
+                    Image(systemName: "person.crop.circle.fill")
+                }
+            }
+        )
+        .buttonStyle(.bordered)
+        .buttonBorderShape(.roundedRectangle)
+        .tint(.black)
+    }
+
+    func logoutButton() -> some View {
+        Button(
+            action: { showLogoutConfirmation.toggle() },
+            label: {
+                HStack {
+                    Text("Atsijungti").frame(width: 120)
+                    Image(systemName: "rectangle.portrait.and.arrow.right")
+                }
+            }
+        )
+        .buttonStyle(.bordered)
+        .buttonBorderShape(.roundedRectangle)
+        .tint(.black)
+        .alert("Atsijungti", isPresented: $showLogoutConfirmation) {
+            Button("Atšaukti", role: .cancel) {}
+            Button("Atsijungti", role: .destructive) {
+                interactor.onLogOutTap()
+            }
+        } message: {
+            Text("Ar tikrai norite atsijungti?")
+        }
+    }
+
     var body: some View {
         ZStack {
             Constants.mainScreenColor.ignoresSafeArea()
-
-            contentView
-                .navigationTitle(viewModel.title)
-                .navigationBarTitleDisplayMode(.large)
-                .toolbar {
-                    ToolbarItem(placement: .navigationBarTrailing) {
-                        Button(
-                            action: { showLogoutConfirmation.toggle() },
-                            label: {
-                                HStack {
-                                    Text("Atsijungti")
-                                    Image(systemName: "rectangle.portrait.and.arrow.right")
-                                }
-                            }
-                        )
-                        .buttonStyle(.bordered)
-                        .buttonBorderShape(.roundedRectangle)
-                        .tint(.black)
-                        .controlSize(.small)
-                        .alert("Atsijungti", isPresented: $showLogoutConfirmation) {
-                            Button("Atšaukti", role: .cancel) {}
-                            Button("Atsijungti", role: .destructive) {
-                                interactor.onLogOutTap()
-                            }
-                        } message: {
-                            Text("Ar tikrai norite atsijungti?")
-                        }
+            ScrollView {
+                LazyVStack(spacing: 16, pinnedViews: .sectionFooters) {
+                    Section {
+                        booksGridView()
+                    } footer: {
+                        Text(viewModel.title).font(.footnote)
                     }
                 }
+            }
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading, content: logoutButton)
+                ToolbarItem(placement: .topBarTrailing, content: profileButton)
+            }
         }
         .animation(.bouncy, value: viewModel.isLoading)
         .animation(.bouncy, value: viewModel.books)
         .toolbarBackground(Constants.mainScreenColor, for: .navigationBar)
         .onAppear(perform: { [weak interactor] in interactor?.viewDidAppear() })
-    }
-
-    @ViewBuilder
-    private var contentView: some View {
-        booksGridView()
     }
 
     private func chipView(for book: HomeModels.BooksPresentable) -> some View {

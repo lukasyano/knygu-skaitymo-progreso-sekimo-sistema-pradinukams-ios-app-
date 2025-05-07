@@ -27,7 +27,7 @@ extension DefaultHomeViewModel: HomeDisplayLogic {
 
     func displayBooks(_ books: [HomeModels.BooksPresentable]) {
         self.books = books
-        title = "Bibliotekoje: \(books.count)"
+        title = "Tavo bibliotekoje: \(books.count) knyga(os)"
         isLoading = false
     }
 
