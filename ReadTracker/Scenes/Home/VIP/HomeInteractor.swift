@@ -7,6 +7,7 @@ import SwiftUI
 protocol HomeInteractor: AnyObject {
     func viewDidAppear()
     func onLogOutTap()
+    func onProfileTap()
     func onBookClicked(_ bookID: String)
 }
 
@@ -20,6 +21,7 @@ final class DefaultHomeInteractor {
 
     private var cancelBag = Set<AnyCancellable>()
     private var books: [BookEntity]?
+    private var user: UserEntity?
 
     init(
         coordinator: any HomeCoordinator,
@@ -40,8 +42,21 @@ extension DefaultHomeInteractor: HomeInteractor {
     func viewDidAppear() {
         cancelBag.removeAll()
         observeUsserSession()
-        fetchBooks()
         fetchUserProgress()
+    }
+
+    private func getUserRole(userID: String) {
+        userRepository.getCurrentUser()
+            .subscribe(on: DispatchQueue.global())
+            .receive(on: DispatchQueue.main)
+            .sink(receiveValue: { [weak self] in self?.receiveCurrentUser(user: $0) })
+            .store(in: &cancelBag)
+    }
+
+    private func receiveCurrentUser(user: UserEntity?) {
+        guard let user else { return }
+        self.user = user
+        fetchBooks(for: user.role)
     }
 
     private func observeUsserSession() {
@@ -50,18 +65,20 @@ extension DefaultHomeInteractor: HomeInteractor {
         userRepository.authStatePublisher
             .removeDuplicates()
             .subscribe(on: DispatchQueue.global())
+            .receive(on: DispatchQueue.main)
             .delay(for: logOutDelay, scheduler: DispatchQueue.main)
-            .sink { [weak coordinator] userId in
-                guard userId != .none else {
-                    coordinator?.popToParent()
+            .sink { [weak self] userId in
+                guard let userId else {
+                    self?.coordinator?.popToRoot()
                     return
                 }
+                self?.getUserRole(userID: userId)
             }
             .store(in: &cancelBag)
     }
 
-    private func fetchBooks() {
-        bookRepository.fetchBooks(for: .parent)
+    private func fetchBooks(for role: Role) {
+        bookRepository.fetchBooks(for: role)
             .receive(on: DispatchQueue.main)
             .sink(
                 receiveCompletion: { [weak self] completion in
@@ -115,5 +132,10 @@ extension DefaultHomeInteractor: HomeInteractor {
             return
         }
         coordinator?.showBook(at: url)
+    }
+
+    func onProfileTap() {
+        guard let user else { return }
+        coordinator?.showProfile(with: user)
     }
 }

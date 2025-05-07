@@ -4,13 +4,11 @@ struct HomeCoordinatorView: View {
     @ObservedObject var coordinator: DefaultHomeCoordinator
 
     var body: some View {
-//        TabView {
         coordinator.start()
             .navigation(item: $coordinator.route, destination: routeView(for:))
             .presentedView($coordinator.presentedView, content: presentedViewContent)
             .navigationBarBackButtonHidden()
     }
-//    }
 }
 
 // MARK: - Presented View Content
@@ -20,6 +18,11 @@ extension HomeCoordinatorView {
         switch presentedView {
         case let .book(url):
             ReadBookView(url: url)
+            
+        case let .profile(user):
+            ProfileCoordinatorView(coordinator: .init(user: user, parent: coordinator))
+
+            
 
         case let .error(error: error, dismiss: dismiss): EmptyView()
             // Toa

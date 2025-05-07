@@ -1,69 +1,131 @@
 import Combine
+import Foundation
 import Resolver
 import SwiftData
 
 protocol UserRepository {
-    func createUser(name: String, email: String, password: String, role: Role) -> AnyPublisher<String, UserError>
-    func logIn(email: String, password: String) -> AnyPublisher<Void, UserError>
+    func createUser(name: String, email: String, password: String, role: Role) -> AnyPublisher<UserEntity, UserError>
+    func logIn(email: String, password: String) -> AnyPublisher<UserEntity, UserError>
+    func getCurrentUser() -> AnyPublisher<UserEntity?, Never>
     var authStatePublisher: AnyPublisher<String?, Never> { get }
     func signOut() throws
 }
 
-class DefaultUserRepository {
-    private let firebaseAuthService: AuthenticationService
+final class DefaultUserRepository: UserRepository {
+    private let firebaseAuthenticationService: AuthenticationService
     private let usersFirestoreService: UsersFirestoreService
-    private let localUserService: UsersSwiftDataService
-    private let modelContext: ModelContext
+    private let localUsersService: LocalUsersService
+    private var cancellables = Set<AnyCancellable>()
+
+    @Published private var currentUser: UserEntity?
 
     init(
-        firebaseAuthService: AuthenticationService = Resolver.resolve(),
+        firebaseAuthenticationService: AuthenticationService = Resolver.resolve(),
         usersFirestoreService: UsersFirestoreService = Resolver.resolve(),
-        localUserService: UsersSwiftDataService = Resolver.resolve(),
-        modelContext: ModelContext = Resolver.resolve()
+        localUsersService: LocalUsersService = Resolver.resolve()
     ) {
-        self.firebaseAuthService = firebaseAuthService
+        self.firebaseAuthenticationService = firebaseAuthenticationService
         self.usersFirestoreService = usersFirestoreService
-        self.localUserService = localUserService
-        self.modelContext = modelContext
-    }
-}
-
-extension DefaultUserRepository: UserRepository {
-    var authStatePublisher: AnyPublisher<String?, Never> {
-        firebaseAuthService.authStatePublisher
+        self.localUsersService = localUsersService
+        setupAuthObserver()
     }
 
-    func createUser(name: String, email: String, password: String, role: Role)
-        -> AnyPublisher<String, UserError> {
-        firebaseAuthService.createUser(email: email, password: password)
-            .flatMap { [weak self] user -> AnyPublisher<String, UserError> in
-                guard let self else {
-                    return .fail(.message("Nežinoma klaida"))
-                }
+    // MARK: - Public Interface
+    func createUser(name: String, email: String, password: String, role: Role) -> AnyPublisher<UserEntity, UserError> {
+        firebaseAuthenticationService.createUser(email: email, password: password)
+            .flatMap { [weak self] firebaseUser -> AnyPublisher<UserEntity, UserError> in
+                guard let self else { return .fail(.message("System error")) }
 
-                let userEntity = UserMapper.mapFromUserToUserEntity(user, name: name, role: role)
+                let userEntity = UserEntity(
+                    id: firebaseUser.uid,
+                    email: email,
+                    name: name,
+                    role: role,
+                    parentID: nil,
+                    childrensID: [],
+                    points: 0
+                )
 
-                return usersFirestoreService
-                    .saveUserEntity(userEntity)
-                    .mapError { UserError.message($0.localizedDescription) }
-                    .flatMap { _ -> AnyPublisher<String, UserError> in
-                        self.localUserService
-                            .saveUserEntity(userEntity)
-                            .map { _ in userEntity.email }
-                            .mapError { UserError.message("Klaida kuriant vartotoją: \($0.localizedDescription)") }
-                            .eraseToAnyPublisher()
-                    }
+                return self.saveUser(entity: userEntity)
+            }
+            .eraseToAnyPublisher()
+    }
+
+    func logIn(email: String, password: String) -> AnyPublisher<UserEntity, UserError> {
+        clearExistingUserData()
+            .flatMap { [weak self] _ -> AnyPublisher<UserEntity, UserError> in
+                guard let self else { return .fail(.message("Session expired")) }
+
+                return self.firebaseAuthenticationService.signIn(email: email, password: password)
+                    .flatMap { self.syncUserData(uid: $0.uid) }
                     .eraseToAnyPublisher()
             }
             .eraseToAnyPublisher()
     }
 
-    func logIn(email: String, password: String) -> AnyPublisher<Void, UserError> {
-        firebaseAuthService.signIn(email: email, password: password)
-            .mapToVoid()
+    func getCurrentUser() -> AnyPublisher<UserEntity?, Never> {
+        localUsersService.getCurrentUser()
     }
 
     func signOut() throws {
-        try firebaseAuthService.signOut()
+        try firebaseAuthenticationService.signOut()
+        clearLocalUserData()
+    }
+
+    // MARK: - Auth State
+    var authStatePublisher: AnyPublisher<String?, Never> {
+        firebaseAuthenticationService.authStatePublisher
+    }
+
+    private func setupAuthObserver() {
+        authStatePublisher
+            .sink { [weak self] uid in
+                guard let self else { return }
+
+                if let uid {
+                    self.syncUserData(uid: uid)
+                        .sink(receiveCompletion: { _ in }, receiveValue: { _ in })
+                        .store(in: &self.cancellables)
+                } else {
+                    self.clearLocalUserData()
+                }
+            }
+            .store(in: &cancellables)
+    }
+}
+
+// MARK: - Data Management
+private extension DefaultUserRepository {
+    func syncUserData(uid: String) -> AnyPublisher<UserEntity, UserError> {
+        usersFirestoreService.getUserEntity(userID: uid)
+            .mapError { UserError.message($0.localizedDescription) }
+            .flatMap { [weak self] remoteUser -> AnyPublisher<UserEntity, UserError> in
+                guard let self else { return .fail(.message("Session expired")) }
+
+                return self.saveUser(entity: remoteUser)
+            }
+            .eraseToAnyPublisher()
+    }
+
+    func saveUser(entity: UserEntity) -> AnyPublisher<UserEntity, UserError> {
+        Publishers.Zip(
+            localUsersService.saveUserEntity(entity),
+            usersFirestoreService.saveUserEntity(entity)
+        )
+        .map { _ in entity }
+        .mapError { UserError.message($0.localizedDescription) }
+        .eraseToAnyPublisher()
+    }
+
+    func clearExistingUserData() -> AnyPublisher<Void, UserError> {
+        localUsersService.clearAllUsers()
+            .mapError { UserError.message($0.localizedDescription) }
+            .eraseToAnyPublisher()
+    }
+
+    func clearLocalUserData() {
+        localUsersService.clearAllUsers()
+            .sink(receiveCompletion: { _ in }, receiveValue: { _ in })
+            .store(in: &cancellables)
     }
 }

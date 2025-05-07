@@ -7,6 +7,7 @@ protocol HomeCoordinator: Coordinator {
         onDismiss: @escaping () -> Void
     )
     func showBook(at url: URL)
+    func showProfile(with user: UserEntity)
 }
 
 final class DefaultHomeCoordinator: HomeCoordinator {
@@ -42,6 +43,10 @@ extension DefaultHomeCoordinator {
     }
     func showBook(at url: URL) {
         presentedView = .book(url: url)
+    }
+    
+    func showProfile(with user: UserEntity) {
+        presentedView = .profile(user)
     }
 }
 

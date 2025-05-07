@@ -75,7 +75,7 @@ extension DefaultRegistrationInteractor: RegistrationInteractor {
                     self?.handleRegistrationCompletion($0)
                 },
                 receiveValue: { [weak self] in
-                    self?.handleRegistrationSuccess(email: $0)
+                    self?.handleRegistrationSuccess(email: $0.email)
                 }
             )
             .store(in: &cancelBag)

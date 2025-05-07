@@ -19,7 +19,7 @@ struct HomeView<ViewModel: HomeViewModel>: View {
 
     func profileButton() -> some View {
         Button(
-            action: {},
+            action: { [weak interactor] in interactor?.onProfileTap() },
             label: {
                 HStack {
                     Text("Tavo Profilis").frame(width: 120)
@@ -55,27 +55,33 @@ struct HomeView<ViewModel: HomeViewModel>: View {
         }
     }
 
+    @ViewBuilder
+    func contentView() -> some View {
+        ScrollView {
+            LazyVStack(spacing: 16, pinnedViews: .sectionFooters) {
+                Section {
+                    booksGridView()
+                } footer: {
+                    Text(viewModel.title).font(.footnote)
+                }
+            }
+        }
+    }
+
     var body: some View {
         ZStack {
             Constants.mainScreenColor.ignoresSafeArea()
-            ScrollView {
-                LazyVStack(spacing: 16, pinnedViews: .sectionFooters) {
-                    Section {
-                        booksGridView()
-                    } footer: {
-                        Text(viewModel.title).font(.footnote)
-                    }
+
+            contentView()
+                .toolbar {
+                    ToolbarItem(placement: .topBarLeading, content: logoutButton)
+                    ToolbarItem(placement: .topBarTrailing, content: profileButton)
                 }
-            }
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading, content: logoutButton)
-                ToolbarItem(placement: .topBarTrailing, content: profileButton)
-            }
+                .animation(.bouncy, value: viewModel.isLoading)
+                .animation(.bouncy, value: viewModel.books)
+                .toolbarBackground(Constants.mainScreenColor, for: .navigationBar)
+                .onAppear(perform: { [weak interactor] in interactor?.viewDidAppear() })
         }
-        .animation(.bouncy, value: viewModel.isLoading)
-        .animation(.bouncy, value: viewModel.books)
-        .toolbarBackground(Constants.mainScreenColor, for: .navigationBar)
-        .onAppear(perform: { [weak interactor] in interactor?.viewDidAppear() })
     }
 
     private func chipView(for book: HomeModels.BooksPresentable) -> some View {

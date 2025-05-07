@@ -30,7 +30,7 @@ final class DefaultAuthenticationService: AuthenticationService {
 
     deinit {
         if let handle = authListenerHandle {
-            Auth.auth().removeStateDidChangeListener(handle)
+            instance.removeStateDidChangeListener(handle)
         }
     }
 
