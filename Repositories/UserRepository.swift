@@ -34,11 +34,11 @@ final class DefaultUserRepository: UserRepository {
         setupAuthObserver()
         loadInitialRole()
     }
-    
+
     func saveUser(_ user: UserEntity) -> AnyPublisher<Void, Error> {
         firestoreService.saveUserEntity(user)
     }
-    
+
     func getChildrenForParent(parentID: String) -> AnyPublisher<[UserEntity], UserError> {
         firestoreService.getChildrenForParent(parentID: parentID)
             .mapError { UserError.message($0.localizedDescription) }
@@ -160,7 +160,10 @@ final class DefaultUserRepository: UserRepository {
             .flatMap { [weak self] uid in
                 self?.fetchAndSetCurrentUser(uid: uid) ?? .empty()
             }
-            .sink(receiveCompletion: { _ in }, receiveValue: { _ in })
+            .sink(
+                receiveCompletion: { [weak self] _ in /* ... */ },
+                receiveValue: { [weak self] _ in /* ... */ }
+            )
             .store(in: &cancellables)
     }
 

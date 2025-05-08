@@ -1,5 +1,5 @@
 protocol BookReaderPresenter: AnyObject {
-
+    func presentCelebrate()
     func presentLoading(_ isLoading: Bool)
 }
 
@@ -17,5 +17,8 @@ extension DefaultBookReaderPresenter: BookReaderPresenter {
     func presentLoading(_ isLoading: Bool) {
         displayLogic?.displayLoading(isLoading)
     }
-
+    
+    func presentCelebrate() {
+        displayLogic?.displayCelebrate()
+    }
 }

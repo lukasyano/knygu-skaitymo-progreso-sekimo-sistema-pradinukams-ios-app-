@@ -107,11 +107,10 @@ struct HomeView<ViewModel: HomeViewModel>: View {
             LazyVGrid(columns: columns, spacing: 16) {
                 ForEach(viewModel.books) { book in
                     VStack(spacing: 8) {
-                        
                         if viewModel.user.role == .child {
                             chipView(for: book)
                         }
-                        
+
                         ZStack {
                             RoundedRectangle(cornerRadius: 8)
                                 .fill(Color.brown.gradient.opacity(0.5))
@@ -139,10 +138,9 @@ struct HomeView<ViewModel: HomeViewModel>: View {
                         Spacer()
 
                         if let totalPages = book.totalPages {
-                            let readedPages = book.readedPages ?? 0
                             HStack {
                                 Spacer()
-                                Text("\(readedPages) / \(totalPages) psl.")
+                                Text("\(totalPages) psl.")
                             }
                         }
                     }

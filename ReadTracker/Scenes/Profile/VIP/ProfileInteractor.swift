@@ -90,7 +90,7 @@ extension DefaultProfileInteractor: ProfileInteractor {
     private func fetchChildrends() {
         userRepository.getChildrenForParent(parentID: user.id)
             .receive(on: DispatchQueue.main)
-            .sink(receiveCompletion: { completion in
+            .sink(receiveCompletion: { [weak self] completion in
                 if case let .failure(error) = completion {
                     print("Error fetching children: \(error)")
                 }

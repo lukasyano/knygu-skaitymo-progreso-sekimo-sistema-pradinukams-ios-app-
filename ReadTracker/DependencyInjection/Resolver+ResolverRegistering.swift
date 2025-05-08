@@ -1,5 +1,4 @@
 import Resolver
-
 extension Resolver: @retroactive ResolverRegistering {
     public static func registerAllServices() {
         // for swiftData model context

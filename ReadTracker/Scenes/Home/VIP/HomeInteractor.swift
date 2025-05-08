@@ -10,7 +10,6 @@ protocol HomeInteractor: AnyObject {
     func onProfileTap()
     func onBookClicked(_ bookID: String)
 }
-
 final class DefaultHomeInteractor {
     private weak var presenter: HomePresenter?
     private weak var coordinator: (any HomeCoordinator)?
@@ -42,7 +41,6 @@ extension DefaultHomeInteractor: HomeInteractor {
     func viewDidAppear() {
         cancelBag.removeAll()
         observeUsserSession()
-        fetchUserProgress()
     }
 
     private func getUserRole(userID: String) {
@@ -65,9 +63,9 @@ extension DefaultHomeInteractor: HomeInteractor {
 
         userRepository.authStatePublisher
             .removeDuplicates()
-            .subscribe(on: DispatchQueue.global())
-            .receive(on: DispatchQueue.main)
-            .delay(for: logOutDelay, scheduler: DispatchQueue.main)
+            .subscribe(on: DispatchQueue.global()) // Offload to background
+            .delay(for: logOutDelay, scheduler: DispatchQueue.global()) // ✅ Delay on background
+            .receive(on: DispatchQueue.main) // Only switch to main for UI updates            .receive(on: DispatchQueue.main)
             .sink { [weak self] userId in
                 guard let userId else {
                     self?.coordinator?.popToRoot()
@@ -96,15 +94,7 @@ extension DefaultHomeInteractor: HomeInteractor {
             .store(in: &cancelBag)
     }
 
-    private func fetchUserProgress() {
-//        guard let userID = currentUserID else { return }
-//        progressRepository.fetchProgress(forUser: userID)
-//            .receive(on: DispatchQueue.main)
-//            .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] progress in
-//                self?.presenter?.presentProgress(progress)
-//            })
-//            .store(in: &cancelBag)
-    }
+
 
     private func generateThumbnails(for books: [BookEntity]) {
         thumbnailWorker

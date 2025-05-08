@@ -1,5 +1,4 @@
 import Resolver
-
 extension Resolver {
     static func registerServices() {
         // USER

@@ -1,5 +1,4 @@
 import Resolver
-
 extension Resolver {
     static func registerRepositories() {
         Resolver.register { DefaultUserRepository() }

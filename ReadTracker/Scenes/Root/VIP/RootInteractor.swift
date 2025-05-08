@@ -43,11 +43,14 @@ extension DefaultRootInteractor: RootInteractor {
             .eraseToAnyPublisher()
 
         Publishers.CombineLatest(authPublisher, refreshPublisher)
-            .subscribe(on: DispatchQueue.global(qos: .userInteractive))
+            .subscribe(on: DispatchQueue.global())
             .receive(on: DispatchQueue.main)
             .sink(
-                receiveCompletion: { _ in },
+                receiveCompletion: { [weak self] in
+                print($0)
+                },
                 receiveValue: { [weak coordinator] userId, _ in
+                    print("value")
                     userId != nil
                         ? coordinator?.navigateToHome()
                         : coordinator?.navigateToAuthentication()

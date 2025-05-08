@@ -187,6 +187,7 @@
 		AA791FEC2DCBFF80007C2F0D /* BookReaderPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA791FDE2DCBFF80007C2F0D /* BookReaderPresenter.swift */; };
 		AA8DBE142DC63D03000C3803 /* HoldToDismissButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8DBE132DC63D00000C3803 /* HoldToDismissButton.swift */; };
 		AA8DBE182DC69BC1000C3803 /* ReadingProgressEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8DBE172DC69BC1000C3803 /* ReadingProgressEntity.swift */; };
+		AAA713922DCC32BF009B7ADA /* checkpoint.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = AAA713912DCC32BF009B7ADA /* checkpoint.mp3 */; };
 		AAD516A02DC62483002C7529 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAD5169F2DC62481002C7529 /* Constants.swift */; };
 		AAD516A22DC624DF002C7529 /* View+ApplicationLifeCycle.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAD516A12DC624DF002C7529 /* View+ApplicationLifeCycle.swift */; };
 		AAD516AC2DC62646002C7529 /* complete.json in Resources */ = {isa = PBXBuildFile; fileRef = AAD516A62DC62646002C7529 /* complete.json */; };
@@ -361,6 +362,7 @@
 		AA791FDF2DCBFF80007C2F0D /* BookReaderViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookReaderViewModel.swift; sourceTree = "<group>"; };
 		AA8DBE132DC63D00000C3803 /* HoldToDismissButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HoldToDismissButton.swift; sourceTree = "<group>"; };
 		AA8DBE172DC69BC1000C3803 /* ReadingProgressEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadingProgressEntity.swift; sourceTree = "<group>"; };
+		AAA713912DCC32BF009B7ADA /* checkpoint.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = checkpoint.mp3; sourceTree = "<group>"; };
 		AAD5169F2DC62481002C7529 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		AAD516A12DC624DF002C7529 /* View+ApplicationLifeCycle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+ApplicationLifeCycle.swift"; sourceTree = "<group>"; };
 		AAD516A62DC62646002C7529 /* complete.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = complete.json; sourceTree = "<group>"; };
@@ -959,6 +961,7 @@
 				AAD516AA2DC62646002C7529 /* walkingDog.json */,
 				AAD516AB2DC62646002C7529 /* walkingDog2.json */,
 				AA3BC1C12DC5EC3D00B14271 /* loading.json */,
+				AAA713912DCC32BF009B7ADA /* checkpoint.mp3 */,
 			);
 			path = LottieAnimations;
 			sourceTree = "<group>";
@@ -1124,6 +1127,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AAA713922DCC32BF009B7ADA /* checkpoint.mp3 in Resources */,
 				12AE949B2DA99F8E00064C94 /* swiftlint.yml in Resources */,
 				AA43A4C32DC62AFE00109467 /* GoogleService-Info.plist in Resources */,
 				AA43A4C42DC62AFE00109467 /* Assets.xcassets in Resources */,

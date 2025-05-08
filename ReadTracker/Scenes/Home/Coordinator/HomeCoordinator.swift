@@ -1,6 +1,5 @@
 import SwiftData
 import SwiftUI
-
 protocol HomeCoordinator: Coordinator {
     func presentError(
         message: String,
