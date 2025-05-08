@@ -27,6 +27,7 @@ class BookSyncService {
 
     func syncFirestoreToSwiftData() -> AnyPublisher<Void, Error> {
         firestoreService.fetchAllBooks()
+            .receive(on: DispatchQueue.main) // Ensure main thread
             .tryMap { [weak self] books in
                 guard let self else { throw NSError(domain: "Self", code: -1) }
 
@@ -67,8 +68,11 @@ class BookSyncService {
         guard let url = URL(string: "\(githubBaseURL)\(role.rawValue)") else {
             return .empty()
         }
+        let config = URLSessionConfiguration.default
+        config.urlCache = URLCache(memoryCapacity: 50_000_000, diskCapacity: 1_000_000_000)
+        let session = URLSession(configuration: config)
 
-        return URLSession.shared.dataTaskPublisher(for: url)
+        return session.dataTaskPublisher(for: url)
             .map(\.data)
             .decode(type: [GitHubItem].self, decoder: JSONDecoder())
             .map { items in

@@ -62,6 +62,14 @@ final class DefaultBookRepository: BookRepository {
     func refreshBooks() -> AnyPublisher<Void, Error> {
         deleteAllBooks()
             .flatMap { _ in self.populateBooks() }
+            .handleEvents(
+                receiveCompletion: { completion in
+                    if case .failure(let error) = completion {
+                        print("Refresh failed: \(error)")
+                    }
+                },
+                receiveCancel: { print("Refresh cancelled") }
+            )
             .eraseToAnyPublisher()
     }
 
@@ -79,17 +87,16 @@ final class DefaultBookRepository: BookRepository {
 
     func populateBooks() -> AnyPublisher<Void, Error> {
         syncService.fetchFromGitHubAndAddToFirestore()
-            .subscribe(on: backgroundQueue)
+            .subscribe(on: backgroundQueue) // Offload initial work
             .flatMap { _ in self.syncService.syncFirestoreToSwiftData() }
-            .receive(on: DispatchQueue.main)
+            .receive(on: DispatchQueue.main) // SwiftData needs main thread
             .flatMap { _ in self.downloadService.downloadMissingBooks() }
-            .subscribe(on: backgroundQueue)
+            .subscribe(on: backgroundQueue) // Offload downloads
+            .receive(on: DispatchQueue.main) // Final UI update
             .map { _ in }
-            .handleEvents(receiveOutput: { [weak self] _ in
-                self?.storage.markLastRefresh()
-            })
             .eraseToAnyPublisher()
     }
+
 
     func refreshIfNeeded() -> AnyPublisher<Void, Error> {
         guard storage.shouldRefresh else { return .just(()) }

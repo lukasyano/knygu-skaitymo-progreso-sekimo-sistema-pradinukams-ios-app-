@@ -21,6 +21,7 @@ final class DefaultProfileInteractor {
 
     private(set) var user: UserEntity
     private(set) var childrends: [UserEntity]?
+    private var progress: [ProgressData] = []
     // Repositories
     private let userRepository: UserRepository
 
@@ -83,8 +84,9 @@ extension DefaultProfileInteractor: ProfileInteractor {
     // MARK: - View Did Change
 
     func viewDidAppear() {
-        cancelBag.removeAll()
+        //cancelBag.removeAll()
         fetchChildrends()
+        loadUserProgress()
     }
 
     private func fetchChildrends() {
@@ -98,6 +100,20 @@ extension DefaultProfileInteractor: ProfileInteractor {
                 self?.childrends = children
                 self?.presenter?.presentChilds(children)
             })
+            .store(in: &cancelBag)
+    }
+    
+    private func loadUserProgress() {
+        userRepository.fetchUserProgress(userID: user.id)
+            .receive(on: DispatchQueue.main)
+            .sink { completion in
+                if case let .failure(error) = completion {
+                    print("Firestore Error: \(error.localizedDescription)")
+                }
+            } receiveValue: { [weak self] progressData in
+                self?.progress = progressData
+                self?.presenter?.presentProgress(progressData)
+            }
             .store(in: &cancelBag)
     }
 }

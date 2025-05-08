@@ -16,39 +16,47 @@ final class DefaultUsersFirestoreService: UsersFirestoreService {
 
     // In DefaultUsersFirestoreService
     func getProgressData(userID: String) -> AnyPublisher<[ProgressData], Error> {
-        // Add guard clause
         guard !userID.isEmpty else {
             return Fail(error: NSError(domain: "InvalidUserID", code: 400, userInfo: nil))
                 .eraseToAnyPublisher()
         }
-        
+
         let progressRef = fireStoreReference
             .collection("users")
-            .document(userID)  // ← This was causing the crash if userID is empty
+            .document(userID)
             .collection("progress")
-        
-        return Future<QuerySnapshot, Error> { promise in
-            progressRef.getDocuments { snapshot, error in
+
+        return Deferred {
+            let subject = PassthroughSubject<[ProgressData], Error>()
+            var listener: ListenerRegistration?
+
+            listener = progressRef.addSnapshotListener { snapshot, error in
                 if let error = error {
-                    promise(.failure(error))
-                } else if let snapshot = snapshot {
-                    promise(.success(snapshot))
-                } else {
-                    promise(.failure(NSError(domain: "UnknownError", code: 500)))
+                    subject.send(completion: .failure(error))
+                    return
                 }
+
+                guard let snapshot = snapshot else {
+                    subject.send(completion: .failure(NSError(domain: "UnknownError", code: 500, userInfo: nil)))
+                    return
+                }
+
+                let progressData = snapshot.documents.map { document -> ProgressData in
+                    let data = document.data()
+                    return ProgressData(
+                        bookId: document.documentID,
+                        pagesRead: data["pagesRead"] as? Int ?? 0,
+                        totalPages: data["totalPages"] as? Int ?? 0,
+                        finished: data["finished"] as? Bool ?? false,
+                        pointsEarned: data["pointsEarned"] as? Int ?? 0
+                    )
+                }
+                subject.send(progressData)
             }
-        }
-        .tryMap { snapshot in
-            try snapshot.documents.map { document in
-                let data = document.data()
-                return ProgressData(
-                    bookId: document.documentID,
-                    pagesRead: data["pagesRead"] as? Int ?? 0,
-                    totalPages: data["totalPages"] as? Int ?? 0,
-                    finished: data["finished"] as? Bool ?? false,
-                    pointsEarned: data["pointsEarned"] as? Int ?? 0
-                )
-            }
+
+            return subject.handleEvents(receiveCancel: {
+                listener?.remove()
+            })
         }
         .eraseToAnyPublisher()
     }

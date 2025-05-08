@@ -1,4 +1,5 @@
 import SwiftData
+import Foundation
 
 @Model
 class UserEntity {
@@ -32,7 +33,8 @@ class UserEntity {
     }
 }
 
-struct ProgressData: Codable {
+struct ProgressData: Codable, Identifiable {
+    var id: String = UUID().uuidString
     var bookId: String
     var pagesRead: Int
     var totalPages: Int

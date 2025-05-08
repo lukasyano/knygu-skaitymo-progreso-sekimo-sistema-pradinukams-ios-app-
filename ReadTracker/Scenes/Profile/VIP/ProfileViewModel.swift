@@ -5,9 +5,7 @@ protocol ProfileDisplayLogic: AnyObject {
     func displayUser(_ user: UserEntity)
     func displayChilds(_ childs: [UserEntity])
     func dismissChildCreateCompletion()
-//    func displayEmail(_ email: String)
-//    func displayName(_ name: String)
-//    func displayPassword(_ password: String)
+    func displayProgress(_ progress: [ProgressData])
 }
 
 protocol ProfileViewModel: ObservableObject {
@@ -15,11 +13,8 @@ protocol ProfileViewModel: ObservableObject {
     var isUserCreationActive: Bool { get set }
     var user: UserEntity { get }
     var childs: [UserEntity] { get }
-//    var title: String { get }
-//    var email: String { get }
-//    var name: String { get }
-//    var password: String { get }
-//    var isDisabled: Bool { get }
+    var progressData: [ProgressData] { get }
+
 }
 
 final class DefaultProfileViewModel: ProfileViewModel {
@@ -27,16 +22,17 @@ final class DefaultProfileViewModel: ProfileViewModel {
     @Published var isUserCreationActive = false
     @Published private(set) var user: UserEntity = .init(id: "", email: "", name: "", role: .unknown)
     @Published private(set) var childs: [UserEntity] = .init()
-//    @Published private(set) var title: String = "Naujos tėvų rolės registracijos forma"
-//    @Published private(set) var email: String = ""
-//    @Published private(set) var name: String = ""
-//    @Published private(set) var password: String = ""
-//    @Published private(set) var isDisabled: Bool = true
+    @Published private(set) var progressData: [ProgressData] = []
+
 }
 
 // MARK: - Display Logic
 
 extension DefaultProfileViewModel: ProfileDisplayLogic {
+    func displayProgress(_ progress: [ProgressData]) {
+        progressData = progress
+    }
+
     func dismissChildCreateCompletion() {
         isUserCreationActive = false
     }
@@ -53,22 +49,4 @@ extension DefaultProfileViewModel: ProfileDisplayLogic {
         self.childs = childs
     }
 
-//    func displayEmail(_ email: String) {
-//        self.email = email
-//        manageDisableState()
-//    }
-//
-//    func displayName(_ name: String) {
-//        self.name = name
-//        manageDisableState()
-//    }
-//
-//    func displayPassword(_ password: String) {
-//        self.password = password
-//        manageDisableState()
-//    }
-//
-//    private func manageDisableState() {
-//        isDisabled = email.isEmpty || password.isEmpty || name.isEmpty
-//    }
 }

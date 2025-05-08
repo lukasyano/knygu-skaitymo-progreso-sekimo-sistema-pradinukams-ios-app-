@@ -1,6 +1,6 @@
-import SwiftUI
 import Combine
 import Resolver
+import SwiftUI
 
 private enum ViewConstants {}
 
@@ -86,7 +86,6 @@ struct HomeView<ViewModel: HomeViewModel>: View {
                 .animation(.bouncy, value: viewModel.books)
                 .toolbarBackground(Constants.mainScreenColor, for: .navigationBar)
                 .onAppear(perform: { [weak interactor] in interactor?.viewDidAppear() })
-
         }
     }
 
@@ -106,7 +105,7 @@ struct HomeView<ViewModel: HomeViewModel>: View {
 
                     VStack(spacing: 8) {
                         if viewModel.user.role == .child {
-                            chipView(pagesRead: pagesRead)  // Updated chip view
+                            chipView(pagesRead: pagesRead) // Updated chip view
                         }
 
                         ZStack {
@@ -163,11 +162,11 @@ struct HomeView<ViewModel: HomeViewModel>: View {
     // Updated chip view that uses progress data
     private func chipView(pagesRead: Int) -> some View {
         let isStartedReading = pagesRead > 0
-        
+
         return Text(isStartedReading ? "Skaitoma" : "Nepradėta")
             .frame(maxWidth: .infinity)
             .padding(.vertical, 1)
-            .background(isStartedReading ? Color.green.gradient : Color.gray.gradient)
+            .background(isStartedReading ? Color.mint.gradient.opacity(0.7) : Color.gray.gradient.opacity(0.7))
             .clipShape(Capsule())
     }
 }

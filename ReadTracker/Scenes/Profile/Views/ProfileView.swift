@@ -14,11 +14,114 @@ struct ProfileView<ViewModel: ProfileViewModel>: View {
         self.viewModel = viewModel
     }
 
+    private var progressGrid: some View {
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 160), spacing: 16)], spacing: 16) {
+            ForEach(viewModel.progressData) { progress in
+                progressCard(for: progress)
+            }
+        }
+    }
+
+    private func progressCard(for progress: ProgressData) -> some View {
+        let progressValue = progress.totalPages > 0 ?
+            CGFloat(progress.pagesRead) / CGFloat(progress.totalPages) : 0
+
+        return VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text(progress.bookId)
+                    .font(.footnote)
+                    .fontWeight(.medium)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+                Spacer()
+                Image(systemName: progress.finished ? "checkmark.circle.fill" : "book.fill")
+                    .foregroundColor(progress.finished ? .green : .orange)
+            }
+
+            // Dynamic-width progress bar
+            ZStack(alignment: .leading) {
+                GeometryReader { geo in
+                    Capsule()
+                        .frame(height: 6)
+                        .foregroundColor(Color(.systemFill))
+
+                    Capsule()
+                        .frame(width: geo.size.width * progressValue, height: 6)
+                        .foregroundColor(progress.finished ? .green : .blue)
+                        .animation(.spring, value: progressValue)
+                }
+                .frame(height: 6)
+            }
+
+            HStack {
+                Text("\(progress.pagesRead)/\(progress.totalPages) psl.")
+                    .font(.caption)
+
+                Spacer()
+
+                Text("\(progress.pointsEarned) taškų")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+        }
+        .padding()
+        .frame(maxWidth: .infinity)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color(.secondarySystemBackground))
+        )
+    }
+
+    private var emptyProgressView: some View {
+        VStack {
+            Image(systemName: "book.closed.fill")
+                .font(.system(size: 40))
+                .foregroundColor(.secondary)
+                .padding(.bottom, 8)
+
+            Text("Nėra progreso duomenų")
+                .foregroundColor(.secondary)
+        }
+        .frame(maxWidth: .infinity)
+        .padding()
+    }
+
+    private var completedBooksCount: Int {
+        viewModel.progressData.filter { $0.finished }.count
+    }
+
+    private var progressSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text("Skaitymo progresas")
+                    .font(.subheadline)
+                    .foregroundColor(.purple)
+
+                Spacer()
+
+                if !viewModel.progressData.isEmpty {
+                    Text("\(completedBooksCount) iš \(viewModel.progressData.count)")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+            }
+
+            if viewModel.progressData.isEmpty {
+                emptyProgressView
+            } else {
+                progressGrid
+            }
+        }
+        .padding()
+        .background(RoundedRectangle(cornerRadius: 12).fill(Color(.systemBackground)))
+        .shadow(color: Color.black.opacity(0.1), radius: 5, y: 2)
+    }
+
     private var childrenSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Text("Mano vaikai")
-                    .font(.headline)
+                    .font(.subheadline)
                     .foregroundColor(.green)
 
                 Spacer()
@@ -52,7 +155,7 @@ struct ProfileView<ViewModel: ProfileViewModel>: View {
     private var userInfoSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Vartotojo informacija")
-                .font(.headline)
+                .font(.subheadline)
                 .foregroundColor(.blue)
 
             InfoRow(label: "Vardas", value: viewModel.user.name)
@@ -75,6 +178,10 @@ struct ProfileView<ViewModel: ProfileViewModel>: View {
                 ScrollView {
                     VStack(spacing: 20) {
                         userInfoSection
+
+                        if viewModel.user.role == .child {
+                            progressSection
+                        }
 
                         if viewModel.user.role == .parent {
                             childrenSection

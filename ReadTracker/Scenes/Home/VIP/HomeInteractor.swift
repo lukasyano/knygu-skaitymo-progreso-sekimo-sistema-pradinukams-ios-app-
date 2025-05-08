@@ -41,7 +41,7 @@ final class DefaultHomeInteractor {
 
 extension DefaultHomeInteractor: HomeInteractor {
     func viewDidAppear() {
-        cancelBag.removeAll()
+       // cancelBag.removeAll()
         observeUsserSession()
     }
 

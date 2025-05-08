@@ -7,6 +7,7 @@ protocol HomePresenter: AnyObject {
     func presentUser(_ user: UserEntity)
     func presentBookThumbnails(_ presentable: [HomeModels.BooksPresentable]?)
     func presentProgress(_ progress: [ProgressData])
+    
 }
 
 final class DefaultHomePresenter {

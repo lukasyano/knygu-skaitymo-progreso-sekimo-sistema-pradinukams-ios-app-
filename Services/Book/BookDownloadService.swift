@@ -46,7 +46,10 @@ final class DefaultBookDownloadService: BookDownloadService {
 
     func downloadMissingBooks() -> AnyPublisher<[BookWithLocalURL], Error> {
         let entities = (try? modelContext.fetch(FetchDescriptor<BookEntity>())) ?? []
-        return Publishers.MergeMany(entities.map(downloadIfNeeded))
+        return Publishers.Sequence(sequence: entities)
+            .flatMap(maxPublishers: .max(3)) { entity in // Limit to 3 at once
+                self.downloadIfNeeded(for: entity)
+            }
             .collect()
             .eraseToAnyPublisher()
     }
@@ -77,7 +80,11 @@ final class DefaultBookDownloadService: BookDownloadService {
                     return
                 }
 
-                let publisher = URLSession.shared.dataTaskPublisher(for: pdfURL)
+                let config = URLSessionConfiguration.default
+                config.urlCache = URLCache(memoryCapacity: 50_000_000, diskCapacity: 1_000_000_000)
+                let session = URLSession(configuration: config)
+
+                let publisher = session.dataTaskPublisher(for: pdfURL)
                     .tryMap { data, response -> Data in
                         guard let httpResponse = response as? HTTPURLResponse,
                               200 ... 299 ~= httpResponse.statusCode else {
@@ -99,6 +106,7 @@ final class DefaultBookDownloadService: BookDownloadService {
                 promise(.success(publisher))
             }
         }
+//        }
         .switchToLatest()
         .eraseToAnyPublisher()
     }
