@@ -1,5 +1,5 @@
-import SwiftUI
 import Lottie
+import SwiftUI
 
 struct BookReaderView<ViewModel: BookReaderViewModel>: View {
     // MARK: - Variables
@@ -8,6 +8,10 @@ struct BookReaderView<ViewModel: BookReaderViewModel>: View {
 
     private unowned var interactor: BookReaderInteractor
     @ObservedObject private var viewModel: ViewModel
+
+    let lottieList = [
+        "complete.json", "eye.json", "reading.json", "star.json"
+    ]
 
     init(
         interactor: BookReaderInteractor,
@@ -30,17 +34,6 @@ struct BookReaderView<ViewModel: BookReaderViewModel>: View {
                 HoldToDismissButton(action: dismiss.callAsFunction)
                     .padding(.bottom, 10)
                     .padding(.horizontal, 30)
-
-                if viewModel.shouldCelebrate {
-                    ZStack {
-                        Color.clear
-                        LottieView(animation: .named("star.json")).looping()
-                            .animationSpeed(0.9)
-                            .frame(height: 600)
-                        
-                    }
-                    .allowsHitTesting(false)
-                }
             }
             .onChange(of: viewModel.shouldCelebrate) { shouldCelebrate in
                 guard shouldCelebrate else { return }
@@ -58,12 +51,24 @@ struct BookReaderView<ViewModel: BookReaderViewModel>: View {
         .sensoryFeedback(.success, trigger: viewModel.shouldCelebrate)
         .onAppear { [weak interactor] in interactor?.viewDidAppear() }
         .animation(.easeInOut, value: viewModel.isLoading)
+        .overlay(alignment: .top) {
+            if viewModel.shouldCelebrate {
+                ZStack {
+                    Color.clear
+                    LottieView(animation: .named(lottieList.randomElement() ?? "star.json")).looping()
+                        .animationSpeed(0.9)
+                        .frame(height: 200, alignment: .top)
+                }
+                .allowsHitTesting(false)
+            }
+        }
+        .animation(.spring, value: viewModel.shouldCelebrate)
     }
 }
 
 import UIKit
 
-struct HapticManager {
+enum HapticManager {
     static func playSuccessVibration() {
         let generator = UINotificationFeedbackGenerator()
         generator.notificationOccurred(.success)
@@ -75,7 +80,7 @@ import AVFoundation
 class SoundPlayer {
     static let shared = SoundPlayer()
     private var player: AVAudioPlayer?
-    
+
     func playCelebrationSound() {
         guard let url = Bundle.main.url(forResource: "checkpoint", withExtension: "mp3") else { return }
         try? AVAudioSession.sharedInstance().setCategory(.ambient)

@@ -78,7 +78,9 @@ extension DefaultBookReaderInteractor: BookReaderInteractor {
 //                    self?.coordinator?.presentError(message: "Failed to save progress: \(error.localizedDescription)")
 //                }
             }, receiveValue: { [weak self] _ in
-                self?.presenter?.presentCelebrate()
+                if pointsDelta > 0 {
+                    self?.presenter?.presentCelebrate()
+                }
                 // self?.presenter?.presentProgressUpdate(progress: progress)
             })
             .store(in: &cancelBag)
