@@ -10,6 +10,7 @@ protocol UserRepository {
     var authStatePublisher: AnyPublisher<String?, Never> { get }
     func getChildrenForParent(parentID: String) -> AnyPublisher<[UserEntity], UserError>
     func saveUser(_ user: UserEntity) -> AnyPublisher<Void, Error>
+    func fetchUserProgress(userID: String) -> AnyPublisher<[ProgressData], UserError>
     func signOut() throws
     var cachedRole: Role? { get }
 }
@@ -33,6 +34,12 @@ final class DefaultUserRepository: UserRepository {
     init() {
         setupAuthObserver()
         loadInitialRole()
+    }
+    
+    func fetchUserProgress(userID: String) -> AnyPublisher<[ProgressData], UserError> {
+        firestoreService.getProgressData(userID: userID)
+            .mapError { UserError.message($0.localizedDescription) }
+            .eraseToAnyPublisher()
     }
 
     func saveUser(_ user: UserEntity) -> AnyPublisher<Void, Error> {

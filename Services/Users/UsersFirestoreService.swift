@@ -8,12 +8,51 @@ protocol UsersFirestoreService {
     func updateParentWithChild(parentID: String, childID: String) -> AnyPublisher<Void, Error>
     func getUserEntity(userID: String) -> AnyPublisher<UserEntity, Error>
     func getChildrenForParent(parentID: String) -> AnyPublisher<[UserEntity], Error>
+    func getProgressData(userID: String) -> AnyPublisher<[ProgressData], Error>
 }
 
 final class DefaultUsersFirestoreService: UsersFirestoreService {
     private let fireStoreReference = Firestore.firestore()
-    
-    
+
+    // In DefaultUsersFirestoreService
+    func getProgressData(userID: String) -> AnyPublisher<[ProgressData], Error> {
+        // Add guard clause
+        guard !userID.isEmpty else {
+            return Fail(error: NSError(domain: "InvalidUserID", code: 400, userInfo: nil))
+                .eraseToAnyPublisher()
+        }
+        
+        let progressRef = fireStoreReference
+            .collection("users")
+            .document(userID)  // ← This was causing the crash if userID is empty
+            .collection("progress")
+        
+        return Future<QuerySnapshot, Error> { promise in
+            progressRef.getDocuments { snapshot, error in
+                if let error = error {
+                    promise(.failure(error))
+                } else if let snapshot = snapshot {
+                    promise(.success(snapshot))
+                } else {
+                    promise(.failure(NSError(domain: "UnknownError", code: 500)))
+                }
+            }
+        }
+        .tryMap { snapshot in
+            try snapshot.documents.map { document in
+                let data = document.data()
+                return ProgressData(
+                    bookId: document.documentID,
+                    pagesRead: data["pagesRead"] as? Int ?? 0,
+                    totalPages: data["totalPages"] as? Int ?? 0,
+                    finished: data["finished"] as? Bool ?? false,
+                    pointsEarned: data["pointsEarned"] as? Int ?? 0
+                )
+            }
+        }
+        .eraseToAnyPublisher()
+    }
+
     func getChildrenForParent(parentID: String) -> AnyPublisher<[UserEntity], Error> {
         Future<QuerySnapshot, Error> { promise in
             self.fireStoreReference.collection("users")
@@ -30,14 +69,14 @@ final class DefaultUsersFirestoreService: UsersFirestoreService {
         }
         .eraseToAnyPublisher()
     }
-    
+
     private func getUserEntity(document: QueryDocumentSnapshot) -> AnyPublisher<UserEntity, Error> {
         Future<UserEntity, Error> { promise in
             self.fetchCompleteUserData(document: document) { result in
                 switch result {
-                case .success(let user):
+                case let .success(user):
                     promise(.success(user))
-                case .failure(let error):
+                case let .failure(error):
                     promise(.failure(error))
                 }
             }
@@ -143,8 +182,12 @@ final class DefaultUsersFirestoreService: UsersFirestoreService {
                 if let error = error {
                     promise(.failure(error))
                 } else {
-                    self.saveProgressData(user: user, userRef: userRef) {
-                        promise(.success(()))
+                    self.saveProgressData(user: user, userRef: userRef) { progressError in
+                        if let progressError = progressError {
+                            promise(.failure(progressError))
+                        } else {
+                            promise(.success(()))
+                        }
                     }
                 }
             }
@@ -152,9 +195,9 @@ final class DefaultUsersFirestoreService: UsersFirestoreService {
         .eraseToAnyPublisher()
     }
 
-    private func saveProgressData(user: UserEntity, userRef: DocumentReference, completion: @escaping () -> Void) {
+    private func saveProgressData(user: UserEntity, userRef: DocumentReference, completion: @escaping (Error?) -> Void) {
         guard user.role == .child else {
-            completion()
+            completion(nil)
             return
         }
 
@@ -172,8 +215,8 @@ final class DefaultUsersFirestoreService: UsersFirestoreService {
             batch.setData(data, forDocument: docRef)
         }
 
-        batch.commit { _ in
-            completion()
+        batch.commit { error in
+            completion(error)
         }
     }
 

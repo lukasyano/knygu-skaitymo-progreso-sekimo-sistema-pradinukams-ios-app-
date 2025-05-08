@@ -1,4 +1,6 @@
 import SwiftUI
+import Combine
+import Resolver
 
 private enum ViewConstants {}
 
@@ -7,14 +9,17 @@ struct HomeView<ViewModel: HomeViewModel>: View {
     @State private var showLogoutConfirmation: Bool = false
     private unowned var interactor: HomeInteractor
     @ObservedObject private var viewModel: ViewModel
+    private let userRepository: UserRepository
 
     // MARK: - Init
     init(
         interactor: HomeInteractor,
-        viewModel: ViewModel
+        viewModel: ViewModel,
+        userRepository: UserRepository = Resolver.resolve()
     ) {
         self.interactor = interactor
         self.viewModel = viewModel
+        self.userRepository = userRepository
     }
 
     func profileButton() -> some View {
@@ -81,20 +86,8 @@ struct HomeView<ViewModel: HomeViewModel>: View {
                 .animation(.bouncy, value: viewModel.books)
                 .toolbarBackground(Constants.mainScreenColor, for: .navigationBar)
                 .onAppear(perform: { [weak interactor] in interactor?.viewDidAppear() })
-        }
-    }
 
-    private func chipView(for book: HomeModels.BooksPresentable) -> some View {
-        var isStartedReading: Bool {
-            guard let readedPages = book.readedPages else { return false }
-            return readedPages > 0
         }
-
-        return Text(isStartedReading ? "Skaitoma" : "Nepradėta")
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 1)
-            .background(isStartedReading ? Color.green.gradient : Color.gray.gradient)
-            .clipShape(Capsule())
     }
 
     private func booksGridView() -> some View {
@@ -106,9 +99,14 @@ struct HomeView<ViewModel: HomeViewModel>: View {
         return ScrollView {
             LazyVGrid(columns: columns, spacing: 16) {
                 ForEach(viewModel.books) { book in
+                    // Get progress for this book
+                    let bookProgress = viewModel.progressData.first { $0.bookId == book.id }
+                    let pagesRead = bookProgress?.pagesRead ?? 0
+                    let totalPages = bookProgress?.totalPages ?? book.totalPages ?? 0
+
                     VStack(spacing: 8) {
                         if viewModel.user.role == .child {
-                            chipView(for: book)
+                            chipView(pagesRead: pagesRead)  // Updated chip view
                         }
 
                         ZStack {
@@ -137,10 +135,13 @@ struct HomeView<ViewModel: HomeViewModel>: View {
 
                         Spacer()
 
-                        if let totalPages = book.totalPages {
+                        // Updated progress display
+                        if totalPages > 0 {
                             HStack {
                                 Spacer()
-                                Text("\(totalPages) psl.")
+                                Text("\(pagesRead)/\(totalPages) psl.")
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
                             }
                         }
                     }
@@ -157,5 +158,16 @@ struct HomeView<ViewModel: HomeViewModel>: View {
             }
             .padding()
         }
+    }
+
+    // Updated chip view that uses progress data
+    private func chipView(pagesRead: Int) -> some View {
+        let isStartedReading = pagesRead > 0
+        
+        return Text(isStartedReading ? "Skaitoma" : "Nepradėta")
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 1)
+            .background(isStartedReading ? Color.green.gradient : Color.gray.gradient)
+            .clipShape(Capsule())
     }
 }

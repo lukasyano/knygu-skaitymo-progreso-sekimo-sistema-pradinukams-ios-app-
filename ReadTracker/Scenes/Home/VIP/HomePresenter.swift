@@ -6,7 +6,7 @@ protocol HomePresenter: AnyObject {
     func presentBooks(_ entities: [BookEntity])
     func presentUser(_ user: UserEntity)
     func presentBookThumbnails(_ presentable: [HomeModels.BooksPresentable]?)
-    func presentBookProgress(_ presentable: [HomeModels.BookProgressPreseentable])
+    func presentProgress(_ progress: [ProgressData])
 }
 
 final class DefaultHomePresenter {
@@ -38,7 +38,7 @@ extension DefaultHomePresenter: HomePresenter {
         displayLogic?.displayBookThumbnails(presentable)
     }
 
-    func presentBookProgress(_ presentable: [HomeModels.BookProgressPreseentable]) {
-        displayLogic?.displayBookProgress(presentable)
+    func presentProgress(_ progress: [ProgressData]){
+        displayLogic?.displayProgress(progress)
     }
 }

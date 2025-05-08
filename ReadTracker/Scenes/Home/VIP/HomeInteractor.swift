@@ -10,6 +10,7 @@ protocol HomeInteractor: AnyObject {
     func onProfileTap()
     func onBookClicked(_ bookID: String)
 }
+
 final class DefaultHomeInteractor {
     private weak var presenter: HomePresenter?
     private weak var coordinator: (any HomeCoordinator)?
@@ -19,6 +20,7 @@ final class DefaultHomeInteractor {
     private let thumbnailWorker: BookThumbnailWorker
 
     private var cancelBag = Set<AnyCancellable>()
+    private var progress: [ProgressData] = []
     private var books: [BookEntity]?
     private var user: UserEntity?
 
@@ -43,6 +45,20 @@ extension DefaultHomeInteractor: HomeInteractor {
         observeUsserSession()
     }
 
+    private func loadUserProgress(userID: String) {
+        userRepository.fetchUserProgress(userID: userID)
+            .receive(on: DispatchQueue.main)
+            .sink { completion in
+                if case let .failure(error) = completion {
+                    print("Firestore Error: \(error.localizedDescription)")
+                }
+            } receiveValue: { [weak self] progressData in
+                self?.progress = progressData
+                self?.presenter?.presentProgress(progressData)
+            }
+            .store(in: &cancelBag)
+    }
+
     private func getUserRole(userID: String) {
         userRepository.getCurrentUser()
             .subscribe(on: DispatchQueue.global())
@@ -56,6 +72,7 @@ extension DefaultHomeInteractor: HomeInteractor {
         self.user = user
         presenter?.presentUser(user)
         fetchBooks(for: user.role)
+        loadUserProgress(userID: user.id)
     }
 
     private func observeUsserSession() {
@@ -93,8 +110,6 @@ extension DefaultHomeInteractor: HomeInteractor {
             )
             .store(in: &cancelBag)
     }
-
-
 
     private func generateThumbnails(for books: [BookEntity]) {
         thumbnailWorker

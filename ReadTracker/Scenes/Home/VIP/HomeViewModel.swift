@@ -5,12 +5,13 @@ protocol HomeDisplayLogic: AnyObject {
     func displayBooks(_ books: [HomeModels.BooksPresentable])
     func displayUser(_ user: UserEntity)
     func displayBookThumbnails(_ presentable: [HomeModels.BooksPresentable])
-    func displayBookProgress(_ presentable: [HomeModels.BookProgressPreseentable])
+    func displayProgress(_ progress: [ProgressData])
 }
 
 protocol HomeViewModel: ObservableObject {
     var title: String { get }
     var user: UserEntity { get }
+    var progressData: [ProgressData] { get }
     var isLoading: Bool { get }
     var books: [HomeModels.BooksPresentable] { get }
 }
@@ -18,12 +19,17 @@ protocol HomeViewModel: ObservableObject {
 final class DefaultHomeViewModel: HomeViewModel {
     @Published private(set) var title: String = "Biblioteka"
     @Published private(set) var user: UserEntity = .init(id: "", email: "", name: "", role: .unknown)
+    @Published private(set) var progressData: [ProgressData] = []
     @Published private(set) var isLoading = true
     @Published private(set) var books: [HomeModels.BooksPresentable] = []
 }
 
 // MARK: - Display Logic
 extension DefaultHomeViewModel: HomeDisplayLogic {
+    func displayProgress(_ progress: [ProgressData]) {
+        self.progressData = progress
+    }
+    
     func displayUser(_ user: UserEntity) {
         self.user = user
     }
