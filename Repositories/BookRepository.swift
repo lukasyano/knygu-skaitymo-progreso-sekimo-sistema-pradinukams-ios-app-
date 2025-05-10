@@ -4,7 +4,7 @@ import Resolver
 import SwiftData
 
 protocol BookRepository {
-    func fetchBooks(for role: Role) -> AnyPublisher<[BookEntity], Error>
+   // func fetchBooks(for role: Role) -> AnyPublisher<[BookEntity], Error>
     func refreshBooks() -> AnyPublisher<Void, Error>
     func deleteAllBooks() -> AnyPublisher<Void, Error>
     func populateBooks() -> AnyPublisher<Void, Error>

@@ -80,9 +80,8 @@ extension DefaultHomeInteractor: HomeInteractor {
 
         userRepository.authStatePublisher
             .removeDuplicates()
-            .subscribe(on: DispatchQueue.global()) // Offload to background
-            .delay(for: logOutDelay, scheduler: DispatchQueue.global()) // ✅ Delay on background
-            .receive(on: DispatchQueue.main) // Only switch to main for UI updates            .receive(on: DispatchQueue.main)
+            .delay(for: logOutDelay, scheduler: DispatchQueue.global())
+            .receive(on: DispatchQueue.main)
             .sink { [weak self] userId in
                 guard let userId else {
                     self?.coordinator?.popToRoot()
@@ -105,7 +104,7 @@ extension DefaultHomeInteractor: HomeInteractor {
                 receiveValue: { [weak self] books in
                     self?.books = books
                     self?.presenter?.presentBooks(books)
-                    self?.generateThumbnails(for: books)
+                    //self?.generateThumbnails(for: books)
                 }
             )
             .store(in: &cancelBag)

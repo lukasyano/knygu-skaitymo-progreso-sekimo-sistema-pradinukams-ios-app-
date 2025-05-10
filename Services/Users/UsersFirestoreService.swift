@@ -14,7 +14,6 @@ protocol UsersFirestoreService {
 final class DefaultUsersFirestoreService: UsersFirestoreService {
     private let fireStoreReference = Firestore.firestore()
 
-    // In DefaultUsersFirestoreService
     func getProgressData(userID: String) -> AnyPublisher<[ProgressData], Error> {
         guard !userID.isEmpty else {
             return Fail(error: NSError(domain: "InvalidUserID", code: 400, userInfo: nil))

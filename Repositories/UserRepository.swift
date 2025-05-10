@@ -35,7 +35,7 @@ final class DefaultUserRepository: UserRepository {
         setupAuthObserver()
         loadInitialRole()
     }
-    
+
     func fetchUserProgress(userID: String) -> AnyPublisher<[ProgressData], UserError> {
         firestoreService.getProgressData(userID: userID)
             .mapError { UserError.message($0.localizedDescription) }

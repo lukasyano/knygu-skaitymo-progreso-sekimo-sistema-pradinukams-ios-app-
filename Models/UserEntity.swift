@@ -1,5 +1,5 @@
-import SwiftData
 import Foundation
+import SwiftData
 
 @Model
 class UserEntity {
@@ -10,8 +10,8 @@ class UserEntity {
     var parentID: String?
     var childrensID: [String]
     var totalPoints: Int
-    var progressData: [ProgressData]  // Add this property
-    
+    var progressData: [ProgressData]
+
     init(
         id: String,
         email: String,
@@ -42,17 +42,16 @@ struct ProgressData: Codable, Identifiable {
     var pointsEarned: Int
 }
 
-// Add this extension to your UserEntity class
 extension UserEntity {
     func withAddedChild(childID: String) -> UserEntity {
         UserEntity(
-            id: self.id,
-            email: self.email,
-            name: self.name,
-            role: self.role,
-            parentID: self.parentID,
-            childrensID: self.childrensID + [childID],
-            totalPoints: self.totalPoints
+            id: id,
+            email: email,
+            name: name,
+            role: role,
+            parentID: parentID,
+            childrensID: childrensID + [childID],
+            totalPoints: totalPoints
         )
     }
 }
