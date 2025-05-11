@@ -12,26 +12,24 @@ protocol BookDownloadService {
 }
 
 final class DefaultBookDownloadService: BookDownloadService {
-    private let modelContext: ModelContext
-    private let fileManager: FileManager
+    @Injected private var modelContext: ModelContext
+    
+    private let fileManager: FileManager = .default
     private let queue = DispatchQueue(label: "BookDownloadService", qos: .utility)
     let booksDirectory: URL
 
-    init(modelContext: ModelContext = Resolver.resolve()) {
-        self.modelContext = modelContext
-        self.fileManager = .default
+    init() {
         self.booksDirectory = Self.createBooksDirectory()
-        print("📁 Books Directory: \(booksDirectory.path)") // Debug path
-
+        print("📁 Books Directory: \(booksDirectory.path)")
     }
 
     func downloadMissingBooks() -> AnyPublisher<Void, Error> {
         guard let entities = try? modelContext.fetch(FetchDescriptor<BookEntity>()) else {
-            return Fail(error: NSError(domain: "FetchFailed", code: -1)).eraseToAnyPublisher()
+            return .fail(NSError.general)
         }
 
         return Publishers.Sequence(sequence: entities)
-            .flatMap(maxPublishers: .max(3)) { [weak self] entity in
+            .flatMap { [weak self] entity in
                 self?.downloadAndUpdate(entity) ?? .empty()
             }
             .collect()
@@ -41,9 +39,7 @@ final class DefaultBookDownloadService: BookDownloadService {
 
     func clearLocalFiles() -> AnyPublisher<Void, Error> {
         Future { [weak self] promise in
-            guard let self else {
-                return promise(.failure(NSError(domain: "Service", code: -1)))
-            }
+            guard let self else { return }
 
             do {
                 let files = try FileManager.default.contentsOfDirectory(

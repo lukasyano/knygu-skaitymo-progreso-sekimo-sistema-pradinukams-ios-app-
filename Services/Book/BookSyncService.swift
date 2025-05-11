@@ -4,18 +4,10 @@ import Resolver
 import SwiftData
 
 class BookSyncService {
-    private let firestoreService: BookFirestoreService
-    private let modelContext: ModelContext
+    @Injected private var firestoreService: BookFirestoreService
+    @Injected private var modelContext: ModelContext
 
     private let githubBaseURL = "https://api.github.com/repos/lukasyano/Books/contents/"
-
-    init(
-        firestoreService: BookFirestoreService = Resolver.resolve(),
-        modelContext: ModelContext = Resolver.resolve()
-    ) {
-        self.firestoreService = firestoreService
-        self.modelContext = modelContext
-    }
 
     func fetchFromGitHubAndAddToFirestore() -> AnyPublisher<Void, Error> {
         fetchGitHubBooks()

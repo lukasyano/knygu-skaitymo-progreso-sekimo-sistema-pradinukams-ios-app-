@@ -1,4 +1,3 @@
-// LocalUsersService.swift
 import Combine
 import SwiftData
 import Resolver
@@ -9,11 +8,10 @@ protocol LocalUsersService {
 }
 
 final class DefaultLocalUsersService: LocalUsersService {
-    private let context: ModelContext
+    @Injected private var context: ModelContext
     @Published private var currentUser: UserEntity?
     
-    init(context: ModelContext = Resolver.resolve()) {
-        self.context = context
+    init() {
         loadInitialUser()
     }
     

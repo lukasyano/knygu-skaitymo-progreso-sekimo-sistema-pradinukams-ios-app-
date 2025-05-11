@@ -32,9 +32,8 @@ struct RootCoordinatorView: View {
 //        case .authentication:
 //            AuthenticationCoordinatorView(coordinator: Resolver.resolve())
 
-        case .carousel:
-            LoadingIndicator(animation: .text, size: .large)
-
+        case .carousel: LoadingView()
+            
         case .home:
             HomeCoordinatorView(coordinator: .init(parent: coordinator))
 

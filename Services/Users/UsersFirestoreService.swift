@@ -1,4 +1,3 @@
-// UsersFirestoreService.swift
 import Combine
 import FirebaseFirestore
 import Foundation
