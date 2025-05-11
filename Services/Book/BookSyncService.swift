@@ -27,28 +27,39 @@ class BookSyncService {
 
     func syncFirestoreToSwiftData() -> AnyPublisher<Void, Error> {
         firestoreService.fetchAllBooks()
-            .receive(on: DispatchQueue.main) // Ensure main thread
+            .receive(on: DispatchQueue.main)
             .tryMap { [weak self] books in
-                guard let self else { throw NSError(domain: "Self", code: -1) }
+                guard let self else {
+                    throw NSError(domain: "Self", code: -1)
+                }
 
-                let existing = try self.modelContext.fetch(FetchDescriptor<BookEntity>())
+                print("🔄 Syncing \(books.count) books from Firestore")
 
-                // Update or insert new
+                let existing = try modelContext.fetch(FetchDescriptor<BookEntity>())
+
+                // Update tracking
+                var updatedCount = 0
+                var insertedCount = 0
+
+                // Update or insert
                 for book in books {
                     if let entity = existing.first(where: { $0.id == book.id }) {
                         entity.update(from: book)
+                        updatedCount += 1
                     } else {
-                        self.modelContext.insert(book.toEntity())
+                        modelContext.insert(book.toEntity())
+                        insertedCount += 1
                     }
                 }
 
-                // Delete removed
+                // Delete tracking
                 let currentIDs = Set(books.map(\.id))
-                for entity in existing where !currentIDs.contains(entity.id) {
-                    self.modelContext.delete(entity)
-                }
+                let toDelete = existing.filter { !currentIDs.contains($0.id) }
+                toDelete.forEach { self.modelContext.delete($0) }
 
-                try self.modelContext.save()
+                // Save changes
+                try modelContext.save()
+                print("💾 Sync results: \(insertedCount) new, \(updatedCount) updated, \(toDelete.count) deleted")
             }
             .eraseToAnyPublisher()
     }

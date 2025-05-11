@@ -15,7 +15,7 @@ struct BookStorageService: BookStorageServiceProtocol {
 
     var shouldRefresh: Bool {
         guard let lastDate = userDefaults.object(forKey: lastRefreshKey) as? Date else { return true }
-        return Date().timeIntervalSince(lastDate) > 86400 // 24 hours
+        return Date().timeIntervalSince(lastDate) > 86400
     }
 
     func markLastRefresh() {

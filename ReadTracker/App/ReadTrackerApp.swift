@@ -6,9 +6,7 @@ import SwiftUI
 struct ReadTrackerApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
 
-    init() {
-        _ = DataConfiguration.shared
-    }
+    let container = DataConfiguration.shared.container
 
     var body: some Scene {
         WindowGroup {
@@ -19,6 +17,6 @@ struct ReadTrackerApp: App {
                 )
             }
         }
-        .modelContainer(for: BookEntity.self)
+        .modelContainer(container)
     }
 }

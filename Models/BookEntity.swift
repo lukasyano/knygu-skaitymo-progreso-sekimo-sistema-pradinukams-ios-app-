@@ -10,6 +10,7 @@ class BookEntity {
     var pdfURL: String
     var totalPages: Int?
     var fileURL: URL?
+    var thumbnailData: Data?
 
     init(
         id: String,
@@ -17,7 +18,8 @@ class BookEntity {
         role: String,
         pdfURL: String,
         totalPages: Int? = nil,
-        fileURL: URL? = nil
+        fileURL: URL? = nil,
+        thumbnailData: Data? = nil
     ) {
         self.id = id
         self.title = title
@@ -25,6 +27,7 @@ class BookEntity {
         self.pdfURL = pdfURL
         self.totalPages = totalPages
         self.fileURL = fileURL
+        self.thumbnailData = thumbnailData
     }
 }
 

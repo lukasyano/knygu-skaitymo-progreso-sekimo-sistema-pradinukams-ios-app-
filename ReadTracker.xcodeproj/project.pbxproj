@@ -165,6 +165,8 @@
 		AA43A4C32DC62AFE00109467 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = AA43A4B52DC62AFE00109467 /* GoogleService-Info.plist */; };
 		AA43A4C42DC62AFE00109467 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AA43A4B92DC62AFE00109467 /* Assets.xcassets */; };
 		AA43A4C62DC62B0B00109467 /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA43A4C52DC62B0B00109467 /* Launch Screen.storyboard */; };
+		AA77312C2DCFDE1400F203A6 /* ThumbnailGeneratorWorker.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA77312B2DCFDE1400F203A6 /* ThumbnailGeneratorWorker.swift */; };
+		AA77312E2DCFE29200F203A6 /* BookItemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA77312D2DCFE29200F203A6 /* BookItemView.swift */; };
 		AA791FC32DCB8F29007C2F0D /* ProfileCoordinatorPresentedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA791FB52DCB8F29007C2F0D /* ProfileCoordinatorPresentedView.swift */; };
 		AA791FC42DCB8F29007C2F0D /* ProfileCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA791FB42DCB8F29007C2F0D /* ProfileCoordinator.swift */; };
 		AA791FC52DCB8F29007C2F0D /* ProfilePresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA791FBE2DCB8F29007C2F0D /* ProfilePresenter.swift */; };
@@ -332,6 +334,8 @@
 		AA43A4BA2DC62AFE00109467 /* MockCredentials.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockCredentials.swift; sourceTree = "<group>"; };
 		AA43A4BC2DC62AFE00109467 /* ReadTrackerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadTrackerApp.swift; sourceTree = "<group>"; };
 		AA43A4C52DC62B0B00109467 /* Launch Screen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = "Launch Screen.storyboard"; sourceTree = "<group>"; };
+		AA77312B2DCFDE1400F203A6 /* ThumbnailGeneratorWorker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThumbnailGeneratorWorker.swift; sourceTree = "<group>"; };
+		AA77312D2DCFE29200F203A6 /* BookItemView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookItemView.swift; sourceTree = "<group>"; };
 		AA791FB42DCB8F29007C2F0D /* ProfileCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileCoordinator.swift; sourceTree = "<group>"; };
 		AA791FB52DCB8F29007C2F0D /* ProfileCoordinatorPresentedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileCoordinatorPresentedView.swift; sourceTree = "<group>"; };
 		AA791FB62DCB8F29007C2F0D /* ProfileCoordinatorRoute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileCoordinatorRoute.swift; sourceTree = "<group>"; };
@@ -719,6 +723,7 @@
 		AA3BBFC02DC2987A00B14271 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				AA77312D2DCFE29200F203A6 /* BookItemView.swift */,
 				AA3BBFBF2DC2987A00B14271 /* HomeView.swift */,
 			);
 			path = Views;
@@ -738,6 +743,7 @@
 			isa = PBXGroup;
 			children = (
 				AA3BC0CE2DC3335F00B14271 /* BookThumbnailWorker.swift */,
+				AA77312B2DCFDE1400F203A6 /* ThumbnailGeneratorWorker.swift */,
 			);
 			path = Workers;
 			sourceTree = "<group>";
@@ -1157,6 +1163,7 @@
 				1245C7262DC21997000A6933 /* UsersFirestoreService.swift in Sources */,
 				AA3BC1312DC3D27800B14271 /* PDFDocumentView.swift in Sources */,
 				AA3BC0D12DC3355100B14271 /* BookDownloadService.swift in Sources */,
+				AA77312C2DCFDE1400F203A6 /* ThumbnailGeneratorWorker.swift in Sources */,
 				AA791FE52DCBFF80007C2F0D /* BookReaderCoordinatorPresentedView.swift in Sources */,
 				1245C7272DC21997000A6933 /* AuthenticationService.swift in Sources */,
 				AA3BBF8E2DC2656D00B14271 /* LoginCoordinatorView.swift in Sources */,
@@ -1261,6 +1268,7 @@
 				120DDD942DC0D3DE00D3329D /* RegistrationPresenter.swift in Sources */,
 				AA3BBF932DC265EC00B14271 /* Resolver+ResolverRegistering.swift in Sources */,
 				AA3BC0D42DC339E400B14271 /* HomeDependencyInjection.swift in Sources */,
+				AA77312E2DCFE29200F203A6 /* BookItemView.swift in Sources */,
 				120DDD952DC0D3DE00D3329D /* RegistrationCoordinatorRoute.swift in Sources */,
 				120DDD962DC0D3DE00D3329D /* RegistrationViewModel.swift in Sources */,
 				AA3BBF8F2DC2656D00B14271 /* LoginView.swift in Sources */,

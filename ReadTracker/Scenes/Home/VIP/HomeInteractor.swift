@@ -5,10 +5,11 @@ import SwiftData
 import SwiftUI
 
 protocol HomeInteractor: AnyObject {
+   // func setCurrentBooks(_ books: [BookEntity])
     func viewDidAppear()
     func onLogOutTap()
     func onProfileTap()
-    func onBookClicked(_ bookID: String)
+    func onBookClicked(_ book: BookEntity) 
 }
 
 final class DefaultHomeInteractor {
@@ -21,7 +22,7 @@ final class DefaultHomeInteractor {
 
     private var cancelBag = Set<AnyCancellable>()
     private var progress: [ProgressData] = []
-    private var books: [BookEntity]?
+   // private var books: [BookEntity] = []
     private var user: UserEntity?
 
     init(
@@ -40,8 +41,12 @@ final class DefaultHomeInteractor {
 }
 
 extension DefaultHomeInteractor: HomeInteractor {
+//    func setCurrentBooks(_ books: [BookEntity]) {
+//        self.books = books
+//    }
+
     func viewDidAppear() {
-       // cancelBag.removeAll()
+        // cancelBag.removeAll()
         observeUsserSession()
     }
 
@@ -71,7 +76,6 @@ extension DefaultHomeInteractor: HomeInteractor {
         guard let user else { return }
         self.user = user
         presenter?.presentUser(user)
-        fetchBooks(for: user.role)
         loadUserProgress(userID: user.id)
     }
 
@@ -92,46 +96,6 @@ extension DefaultHomeInteractor: HomeInteractor {
             .store(in: &cancelBag)
     }
 
-    private func fetchBooks(for role: Role) {
-        bookRepository.fetchBooks(for: role)
-            .receive(on: DispatchQueue.main)
-            .sink(
-                receiveCompletion: { [weak self] completion in
-                    if case .failure = completion {
-                        self?.coordinator?.presentError(message: "Knygų gavimas nepavyko.", onDismiss: {})
-                    }
-                },
-                receiveValue: { [weak self] books in
-                    self?.books = books
-                    self?.presenter?.presentBooks(books)
-                    //self?.generateThumbnails(for: books)
-                }
-            )
-            .store(in: &cancelBag)
-    }
-
-    private func generateThumbnails(for books: [BookEntity]) {
-        thumbnailWorker
-            .generateThumbnails(for: books, size: .init(width: 150, height: 200))
-            .receive(on: DispatchQueue.main)
-            .sink(receiveValue: { [weak self] thumbs in
-                self?.presenter?.presentBookThumbnails(thumbs)
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    self?.presenter?.presentBookThumbnails(thumbs)
-                }
-
-                let updatedBooks = books
-                for book in updatedBooks {
-                    if let thumb = thumbs.first(where: { $0.id == book.id }) {
-                        book.totalPages = thumb.totalPages
-                    }
-                }
-                self?.books = updatedBooks
-
-            })
-            .store(in: &cancelBag)
-    }
-
     func onLogOutTap() {
         do {
             try userRepository.signOut()
@@ -140,13 +104,10 @@ extension DefaultHomeInteractor: HomeInteractor {
         }
     }
 
-    func onBookClicked(_ bookID: String) {
-        guard let book = books?.first(where: { $0.id == bookID }),
-              let bookURL = book.fileURL,
-              let user
-        else { return }
+    func onBookClicked(_ book: BookEntity) {
+        guard let user else { return }
 
-        coordinator?.showBook(at: bookURL, with: user, book: book)
+        coordinator?.showBook(book: book, with: user)
     }
 
     func onProfileTap() {

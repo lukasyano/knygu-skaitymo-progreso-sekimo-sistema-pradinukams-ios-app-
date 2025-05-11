@@ -15,7 +15,7 @@ final class DefaultBookReaderInteractor {
     private weak var coordinator: (any BookReaderCoordinator)?
     private var cancelBag = Set<AnyCancellable>()
 
-    private let bookEntity: BookEntity
+    private let book: BookEntity
     private let userRepository: UserRepository
     private let bookRepository: BookRepository
     private var user: UserEntity
@@ -26,25 +26,25 @@ final class DefaultBookReaderInteractor {
         userRepository: UserRepository = Resolver.resolve(),
         bookRepository: BookRepository = Resolver.resolve(),
         user: UserEntity,
-        bookEntity: BookEntity
+        book: BookEntity
     ) {
         self.coordinator = coordinator
         self.presenter = presenter
         self.userRepository = userRepository
         self.bookRepository = bookRepository
         self.user = user
-        self.bookEntity = bookEntity
+        self.book = book
     }
 }
 
 extension DefaultBookReaderInteractor: BookReaderInteractor {
     func onBookPageChanged(_ page: Int) {
-        guard let totalPages = bookEntity.totalPages else { return }
+        guard let totalPages = book.totalPages else { return }
 
         guard page > 0, page <= totalPages else { return }
 
-        var progress = user.progressData.first { $0.bookId == bookEntity.id } ?? ProgressData(
-            bookId: bookEntity.id,
+        var progress = user.progressData.first { $0.bookId == book.id } ?? ProgressData(
+            bookId: book.id,
             pagesRead: 0,
             totalPages: totalPages,
             finished: false,
@@ -63,7 +63,7 @@ extension DefaultBookReaderInteractor: BookReaderInteractor {
         progress.pointsEarned = totalPointsEarned
         progress.finished = newPages >= totalPages
 
-        if let index = user.progressData.firstIndex(where: { $0.bookId == bookEntity.id }) {
+        if let index = user.progressData.firstIndex(where: { $0.bookId == book.id }) {
             user.progressData[index] = progress
         } else {
             user.progressData.append(progress)
@@ -87,7 +87,7 @@ extension DefaultBookReaderInteractor: BookReaderInteractor {
     }
 
     func getBookProgress() -> ProgressData? {
-        user.progressData.first { $0.bookId == bookEntity.id }
+        user.progressData.first { $0.bookId == book.id }
     }
 
     func viewDidAppear() {

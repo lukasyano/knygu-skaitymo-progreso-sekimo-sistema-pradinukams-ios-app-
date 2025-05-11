@@ -18,22 +18,24 @@ final class DefaultBookReaderCoordinator: BookReaderCoordinator {
     weak var parent: (any Coordinator)?
     @Published var presentedView: BookReaderCoordinatorPresentedView?
     @Published var route: BookReaderCoordinatorRoute?
-    private let url: URL
+    private let book: BookEntity
+    private let user: UserEntity
 
-    init(user: UserEntity, bookEntity: BookEntity, url: URL, parent: (any Coordinator)?) {
-        self.url = url
+    init(book: BookEntity, user: UserEntity, parent: (any Coordinator)?) {
+        self.book = book
+        self.user = user
         self.parent = parent
         self.viewModel = DefaultBookReaderViewModel()
         self.presenter = DefaultBookReaderPresenter(displayLogic: viewModel)
         self.interactor = DefaultBookReaderInteractor(
             coordinator: self,
             presenter: presenter,
-            user: user, bookEntity: bookEntity
+            user: user, book: book
         )
     }
 
     func start() -> some View {
-        BookReaderView(interactor: interactor, viewModel: viewModel, url: url)
+        BookReaderView(interactor: interactor, viewModel: viewModel, book: book, user: user)
     }
 }
 
@@ -57,6 +59,4 @@ extension DefaultBookReaderCoordinator {
 
 // MARK: - Navigation
 
-extension DefaultBookReaderCoordinator {
-
-}
+extension DefaultBookReaderCoordinator {}

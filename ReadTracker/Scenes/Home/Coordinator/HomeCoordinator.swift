@@ -1,11 +1,12 @@
 import SwiftData
 import SwiftUI
+
 protocol HomeCoordinator: Coordinator {
     func presentError(
         message: String,
         onDismiss: @escaping () -> Void
     )
-    func showBook(at url: URL, with user: UserEntity, book: BookEntity)
+    func showBook(book: BookEntity, with user: UserEntity)  
     func showProfile(with user: UserEntity)
 }
 
@@ -41,8 +42,8 @@ extension DefaultHomeCoordinator {
         presentedView = .error(error: message, dismiss: onDismiss)
     }
 
-    func showBook(at url: URL, with user: UserEntity, book: BookEntity) {
-        presentedView = .book(url: url, user: user, book: book)
+    func showBook(book: BookEntity, with user: UserEntity) {
+        presentedView = .book(book: book, user: user)
     }
 
     func showProfile(with user: UserEntity) {

@@ -4,10 +4,7 @@ import Resolver
 import SwiftData
 
 protocol BookRepository {
-   // func fetchBooks(for role: Role) -> AnyPublisher<[BookEntity], Error>
     func refreshBooks() -> AnyPublisher<Void, Error>
-    func deleteAllBooks() -> AnyPublisher<Void, Error>
-    func populateBooks() -> AnyPublisher<Void, Error>
     func refreshIfNeeded() -> AnyPublisher<Void, Error>
 }
 
@@ -40,44 +37,27 @@ final class DefaultBookRepository: BookRepository {
         self.storage = storage
     }
 
-    func fetchBooks(for role: Role) -> AnyPublisher<[BookEntity], Error> {
-        Future { [weak self] promise in
-            guard let self else { return promise(.failure(NSError(domain: "Self", code: -1))) }
-
-            let descriptor = FetchDescriptor<BookEntity>(
-                predicate: #Predicate { $0.role == role.rawValue }
-            )
-
-            do {
-                let books = try self.modelContext.fetch(descriptor)
-                promise(.success(books))
-            } catch {
-                promise(.failure(error))
-            }
-        }
-        .subscribe(on: DispatchQueue.main)
-        .eraseToAnyPublisher()
-    }
-
     func refreshBooks() -> AnyPublisher<Void, Error> {
-        deleteAllBooks()
+        clearBooks()
             .flatMap { _ in self.populateBooks() }
             .handleEvents(
-                receiveCompletion: { completion in
-                    if case .failure(let error) = completion {
+                receiveCompletion: { [weak self] completion in
+                    guard let self else { return }
+                    if case let .failure(error) = completion {
                         print("Refresh failed: \(error)")
+                    } else {
+                        storage.markLastRefresh()
                     }
-                },
-                receiveCancel: { print("Refresh cancelled") }
+                }
             )
             .eraseToAnyPublisher()
     }
 
-    func deleteAllBooks() -> AnyPublisher<Void, Error> {
+    private func clearBooks() -> AnyPublisher<Void, Error> {
         Publishers.Zip3(
             deleteFirestoreBooks(),
-            deleteLocalFiles(),
-            deleteSwiftDataBooks()
+            downloadService.clearLocalFiles(),
+            deleteSwiftDataBooks(),
         )
         .subscribe(on: backgroundQueue)
         .receive(on: DispatchQueue.main)
@@ -87,16 +67,15 @@ final class DefaultBookRepository: BookRepository {
 
     func populateBooks() -> AnyPublisher<Void, Error> {
         syncService.fetchFromGitHubAndAddToFirestore()
-            .subscribe(on: backgroundQueue) // Offload initial work
-            .flatMap { _ in self.syncService.syncFirestoreToSwiftData() }
-            .receive(on: DispatchQueue.main) // SwiftData needs main thread
-            .flatMap { _ in self.downloadService.downloadMissingBooks() }
-            .subscribe(on: backgroundQueue) // Offload downloads
-            .receive(on: DispatchQueue.main) // Final UI update
+            .subscribe(on: backgroundQueue)
+            .flatMap { [weak self] in self?.syncService.syncFirestoreToSwiftData() ?? .empty() }
+            .receive(on: DispatchQueue.main)
+            .flatMap { [weak self] in self?.downloadService.downloadMissingBooks() ?? .empty() }
+            .subscribe(on: backgroundQueue)
+            .receive(on: DispatchQueue.main)
             .map { _ in }
             .eraseToAnyPublisher()
     }
-
 
     func refreshIfNeeded() -> AnyPublisher<Void, Error> {
         guard storage.shouldRefresh else { return .just(()) }
@@ -108,32 +87,11 @@ final class DefaultBookRepository: BookRepository {
         firestoreService.deleteAllBooks()
     }
 
-    private func deleteLocalFiles() -> AnyPublisher<Void, Error> {
-        Future { [weak self] promise in
-            guard let service = self?.downloadService else {
-                return promise(.failure(NSError(domain: "Service", code: -1)))
-            }
-
-            do {
-                let files = try FileManager.default.contentsOfDirectory(at: service.booksDirectory,
-                                                                        includingPropertiesForKeys: nil)
-                for file in files {
-                    try FileManager.default.removeItem(at: file)
-                }
-                promise(.success(()))
-            } catch {
-                promise(.failure(error))
-            }
-        }
-        .eraseToAnyPublisher()
-    }
-
     private func deleteSwiftDataBooks() -> AnyPublisher<Void, Error> {
         Future { [weak self] promise in
             guard let context = self?.modelContext else {
                 return promise(.failure(NSError(domain: "Context", code: -1)))
             }
-
             do {
                 try context.delete(model: BookEntity.self)
                 promise(.success(()))

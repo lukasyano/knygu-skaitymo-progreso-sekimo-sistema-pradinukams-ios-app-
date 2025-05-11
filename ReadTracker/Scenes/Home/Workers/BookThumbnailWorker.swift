@@ -39,7 +39,7 @@ final class DefaultBookThumbnailWorker: BookThumbnailWorker {
                     let fallback = self.makePresentable(book, totalPages: nil, image: Self.fallbackImage)
                     return promise(.success(fallback))
                 }
-                
+
                 // Offload PDF processing to global queue
                 DispatchQueue.global().async {
                     guard
@@ -49,7 +49,7 @@ final class DefaultBookThumbnailWorker: BookThumbnailWorker {
                         let fallback = self.makePresentable(book, totalPages: nil, image: Self.fallbackImage)
                         return promise(.success(fallback))
                     }
-                    
+
                     let image = page.thumbnail(of: size, for: .mediaBox)
                     let totalPages = doc.pageCount
                     let presentable = self.makePresentable(book, totalPages: totalPages, image: image)

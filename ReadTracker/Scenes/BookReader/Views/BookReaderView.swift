@@ -4,7 +4,8 @@ import SwiftUI
 struct BookReaderView<ViewModel: BookReaderViewModel>: View {
     // MARK: - Variables
     @Environment(\.dismiss) private var dismiss
-    let url: URL
+    private let book: BookEntity
+    private let user: UserEntity
 
     private unowned var interactor: BookReaderInteractor
     @ObservedObject private var viewModel: ViewModel
@@ -16,11 +17,13 @@ struct BookReaderView<ViewModel: BookReaderViewModel>: View {
     init(
         interactor: BookReaderInteractor,
         viewModel: ViewModel,
-        url: URL
+        book: BookEntity,
+        user: UserEntity
     ) {
         self.interactor = interactor
         self.viewModel = viewModel
-        self.url = url
+        self.book = book
+        self.user = user
     }
 
     var body: some View {
@@ -28,14 +31,16 @@ struct BookReaderView<ViewModel: BookReaderViewModel>: View {
             Constants.mainScreenColor.ignoresSafeArea()
 
             ZStack(alignment: .bottom) {
-                PDFDocumentView(
-                    url: url) { [weak interactor] in interactor?.onBookPageChanged($0) }
-
-                HoldToDismissButton(action: dismiss.callAsFunction)
-                    .padding(.bottom, 10)
-                    .padding(.horizontal, 30)
+                if let bookURL = book.fileURL{
+                    PDFDocumentView(
+                        url: bookURL) { [weak interactor] in interactor?.onBookPageChanged($0) }
+                    
+                    HoldToDismissButton(action: dismiss.callAsFunction)
+                        .padding(.bottom, 10)
+                        .padding(.horizontal, 30)
+                }
             }
-            .onChange(of: viewModel.shouldCelebrate) { shouldCelebrate in
+            .onChange(of: viewModel.shouldCelebrate) { _, shouldCelebrate in
                 guard shouldCelebrate else { return }
 
                 // Play effects
