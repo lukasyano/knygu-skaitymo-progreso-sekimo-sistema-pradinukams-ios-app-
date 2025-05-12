@@ -40,20 +40,19 @@ struct HomeView<ViewModel: HomeViewModel>: View {
     }
 
     func profileButton() -> some View {
-            Button(
-                action: { [weak interactor] in interactor?.onProfileTap() },
-                label: {
-                    HStack {
-                        Text("Tavo Profilis").frame(width: 120)
-                        Image(systemName: "person.crop.circle.fill")
-                    }
+        Button(
+            action: { [weak interactor] in interactor?.onProfileTap() },
+            label: {
+                HStack {
+                    Text("Tavo Profilis").frame(width: 120)
+                    Image(systemName: "person.crop.circle.fill")
                 }
-            )
-            .buttonStyle(.bordered)
-            .buttonBorderShape(.roundedRectangle)
-            .tint(.black)
-        }
-    
+            }
+        )
+        .buttonStyle(.bordered)
+        .buttonBorderShape(.roundedRectangle)
+        .tint(.black)
+    }
 
     func logoutButton() -> some View {
         Button(
@@ -87,11 +86,11 @@ struct HomeView<ViewModel: HomeViewModel>: View {
             } else {
                 mainContentView
                     .toolbar {
-                        ToolbarItem(placement: .topBarLeading, content: logoutButton)
-                        ToolbarItem(placement: .topBarTrailing, content: profileButton)
+                        ToolbarItem(placement: .topBarTrailing, content: logoutButton)
+                        ToolbarItem(placement: .topBarLeading, content: profileButton)
                     }
                     .animation(.easeInOut, value: books.isEmpty)
-                    .animation(.bouncy, value: books)
+                    .animation(.bouncy, value: filteredBooks)
                     .toolbarBackground(Constants.mainScreenColor, for: .navigationBar)
                     .onAppear(perform: { [weak interactor] in interactor?.viewDidAppear() })
             }
@@ -117,7 +116,7 @@ struct HomeView<ViewModel: HomeViewModel>: View {
                         )
                     }
                 } footer: {
-                    Text("Tavo bibliotekoje yra: \(books.count) knygų (-os)").font(.footnote)
+                    Text("Tavo bibliotekoje yra: \(filteredBooks.count) knygų (-os)").font(.footnote)
                 }
             }
         }

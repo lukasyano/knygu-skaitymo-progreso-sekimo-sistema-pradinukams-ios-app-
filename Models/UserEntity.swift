@@ -10,18 +10,18 @@ class UserEntity {
     var totalPoints: Int
 
     // Firestore-compatible fields
-    @Attribute var parentID: String?
-    @Attribute var childrensID: [String]
+    var parentID: String?
+    var childrensID: [String]
 
-    // SwiftData relationships
+    // Relationships
     @Relationship(deleteRule: .cascade)
-    var progressData: [ProgressData] = []
+    var progressData = [ProgressData]()
 
     @Relationship(deleteRule: .nullify)
-    var parent: UserEntity? // New parent relationship
+    var parent: UserEntity?
 
     @Relationship(deleteRule: .nullify, inverse: \UserEntity.parent)
-    var children: [UserEntity] = []
+    var children = [UserEntity]()
 
     init(
         id: String,
@@ -50,7 +50,7 @@ class ProgressData: Identifiable {
     var totalPages: Int
     var finished: Bool
     var pointsEarned: Int
-    
+
     @Relationship(deleteRule: .nullify, inverse: \UserEntity.progressData)
     var user: UserEntity?
 

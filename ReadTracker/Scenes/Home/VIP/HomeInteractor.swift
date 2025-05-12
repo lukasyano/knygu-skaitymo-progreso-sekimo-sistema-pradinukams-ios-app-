@@ -19,7 +19,6 @@ final class DefaultHomeInteractor {
     @Injected private var bookRepository: BookRepository
 
     private var cancelBag = Set<AnyCancellable>()
-    private var progress: [ProgressData] = []
     private var user: UserEntity?
 
     init(
