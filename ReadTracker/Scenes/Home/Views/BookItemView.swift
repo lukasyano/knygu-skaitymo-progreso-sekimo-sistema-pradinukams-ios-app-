@@ -1,3 +1,4 @@
+import SwiftData
 import SwiftUI
 
 struct BookItemView: View {
@@ -17,74 +18,142 @@ struct BookItemView: View {
         book.totalPages ?? 0
     }
 
-    var body: some View {
-        VStack(spacing: 8) {
-            if user.role == .child {
-                chipView
-            }
-
-            bookCoverImage
-            bookTitle
-            pagesReadIndicator
-        }
-        .frame(maxWidth: .infinity)
-        .frame(height: 300)
-        .padding(8)
-        .background(Color.clear.opacity(0.5))
-        .cornerRadius(16)
-        .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.brown.opacity(0.8), lineWidth: 2)
-        )
-        .onTapGesture(perform: onBookClicked)
+    private var progress: CGFloat {
+        totalPages > 0 ? CGFloat(pagesRead) / CGFloat(totalPages) : 0
     }
 
-    private var chipView: some View {
-        Text(pagesRead > 0 ? "Skaitoma" : "Nepradėta")
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 1)
-            .background(
-                pagesRead > 0
-                    ? Color.mint.gradient.opacity(0.7)
-                    : Color.gray.gradient.opacity(0.7)
-            )
-            .clipShape(Capsule())
+    private var progressText: String {
+        pagesRead > 0 ? "Skaitoma" : "Nepradėta"
+    }
+
+    private var progressColor: Color {
+        pagesRead > 0 ? .blue : .gray.opacity(0.5)
+    }
+
+    var body: some View {
+        HStack(spacing: 12) {
+            bookCoverImage
+                .frame(width: 80, height: 100)
+                .cornerRadius(6)
+                .clipped()
+
+            VStack(alignment: .leading, spacing: 6) {
+                bookTitle
+                pagesReadIndicator
+                progressBar
+                statusChip
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .padding(8)
+        .background(
+            RoundedRectangle(cornerRadius: 14)
+                .fill(Color.white)
+                .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
+        )
+        .onTapGesture {
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                onBookClicked()
+            }
+        }
     }
 
     private var bookCoverImage: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 8)
-                .fill(Color.brown.gradient.opacity(0.5))
-                .frame(width: 150, height: 200)
-
             if let data = book.thumbnailData, let image = UIImage(data: data) {
                 Image(uiImage: image)
                     .resizable()
                     .scaledToFill()
-                    .frame(width: 150, height: 200)
-                    .clipped()
-                    .cornerRadius(8)
             } else {
-                ProgressView()
-                    .frame(width: 150, height: 200)
+                RoundedRectangle(cornerRadius: 10)
+                    .fill(Color.gray.opacity(0.2))
+                Image(systemName: "book")
+                    .resizable()
+                    .scaledToFit()
+                    .padding(10)
+                    .foregroundColor(.gray)
             }
         }
     }
 
     private var bookTitle: some View {
         Text(book.title)
-            .font(.headline)
-            .multilineTextAlignment(.center)
+            .font(.system(size: 16, weight: .semibold))
+            .foregroundColor(.black)
             .lineLimit(2)
-            .frame(maxWidth: .infinity)
+            .multilineTextAlignment(.leading)
     }
 
     private var pagesReadIndicator: some View {
-        HStack {
-            Spacer()
-            Text("\(pagesRead)/\(totalPages) psl.")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-        }
+        Text("\(pagesRead) iš \(totalPages) puslapių")
+            .font(.footnote)
+            .foregroundColor(.gray)
     }
+
+    private var progressBar: some View {
+        ProgressView(value: progress)
+            .frame(height: 6)
+            .accentColor(progressColor)
+            .clipShape(Capsule())
+            .animation(.easeInOut(duration: 0.4), value: progress)
+    }
+
+    private var statusChip: some View {
+        Text(progressText)
+            .font(.caption)
+            .fontWeight(.bold)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 4)
+            .background(
+                Capsule()
+                    .fill(progress > 0 ? Color.blue.opacity(0.2) : Color.gray.opacity(0.2))
+            )
+            .foregroundColor(progress > 0 ? .blue : .gray)
+            .overlay(
+                Capsule()
+                    .stroke(progress > 0 ? Color.blue : Color.gray, lineWidth: 1)
+            )
+    }
+}
+
+#Preview {
+    BookItemView(
+        book: BookEntity(
+            id: "1",
+            title: "The Little Prince",
+            role: "child",
+            pdfURL: "https://example.com/book.pdf",
+            totalPages: 96,
+            thumbnailData: UIImage(systemName: "book")?.pngData()
+        ),
+        user: UserEntity(
+            id: "user1",
+            email: "child@example.com",
+            name: "Alice",
+            role: .child,
+            totalPoints: 50
+        ),
+        onBookClicked: {}
+    )
+}
+
+#Preview("Child - Not Started") {
+    BookItemView(
+        book: BookEntity(
+            id: "2",
+            title: "Alice in Wonderland",
+            role: "child",
+            pdfURL: "https://example.com/alice.pdf",
+            totalPages: 120,
+            thumbnailData: UIImage(systemName: "book.closed")?.pngData()
+        ),
+        user: UserEntity(
+            id: "user2",
+            email: "child2@example.com",
+            name: "Bob",
+            role: .child,
+            totalPoints: 0
+        ),
+        onBookClicked: {}
+    )
 }

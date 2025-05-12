@@ -9,6 +9,7 @@ struct HomeView<ViewModel: HomeViewModel>: View {
     private unowned var interactor: HomeInteractor
     @ObservedObject private var viewModel: ViewModel
     let userID: String
+    
 
     // MARK: - Init
     init(
@@ -91,34 +92,93 @@ struct HomeView<ViewModel: HomeViewModel>: View {
                     }
                     .animation(.easeInOut, value: books.isEmpty)
                     .animation(.bouncy, value: filteredBooks)
+                    .padding(.vertical, 6)
+                    .padding(.horizontal, 12)
                     .toolbarBackground(Constants.mainScreenColor, for: .navigationBar)
                     .onAppear(perform: { [weak interactor] in interactor?.viewDidAppear() })
+                    .onAppear(perform: SoundPlayer.shared.playLobbySound)
             }
         }
     }
 
     private var mainContentView: some View {
-        ScrollView {
-            LazyVGrid(
-                columns: [
-                    GridItem(.flexible(), spacing: 16),
-                    GridItem(.flexible(), spacing: 16)
-                ],
-                spacing: 16,
-                pinnedViews: .sectionFooters
-            ) {
-                Section {
-                    ForEach(filteredBooks) { book in
+        ScrollView(showsIndicators: false) {
+            LazyVStack(alignment: .leading, spacing: 8) {
+                if !startedBooks.isEmpty {
+                    Text("Skaitomos")
+                        .font(.headline)
+                        .padding(.horizontal)
+
+                    ForEach(startedBooks) { book in
                         BookItemView(
                             book: book,
                             user: currentUser,
-                            onBookClicked: { [weak interactor] in interactor?.onBookClicked(book, with: currentUser) },
+                            onBookClicked: { [weak interactor] in
+                                interactor?.onBookClicked(book, with: currentUser)
+                            }
                         )
                     }
-                } footer: {
-                    Text("Tavo bibliotekoje yra: \(filteredBooks.count) knygų (-os)").font(.footnote)
                 }
+
+                if !notStartedBooks.isEmpty {
+                    Text("Nepradėtos")
+                        .font(.headline)
+                        .padding(.horizontal)
+                        .padding(.top, startedBooks.isEmpty ? 0 : 24)
+
+                    ForEach(notStartedBooks) { book in
+                        BookItemView(
+                            book: book,
+                            user: currentUser,
+                            onBookClicked: { [weak interactor] in
+                                interactor?.onBookClicked(book, with: currentUser)
+                            }
+                        )
+                    }
+                }
+
+                Text("Tavo bibliotekoje yra: \(filteredBooks.count) knygų (-os)")
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .font(.footnote)
+                    .padding(.top, 24)
+                    .padding(.horizontal)
             }
+            .padding(.top)
+        }
+    }
+
+    private var startedBooks: [BookEntity] {
+        filteredBooks
+            .filter { book in
+                currentUser.progressData.first(where: { $0.bookId == book.id })?.pagesRead ?? 0 > 0
+            }
+            .sorted { lhs, rhs in
+                let lhsProgress = currentUser.progressData.first { $0.bookId == lhs.id }
+                let rhsProgress = currentUser.progressData.first { $0.bookId == rhs.id }
+
+                let lhsRatio = lhsProgress.map { Double($0.pagesRead) / Double(max($0.totalPages, 1)) } ?? 0
+                let rhsRatio = rhsProgress.map { Double($0.pagesRead) / Double(max($0.totalPages, 1)) } ?? 0
+
+                return lhsRatio > rhsRatio
+            }
+    }
+
+    private var notStartedBooks: [BookEntity] {
+        filteredBooks
+            .filter { book in
+                (currentUser.progressData.first(where: { $0.bookId == book.id })?.pagesRead ?? 0) == 0
+            }
+    }
+
+    private var sortedBooksByProgress: [BookEntity] {
+        filteredBooks.sorted { first, second in
+            let firstProgress = currentUser.progressData.first { $0.bookId == first.id }
+            let secondProgress = currentUser.progressData.first { $0.bookId == second.id }
+
+            let firstRatio = firstProgress.map { Double($0.pagesRead) / Double(max($0.totalPages, 1)) } ?? 0
+            let secondRatio = secondProgress.map { Double($0.pagesRead) / Double(max($0.totalPages, 1)) } ?? 0
+
+            return firstRatio > secondRatio
         }
     }
 }
