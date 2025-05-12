@@ -10,16 +10,31 @@ struct AuthenticationCoordinatorView: View {
     var body: some View {
         coordinator.start()
             .navigation(item: $coordinator.route, destination: navigationViewContent)
+            .presentedView($coordinator.presentedView, content: presentedViewContent)
     }
 }
-
-// MARK: - Presented View Content
 
 extension AuthenticationCoordinatorView {
     @ViewBuilder
     private func presentedViewContent(_ presentedView: AuthenticationCoordinatorPresentedView) -> some View {
         switch presentedView {
-        default: EmptyView()
+        case let .failure(message):
+            ToastMessage(
+                message: message,
+                delay: 4,
+                dismiss: coordinator.dismissPresented,
+                toastState: .error
+            )
+            .clearModalBackground()
+
+        case let .info(message):
+            ToastMessage(
+                message: message,
+                delay: 2,
+                dismiss: coordinator.dismissPresented,
+                toastState: .info
+            )
+            .clearModalBackground()
         }
     }
 }

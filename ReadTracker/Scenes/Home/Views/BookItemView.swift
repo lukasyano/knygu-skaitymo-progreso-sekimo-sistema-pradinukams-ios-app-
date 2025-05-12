@@ -2,30 +2,31 @@ import SwiftUI
 
 struct BookItemView<ViewModel: HomeViewModel>: View {
     let book: BookEntity
+    let user: UserEntity
     let viewModel: ViewModel
     let interactor: HomeInteractor
 
-    private var progressData: ProgressData? {
-        viewModel.progressData.first { $0.bookId == book.id }
-    }
+//    private var progressData: ProgressData? {
+//        viewModel.progressData.first { $0.bookId == book.id }
+//    }
 
-    private var pagesRead: Int {
-        progressData?.pagesRead ?? 0
-    }
-
-    private var totalPages: Int {
-        progressData?.totalPages ?? book.totalPages ?? 0
-    }
+//    private var pagesRead: Int {
+//        progressData?.pagesRead ?? 0
+//    }
+//
+//    private var totalPages: Int {
+//        progressData?.totalPages ?? book.totalPages ?? 0
+//    }
 
     var body: some View {
         VStack(spacing: 8) {
-            if viewModel.user.role == .child {
-                chipView
+            if user.role == .child {
+              //  chipView
             }
 
             bookCoverImage
             bookTitle
-            pagesReadIndicator
+          //  pagesReadIndicator
         }
         .frame(maxWidth: .infinity)
         .padding(8)
@@ -38,17 +39,17 @@ struct BookItemView<ViewModel: HomeViewModel>: View {
         .onTapGesture { [weak interactor] in interactor?.onBookClicked(book) }
     }
 
-    private var chipView: some View {
-        Text(pagesRead > 0 ? "Skaitoma" : "Nepradėta")
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 1)
-            .background(
-                pagesRead > 0
-                    ? Color.mint.gradient.opacity(0.7)
-                    : Color.gray.gradient.opacity(0.7)
-            )
-            .clipShape(Capsule())
-    }
+//    private var chipView: some View {
+//        Text(pagesRead > 0 ? "Skaitoma" : "Nepradėta")
+//            .frame(maxWidth: .infinity)
+//            .padding(.vertical, 1)
+//            .background(
+//                pagesRead > 0
+//                    ? Color.mint.gradient.opacity(0.7)
+//                    : Color.gray.gradient.opacity(0.7)
+//            )
+//            .clipShape(Capsule())
+//    }
 
     private var bookCoverImage: some View {
         ZStack {
@@ -78,16 +79,16 @@ struct BookItemView<ViewModel: HomeViewModel>: View {
             .frame(maxWidth: .infinity)
     }
 
-    private var pagesReadIndicator: some View {
-        Group {
-            if totalPages > 0 {
-                HStack {
-                    Spacer()
-                    Text("\(pagesRead)/\(totalPages) psl.")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                }
-            }
-        }
-    }
+//    private var pagesReadIndicator: some View {
+//        Group {
+//            if totalPages > 0 {
+//                HStack {
+//                    Spacer()
+//                    Text("\(pagesRead)/\(totalPages) psl.")
+//                        .font(.subheadline)
+//                        .foregroundColor(.secondary)
+//                }
+//            }
+//        }
+//    }
 }

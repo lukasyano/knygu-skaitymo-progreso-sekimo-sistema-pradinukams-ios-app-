@@ -4,7 +4,7 @@ enum Role: String, CaseIterable, Codable {
     case parent
     case child
     case unknown
-    
+
     init(rawValue: String) {
         switch rawValue.lowercased() {
         case "parent": self = .parent

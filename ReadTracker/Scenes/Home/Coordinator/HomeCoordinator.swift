@@ -6,7 +6,7 @@ protocol HomeCoordinator: Coordinator {
         message: String,
         onDismiss: @escaping () -> Void
     )
-    func showBook(book: BookEntity, with user: UserEntity)  
+    func showBook(book: BookEntity, with user: UserEntity)
     func showProfile(with user: UserEntity)
 }
 
@@ -17,8 +17,10 @@ final class DefaultHomeCoordinator: HomeCoordinator {
     weak var parent: (any Coordinator)?
     @Published var presentedView: HomeCoordinatorPresentedView?
     @Published var route: HomeCoordinatorRoute?
+    @Published var user: UserEntity
 
-    init(parent: (any Coordinator)?) {
+    init(parent: (any Coordinator)?, user: UserEntity) {
+        self.user = user
         self.parent = parent
         self.viewModel = DefaultHomeViewModel()
         self.presenter = DefaultHomePresenter(displayLogic: viewModel)
@@ -29,7 +31,7 @@ final class DefaultHomeCoordinator: HomeCoordinator {
     }
 
     func start() -> some View {
-        HomeView(interactor: interactor, viewModel: viewModel)
+        HomeView(interactor: interactor, viewModel: viewModel, user: user)
     }
 }
 

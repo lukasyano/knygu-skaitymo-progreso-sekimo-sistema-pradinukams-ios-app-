@@ -11,24 +11,35 @@ protocol AuthenticationInteractor: AnyObject {
 }
 
 final class DefaultAuthenticationInteractor {
+    @Injected private var bookRepository: BookRepository
     private weak var coordinator: DefaultAuthenticationCoordinator?
 
-    init(
-        coordinator: DefaultAuthenticationCoordinator,
-        shouldAutoNavigateToHome: Bool
-    ) {
+    private var cancelBag = Set<AnyCancellable>()
+
+    init(coordinator: DefaultAuthenticationCoordinator) {
         self.coordinator = coordinator
-        if shouldAutoNavigateToHome {
-            coordinator.navigateToLogin()
-        }
     }
 }
 
 // MARK: - Business Logic
 
 extension DefaultAuthenticationInteractor: AuthenticationInteractor {
-    func tapReload() {
-        
+    func tapReload() {        
+        bookRepository.refreshBooks()
+            .subscribe(on: DispatchQueue.global())
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { [weak coordinator] in
+                    if case .failure = $0 {
+                        coordinator?.showRefreshError(
+                            message: "Ops. Atnaujinimas nepavyko. Patikrinkite interneto ryšį bei bandykite dar kartą.")
+                    }
+                },
+                receiveValue: { [weak coordinator] in
+                    coordinator?.showRefreshSuccess(message: "Knygų biblioteka atnaujinta sėkmingai!")
+                }
+            )
+            .store(in: &cancelBag)
     }
 
     func tapLogin() {

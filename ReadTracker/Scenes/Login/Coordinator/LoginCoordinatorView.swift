@@ -48,8 +48,8 @@ extension LoginCoordinatorView {
     @ViewBuilder
     private func routeView(for route: LoginCoordinatorRoute) -> some View {
         switch route {
-        case .home:
-            HomeCoordinatorView(coordinator: .init(parent: coordinator))
+        case let .home(user):
+            HomeCoordinatorView(coordinator: .init(parent: coordinator, user: user))
         }
     }
 }

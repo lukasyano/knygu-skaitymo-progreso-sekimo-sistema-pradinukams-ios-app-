@@ -8,17 +8,27 @@ struct HomeView<ViewModel: HomeViewModel>: View {
     @State private var showLogoutConfirmation: Bool = false
     private unowned var interactor: HomeInteractor
     @ObservedObject private var viewModel: ViewModel
+    let user: UserEntity
 
     // MARK: - Init
     init(
         interactor: HomeInteractor,
-        viewModel: ViewModel
+        viewModel: ViewModel,
+        user: UserEntity
     ) {
         self.interactor = interactor
         self.viewModel = viewModel
+        self.user = user
+
+        let role = user.role.rawValue
+
+        _books = Query(
+            filter: #Predicate<BookEntity> { $0.role == role },
+            sort: \.title
+        )
     }
 
-    @Query(filter: #Predicate<BookEntity> { $0.role == "child" }, sort: \.title) var books: [BookEntity]
+    @Query private var books: [BookEntity]
 
     func profileButton() -> some View {
         Button(
@@ -58,92 +68,23 @@ struct HomeView<ViewModel: HomeViewModel>: View {
         }
     }
 
-//    @ViewBuilder
-//    func contentView() -> some View {
-//        let flexibleColumns = [
-//            GridItem(.flexible(), spacing: 16),
-//            GridItem(.flexible(), spacing: 16)
-//        ]
-//
-//        ScrollView {
-//            LazyVGrid(columns: flexibleColumns, spacing: 16, pinnedViews: .sectionFooters) {
-//                Section {
-//                    ForEach(books) { book in
-//                        // Get progress for this book
-//                        let bookProgress = viewModel.progressData.first { $0.bookId == book.id }
-//                        let pagesRead = bookProgress?.pagesRead ?? 0
-//                        let totalPages = bookProgress?.totalPages ?? book.totalPages ?? 0
-//
-//                        VStack(spacing: 8) {
-//                            if viewModel.user.role == .child {
-//                                chipView(pagesRead: pagesRead) // Updated chip view
-//                            }
-//
-//                            ZStack {
-//                                RoundedRectangle(cornerRadius: 8)
-//                                    .fill(Color.brown.gradient.opacity(0.5))
-//                                    .frame(width: 150, height: 200)
-//
-//                                if let image = book.image {
-//                                    Image(uiImage: image)
-//                                        .resizable()
-//                                        .scaledToFill()
-//                                        .frame(width: 150, height: 200)
-//                                        .clipped()
-//                                        .cornerRadius(8)
-//                                } else {
-//                                    ProgressView()
-//                                        .frame(width: 150, height: 200)
-//                                }
-//                            }
-//
-//                            Text(book.title)
-//                                .font(.headline)
-//                                .multilineTextAlignment(.center)
-//                                .lineLimit(2)
-//                                .frame(maxWidth: .infinity)
-//
-//                            Spacer()
-//
-//                            if totalPages > 0 {
-//                                HStack {
-//                                    Spacer()
-//                                    Text("\(pagesRead)/\(totalPages) psl.")
-//                                        .font(.subheadline)
-//                                        .foregroundColor(.secondary)
-//                                }
-//                            }
-//                        }
-//                        .frame(maxWidth: .infinity)
-//                        .padding(8)
-//                        .background(Color.clear.opacity(0.5))
-//                        .cornerRadius(16)
-//                        .overlay(
-//                            RoundedRectangle(cornerRadius: 16)
-//                                .stroke(Color.brown.opacity(0.8), lineWidth: 2)
-//                        )
-//                        .onTapGesture { [weak interactor] in interactor?.onBookClicked(book.id) }
-//                    }
-//                } footer: {
-//                    Text(viewModel.title).font(.footnote)
-//                }
-//            }
-//        }
-//    }
-
     var body: some View {
         ZStack {
             Constants.mainScreenColor.ignoresSafeArea()
 
-            mainContentView
-                .toolbar {
-                    ToolbarItem(placement: .topBarLeading, content: logoutButton)
-                    ToolbarItem(placement: .topBarTrailing, content: profileButton)
-                }
-                .animation(.bouncy, value: viewModel.isLoading)
-                .animation(.bouncy, value: viewModel.books)
-                .toolbarBackground(Constants.mainScreenColor, for: .navigationBar)
-                .onAppear(perform: { [weak interactor] in interactor?.viewDidAppear() })
+            if books.isEmpty {
+                LoadingView()
+            } else {
+                mainContentView
+                    .toolbar {
+                        ToolbarItem(placement: .topBarLeading, content: logoutButton)
+                        ToolbarItem(placement: .topBarTrailing, content: profileButton)
+                    }
+                    .animation(.easeInOut, value: books.isEmpty)
+                    .animation(.bouncy, value: books)
+                    .toolbarBackground(Constants.mainScreenColor, for: .navigationBar)
+                    .onAppear(perform: { [weak interactor] in interactor?.viewDidAppear() })
+            }
         }
     }
 
@@ -161,12 +102,13 @@ struct HomeView<ViewModel: HomeViewModel>: View {
                     ForEach(books) { book in
                         BookItemView(
                             book: book,
+                            user: user,
                             viewModel: viewModel,
                             interactor: interactor
                         )
                     }
                 } footer: {
-                    Text(viewModel.title).font(.footnote)
+                    Text("Tavo bibliotekoje yra: \(books.count) knygų (-os)").font(.footnote)
                 }
             }
         }

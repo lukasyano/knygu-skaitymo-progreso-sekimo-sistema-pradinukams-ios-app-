@@ -9,33 +9,15 @@ protocol BookRepository {
 }
 
 final class DefaultBookRepository: BookRepository {
-    private let authService: AuthenticationService
-    private let usersService: UsersFirestoreService
-    private let firestoreService: BookFirestoreService
-    private let syncService: BookSyncService
-    private let downloadService: BookDownloadService
-    private let modelContext: ModelContext
-    private let storage: BookStorageService
+    @Injected private var authService: AuthenticationService
+    @Injected private var usersService: UsersFirestoreService
+    @Injected private var firestoreService: BookFirestoreService
+    @Injected private var syncService: BookSyncService
+    @Injected private var downloadService: BookDownloadService
+    @Injected private var modelContext: ModelContext
+    @Injected private var storage: BookStorageService
 
     private let backgroundQueue = DispatchQueue(label: "com.youapp.book-repository", qos: .userInitiated)
-
-    init(
-        authService: AuthenticationService = Resolver.resolve(),
-        usersService: UsersFirestoreService = Resolver.resolve(),
-        firestoreService: BookFirestoreService = Resolver.resolve(),
-        syncService: BookSyncService = Resolver.resolve(),
-        downloadService: BookDownloadService = Resolver.resolve(),
-        modelContext: ModelContext = Resolver.resolve(),
-        storage: BookStorageService = Resolver.resolve()
-    ) {
-        self.authService = authService
-        self.usersService = usersService
-        self.firestoreService = firestoreService
-        self.syncService = syncService
-        self.downloadService = downloadService
-        self.modelContext = modelContext
-        self.storage = storage
-    }
 
     func refreshBooks() -> AnyPublisher<Void, Error> {
         clearBooks()

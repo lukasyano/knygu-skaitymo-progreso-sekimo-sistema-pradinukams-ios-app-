@@ -7,7 +7,6 @@ private enum ViewConstants {
 
 struct LoginView<ViewModel: LoginViewModel>: View {
     // MARK: - Variables
-    @Environment(\.dismiss) private var dismiss
     private unowned var interactor: LoginInteractor
     @ObservedObject private var viewModel: ViewModel
     @FocusState private var focusedField: FocusField?

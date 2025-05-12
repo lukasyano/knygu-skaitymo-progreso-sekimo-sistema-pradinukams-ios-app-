@@ -4,7 +4,8 @@ import Resolver
 
 protocol UserRepository {
     func createUser(name: String, email: String, password: String, role: Role) -> AnyPublisher<UserEntity, UserError>
-    func createChildUser(name: String, email: String, password: String, parent: UserEntity) -> AnyPublisher<UserEntity, UserError>
+    func createChildUser(name: String, email: String, password: String, parent: UserEntity)
+        -> AnyPublisher<UserEntity, UserError>
     func logIn(email: String, password: String) -> AnyPublisher<UserEntity, UserError>
     func getCurrentUser() -> AnyPublisher<UserEntity?, Never>
     var authStatePublisher: AnyPublisher<String?, Never> { get }

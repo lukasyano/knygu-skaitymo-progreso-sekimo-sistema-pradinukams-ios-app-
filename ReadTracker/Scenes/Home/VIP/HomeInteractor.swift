@@ -5,79 +5,66 @@ import SwiftData
 import SwiftUI
 
 protocol HomeInteractor: AnyObject {
-   // func setCurrentBooks(_ books: [BookEntity])
     func viewDidAppear()
     func onLogOutTap()
     func onProfileTap()
-    func onBookClicked(_ book: BookEntity) 
+    func onBookClicked(_ book: BookEntity)
 }
 
 final class DefaultHomeInteractor {
     private weak var presenter: HomePresenter?
     private weak var coordinator: (any HomeCoordinator)?
 
-    private let userRepository: UserRepository
-    private let bookRepository: BookRepository
-    private let thumbnailWorker: BookThumbnailWorker
+    @Injected private var userRepository: UserRepository
+    @Injected private var bookRepository: BookRepository
 
     private var cancelBag = Set<AnyCancellable>()
     private var progress: [ProgressData] = []
-   // private var books: [BookEntity] = []
     private var user: UserEntity?
 
     init(
         coordinator: any HomeCoordinator,
-        presenter: HomePresenter?,
-        userRepository: UserRepository = Resolver.resolve(),
-        bookRepository: BookRepository = Resolver.resolve(),
-        thumbnailWorker: BookThumbnailWorker = Resolver.resolve()
+        presenter: HomePresenter?
     ) {
         self.coordinator = coordinator
         self.presenter = presenter
-        self.userRepository = userRepository
-        self.bookRepository = bookRepository
-        self.thumbnailWorker = thumbnailWorker
     }
 }
 
 extension DefaultHomeInteractor: HomeInteractor {
-//    func setCurrentBooks(_ books: [BookEntity]) {
-//        self.books = books
-//    }
-
     func viewDidAppear() {
-        // cancelBag.removeAll()
+        cancelBag.removeAll()
         observeUsserSession()
     }
 
-    private func loadUserProgress(userID: String) {
-        userRepository.fetchUserProgress(userID: userID)
-            .receive(on: DispatchQueue.main)
-            .sink { completion in
-                if case let .failure(error) = completion {
-                    print("Firestore Error: \(error.localizedDescription)")
-                }
-            } receiveValue: { [weak self] progressData in
-                self?.progress = progressData
-                self?.presenter?.presentProgress(progressData)
-            }
-            .store(in: &cancelBag)
-    }
+//    private func loadUserProgress(userID: String) {
+//        userRepository.fetchUserProgress(userID: userID)
+//            .receive(on: DispatchQueue.main)
+//            .sink { completion in
+//                if case let .failure(error) = completion {
+//                    print("Firestore Error: \(error.localizedDescription)")
+//                }
+//            } receiveValue: { [weak self] progressData in
+//                self?.progress = progressData
+//                self?.presenter?.presentProgress(progressData)
+//            }
+//            .store(in: &cancelBag)
+//    }
 
-    private func getUserRole(userID: String) {
-        userRepository.getCurrentUser()
-            .subscribe(on: DispatchQueue.global())
-            .receive(on: DispatchQueue.main)
-            .sink(receiveValue: { [weak self] in self?.receiveCurrentUser(user: $0) })
-            .store(in: &cancelBag)
-    }
-
-    private func receiveCurrentUser(user: UserEntity?) {
-        guard let user else { return }
-        self.user = user
-        presenter?.presentUser(user)
-        loadUserProgress(userID: user.id)
-    }
+//    private func getUserRole(userID: String) {
+//        userRepository.getCurrentUser()
+//            .subscribe(on: DispatchQueue.global())
+//            .receive(on: DispatchQueue.main)
+//            .sink(receiveValue: { [weak self] in self?.receiveCurrentUser(user: $0) })
+//            .store(in: &cancelBag)
+//    }
+//
+//    private func receiveCurrentUser(user: UserEntity?) {
+//        guard let user else { return }
+//        self.user = user
+//        presenter?.presentUser(user)
+//        loadUserProgress(userID: user.id)
+//    }
 
     private func observeUsserSession() {
         let logOutDelay: DispatchQueue.SchedulerTimeType.Stride = .milliseconds(200)
@@ -86,12 +73,11 @@ extension DefaultHomeInteractor: HomeInteractor {
             .removeDuplicates()
             .delay(for: logOutDelay, scheduler: DispatchQueue.global())
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] userId in
-                guard let userId else {
+            .sink { [weak self] in
+                guard $0 != .none else {
                     self?.coordinator?.popToRoot()
                     return
                 }
-                self?.getUserRole(userID: userId)
             }
             .store(in: &cancelBag)
     }

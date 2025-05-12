@@ -8,7 +8,6 @@ protocol LoginInteractor: AnyObject {
     func viewDidDisappear()
     func onEmailChange(_ email: String)
     func onPasswordChange(_ password: String)
-    // func onRememberMeToggle()
     func onLoginTap()
 }
 
@@ -60,7 +59,7 @@ extension DefaultLoginInteractor: LoginInteractor {
     }
 
     func viewDidDisappear() {
-        presenter?.presentLoading(false)
+        cancelBag.removeAll()
     }
 
     func onLoginTap() {
@@ -70,7 +69,7 @@ extension DefaultLoginInteractor: LoginInteractor {
             .receive(on: DispatchQueue.main)
             .sink(
                 receiveCompletion: { [weak self] in self?.handleLoginCompletion($0) },
-                receiveValue: { [weak coordinator] _ in coordinator?.navigateToHome() }
+                receiveValue: { [weak coordinator] user in coordinator?.navigateToHome(user: user) }
             )
             .store(in: &cancelBag)
     }

@@ -2,17 +2,23 @@ import Resolver
 import SwiftData
 import SwiftUI
 
-final class DefaultAuthenticationCoordinator: Coordinator {
+protocol AuthenticationCoordinator: Coordinator {
+    func navigateToLogin()
+    func navigateToRegister()
+    func showRefreshError(message: String)
+    func showRefreshSuccess(message: String)
+}
+
+final class DefaultAuthenticationCoordinator: AuthenticationCoordinator {
     private var interactor: AuthenticationInteractor!
 
     weak var parent: (any Coordinator)?
     @Published var presentedView: AuthenticationCoordinatorPresentedView?
     @Published var route: AuthenticationCoordinatorRoute?
 
-    init(shouldAutoNavigateToHome: Bool = false) {
+    init() {
         self.interactor = DefaultAuthenticationInteractor(
             coordinator: self,
-            shouldAutoNavigateToHome: shouldAutoNavigateToHome
         )
     }
 
@@ -22,12 +28,6 @@ final class DefaultAuthenticationCoordinator: Coordinator {
     }
 }
 
-// MARK: - Presentation
-
-extension DefaultAuthenticationCoordinator {}
-
-// MARK: - Navigation
-
 extension DefaultAuthenticationCoordinator {
     func navigateToLogin() {
         route = .login
@@ -35,5 +35,13 @@ extension DefaultAuthenticationCoordinator {
 
     func navigateToRegister() {
         route = .registration
+    }
+
+    func showRefreshError(message: String) {
+        presentedView = .failure(message)
+    }
+
+    func showRefreshSuccess(message: String) {
+        presentedView = .info(message)
     }
 }

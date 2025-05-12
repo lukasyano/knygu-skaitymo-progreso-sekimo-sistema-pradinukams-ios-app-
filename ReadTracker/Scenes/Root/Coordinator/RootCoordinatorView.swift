@@ -29,13 +29,13 @@ struct RootCoordinatorView: View {
     @ViewBuilder
     private var contentView: some View {
         switch coordinator.route {
-//        case .authentication:
-//            AuthenticationCoordinatorView(coordinator: Resolver.resolve())
+        case .authentication:
+            AuthenticationCoordinatorView(coordinator: Resolver.resolve())
 
         case .carousel: LoadingView()
-            
-        case .home:
-            HomeCoordinatorView(coordinator: .init(parent: coordinator))
+
+        case let .home(user):
+            HomeCoordinatorView(coordinator: .init(parent: coordinator, user: user))
 
         default:
             AuthenticationCoordinatorView(coordinator: Resolver.resolve())

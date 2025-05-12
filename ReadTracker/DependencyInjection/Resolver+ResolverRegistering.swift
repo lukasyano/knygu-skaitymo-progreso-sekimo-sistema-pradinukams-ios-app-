@@ -15,7 +15,6 @@ extension Resolver: @retroactive ResolverRegistering {
         Resolver.register { DefaultAuthenticationCoordinator() }
             .scope(.shared)
 
-        registerScenes()
         registerServices()
         registerRepositories()
     }

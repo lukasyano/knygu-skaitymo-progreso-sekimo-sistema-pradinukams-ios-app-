@@ -13,7 +13,7 @@ protocol BookDownloadService {
 
 final class DefaultBookDownloadService: BookDownloadService {
     @Injected private var modelContext: ModelContext
-    
+
     private let fileManager: FileManager = .default
     private let queue = DispatchQueue(label: "BookDownloadService", qos: .utility)
     let booksDirectory: URL
