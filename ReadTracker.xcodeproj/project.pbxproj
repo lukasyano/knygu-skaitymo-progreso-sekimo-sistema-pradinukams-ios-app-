@@ -47,6 +47,7 @@
 		12F1824C2DC205DE0055F7EA /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 12F1824B2DC205DE0055F7EA /* FirebaseFirestore */; };
 		12F182502DC207550055F7EA /* UserRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 120DDDC22DC0E7F500D3329D /* UserRepository.swift */; };
 		AA1E9C7B2DD1124700577C89 /* RootCoordinatorPresentedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1E9C7A2DD1124700577C89 /* RootCoordinatorPresentedView.swift */; };
+		AA1E9C7D2DD213C700577C89 /* UserStorageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1E9C7C2DD213C700577C89 /* UserStorageService.swift */; };
 		AA31A94F2DC8EF7700761A0D /* BookStorageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA31A94E2DC8EF7700761A0D /* BookStorageService.swift */; };
 		AA31A9522DC8F2C800761A0D /* UserEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA31A9512DC8F2B800761A0D /* UserEntity.swift */; };
 		AA34FF112DC6277F00B885A7 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = AA34FF102DC6277F00B885A7 /* Lottie */; };
@@ -188,7 +189,6 @@
 		AA8DBE182DC69BC1000C3803 /* ReadingProgressEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8DBE172DC69BC1000C3803 /* ReadingProgressEntity.swift */; };
 		AAD516A02DC62483002C7529 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAD5169F2DC62481002C7529 /* Constants.swift */; };
 		AAD516A22DC624DF002C7529 /* View+ApplicationLifeCycle.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAD516A12DC624DF002C7529 /* View+ApplicationLifeCycle.swift */; };
-		AAE67C682DC955DA00753880 /* UserMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAE67C672DC955D600753880 /* UserMapper.swift */; };
 		AAE67C6B2DC9662400753880 /* LocalUsersService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAE67C6A2DC9662400753880 /* LocalUsersService.swift */; };
 		AAE67C6E2DC9EECE00753880 /* WarmGradientButtonStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAE67C6D2DC9EECE00753880 /* WarmGradientButtonStyle.swift */; };
 		AAE67C712DCA528700753880 /* DataConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAE67C702DCA528700753880 /* DataConfiguration.swift */; };
@@ -262,6 +262,7 @@
 		12C7FEFF2DA91193004DE9F4 /* ReadTrackerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ReadTrackerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		12C7FF092DA91193004DE9F4 /* ReadTrackerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ReadTrackerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA1E9C7A2DD1124700577C89 /* RootCoordinatorPresentedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootCoordinatorPresentedView.swift; sourceTree = "<group>"; };
+		AA1E9C7C2DD213C700577C89 /* UserStorageService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserStorageService.swift; sourceTree = "<group>"; };
 		AA31A94E2DC8EF7700761A0D /* BookStorageService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookStorageService.swift; sourceTree = "<group>"; };
 		AA31A9512DC8F2B800761A0D /* UserEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserEntity.swift; sourceTree = "<group>"; };
 		AA3BBF762DC2656D00B14271 /* LoginCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginCoordinator.swift; sourceTree = "<group>"; };
@@ -355,7 +356,6 @@
 		AA8DBE172DC69BC1000C3803 /* ReadingProgressEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadingProgressEntity.swift; sourceTree = "<group>"; };
 		AAD5169F2DC62481002C7529 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		AAD516A12DC624DF002C7529 /* View+ApplicationLifeCycle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+ApplicationLifeCycle.swift"; sourceTree = "<group>"; };
-		AAE67C672DC955D600753880 /* UserMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserMapper.swift; sourceTree = "<group>"; };
 		AAE67C6A2DC9662400753880 /* LocalUsersService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalUsersService.swift; sourceTree = "<group>"; };
 		AAE67C6D2DC9EECE00753880 /* WarmGradientButtonStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WarmGradientButtonStyle.swift; sourceTree = "<group>"; };
 		AAE67C702DCA528700753880 /* DataConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataConfiguration.swift; sourceTree = "<group>"; };
@@ -632,7 +632,6 @@
 		12F1824F2DC206FC0055F7EA /* Repositories */ = {
 			isa = PBXGroup;
 			children = (
-				AAE67C662DC955D000753880 /* Mappers */,
 				AA3BC0CC2DC2B09300B14271 /* BookRepository.swift */,
 				120DDDC22DC0E7F500D3329D /* UserRepository.swift */,
 			);
@@ -926,17 +925,10 @@
 			path = BookReader;
 			sourceTree = "<group>";
 		};
-		AAE67C662DC955D000753880 /* Mappers */ = {
-			isa = PBXGroup;
-			children = (
-				AAE67C672DC955D600753880 /* UserMapper.swift */,
-			);
-			path = Mappers;
-			sourceTree = "<group>";
-		};
 		AAE67C692DC960AF00753880 /* Users */ = {
 			isa = PBXGroup;
 			children = (
+				AA1E9C7C2DD213C700577C89 /* UserStorageService.swift */,
 				1245C7232DC21914000A6933 /* AuthenticationService.swift */,
 				AAE67C6A2DC9662400753880 /* LocalUsersService.swift */,
 				1245C7212DC21914000A6933 /* UsersFirestoreService.swift */,
@@ -1151,6 +1143,7 @@
 				AA3BC0D12DC3355100B14271 /* BookDownloadService.swift in Sources */,
 				AA77312C2DCFDE1400F203A6 /* ThumbnailGeneratorWorker.swift in Sources */,
 				AA791FE52DCBFF80007C2F0D /* BookReaderCoordinatorPresentedView.swift in Sources */,
+				AA1E9C7D2DD213C700577C89 /* UserStorageService.swift in Sources */,
 				1245C7272DC21997000A6933 /* AuthenticationService.swift in Sources */,
 				AA3BBF8E2DC2656D00B14271 /* LoginCoordinatorView.swift in Sources */,
 				1277962A2DC0A5E4005EF10A /* View+Coordinator.swift in Sources */,
@@ -1162,7 +1155,6 @@
 				AA791FC42DCB8F29007C2F0D /* ProfileCoordinator.swift in Sources */,
 				AA3BC1B62DC5E43800B14271 /* RootCoordinatorRoute.swift in Sources */,
 				AA3BC1B72DC5E43800B14271 /* RootCoordinator.swift in Sources */,
-				AAE67C682DC955DA00753880 /* UserMapper.swift in Sources */,
 				AA3BC13F2DC5274100B14271 /* OnFirstAppear.swift in Sources */,
 				AA3BBFC82DC2987A00B14271 /* HomeView.swift in Sources */,
 				AA3BC0CB2DC2AD9E00B14271 /* Publisher+shorthands.swift in Sources */,

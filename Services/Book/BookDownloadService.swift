@@ -110,12 +110,16 @@ private extension DefaultBookDownloadService {
 
     func generateThumbnail(for entity: BookEntity, fileURL: URL) {
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-            guard let thumbnail = PDFDocument(url: fileURL)?.page(at: 0)?
-                .thumbnail(of: CGSize(width: 200, height: 300), for: .mediaBox)
+            guard let pdfDocument = PDFDocument(url: fileURL),
+                  let thumbnail = pdfDocument.page(at: 0)?
+                  .thumbnail(of: CGSize(width: 200, height: 300), for: .mediaBox)
             else { return }
+
+            let totalPages = pdfDocument.pageCount
 
             DispatchQueue.main.async {
                 entity.thumbnailData = thumbnail.jpegData(compressionQuality: 0.8)
+                entity.totalPages = totalPages
                 try? self?.modelContext.save()
             }
         }

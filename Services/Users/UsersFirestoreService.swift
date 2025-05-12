@@ -118,7 +118,10 @@ final class DefaultUsersFirestoreService: UsersFirestoreService {
         .eraseToAnyPublisher()
     }
 
-    private func fetchCompleteUserData(document: DocumentSnapshot, completion: @escaping (Result<UserEntity, Error>) -> Void) {
+    private func fetchCompleteUserData(
+        document: DocumentSnapshot,
+        completion: @escaping (Result<UserEntity, Error>) -> Void
+    ) {
         guard let data = document.data() else {
             completion(.failure(NSError(domain: "InvalidUserData", code: 400)))
             return
@@ -128,7 +131,7 @@ final class DefaultUsersFirestoreService: UsersFirestoreService {
             id: document.documentID,
             email: data["email"] as? String ?? "",
             name: data["name"] as? String ?? "",
-            role: Role(rawValue: data["role"] as? String ?? "") ?? .unknown,
+            role: Role(rawValue: data["role"] as? String ?? ""),
             parentID: data["parentId"] as? String,
             childrensID: data["children"] as? [String] ?? [],
             totalPoints: data["totalPoints"] as? Int ?? 0
@@ -169,7 +172,8 @@ final class DefaultUsersFirestoreService: UsersFirestoreService {
         var payload: [String: Any] = [
             "email": user.email,
             "name": user.name,
-            "role": user.role.rawValue
+            "role": user.role.rawValue,
+            "children": user.children.map { $0.id }
         ]
 
         switch user.role {
@@ -201,7 +205,11 @@ final class DefaultUsersFirestoreService: UsersFirestoreService {
         .eraseToAnyPublisher()
     }
 
-    private func saveProgressData(user: UserEntity, userRef: DocumentReference, completion: @escaping (Error?) -> Void) {
+    private func saveProgressData(
+        user: UserEntity,
+        userRef: DocumentReference,
+        completion: @escaping (Error?) -> Void
+    ) {
         guard user.role == .child else {
             completion(nil)
             return

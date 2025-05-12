@@ -7,10 +7,21 @@ class UserEntity {
     var email: String
     var name: String
     var role: Role
-    var parentID: String?
-    var childrensID: [String]
     var totalPoints: Int
-    var progressData: [ProgressData]
+
+    // Firestore-compatible fields
+    @Attribute var parentID: String?
+    @Attribute var childrensID: [String]
+
+    // SwiftData relationships
+    @Relationship(deleteRule: .cascade)
+    var progressData: [ProgressData] = []
+
+    @Relationship(deleteRule: .nullify)
+    var parent: UserEntity? // New parent relationship
+
+    @Relationship(deleteRule: .nullify, inverse: \UserEntity.parent)
+    var children: [UserEntity] = []
 
     init(
         id: String,
@@ -19,8 +30,7 @@ class UserEntity {
         role: Role,
         parentID: String? = nil,
         childrensID: [String] = [],
-        totalPoints: Int = 0,
-        progressData: [ProgressData] = []
+        totalPoints: Int = 0
     ) {
         self.id = id
         self.email = email
@@ -29,29 +39,53 @@ class UserEntity {
         self.parentID = parentID
         self.childrensID = childrensID
         self.totalPoints = totalPoints
-        self.progressData = progressData
     }
 }
 
-struct ProgressData: Codable, Identifiable {
-    var id: String = UUID().uuidString
+@Model
+class ProgressData: Identifiable {
+    @Attribute(.unique) var id: String
     var bookId: String
     var pagesRead: Int
     var totalPages: Int
     var finished: Bool
     var pointsEarned: Int
+    
+    @Relationship(deleteRule: .nullify, inverse: \UserEntity.progressData)
+    var user: UserEntity?
+
+    init(
+        id: String = UUID().uuidString,
+        bookId: String,
+        pagesRead: Int,
+        totalPages: Int,
+        finished: Bool,
+        pointsEarned: Int
+    ) {
+        self.id = id
+        self.bookId = bookId
+        self.pagesRead = pagesRead
+        self.totalPages = totalPages
+        self.finished = finished
+        self.pointsEarned = pointsEarned
+    }
 }
 
 extension UserEntity {
-    func withAddedChild(childID: String) -> UserEntity {
-        UserEntity(
-            id: id,
-            email: email,
-            name: name,
-            role: role,
-            parentID: parentID,
-            childrensID: childrensID + [childID],
-            totalPoints: totalPoints
-        )
+    func updateChildrenIDs() {
+        childrensID = children.map { $0.id }
+    }
+
+    func withAddedChild(_ child: UserEntity) -> UserEntity {
+        child.parentID = id
+        children.append(child)
+        childrensID.append(child.id)
+        return self
+    }
+
+    func deleteChild(_ child: UserEntity) {
+        children.removeAll { $0.id == child.id }
+        childrensID.removeAll { $0 == child.id }
+        child.parentID = nil
     }
 }

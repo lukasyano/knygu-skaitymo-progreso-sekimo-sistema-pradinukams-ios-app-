@@ -1,3 +1,4 @@
+import SwiftData
 import SwiftUI
 
 struct ProfileView<ViewModel: ProfileViewModel>: View {
@@ -5,18 +6,38 @@ struct ProfileView<ViewModel: ProfileViewModel>: View {
     @Environment(\.dismiss) private var dismiss
     private unowned var interactor: ProfileInteractor
     @ObservedObject private var viewModel: ViewModel
+    private let userID: String
 
     init(
         interactor: ProfileInteractor,
-        viewModel: ViewModel
+        viewModel: ViewModel,
+        userID: String
     ) {
         self.interactor = interactor
         self.viewModel = viewModel
+        self.userID = userID
+
+        _users = Query(
+            filter: #Predicate<UserEntity> { $0.id == userID },
+            sort: \.name
+        )
+
+        _childs = Query(
+            filter: #Predicate { $0.parentID == userID },
+            sort: [SortDescriptor(\.name)]
+        )
+    }
+
+    @Query private var users: [UserEntity]
+    @Query private var childs: [UserEntity]
+
+    private var currentUser: UserEntity {
+        users.first { $0.id == userID }!
     }
 
     private var progressGrid: some View {
         LazyVGrid(columns: [GridItem(.adaptive(minimum: 160), spacing: 16)], spacing: 16) {
-            ForEach(viewModel.progressData) { progress in
+            ForEach(currentUser.progressData) { progress in
                 progressCard(for: progress)
             }
         }
@@ -87,7 +108,7 @@ struct ProfileView<ViewModel: ProfileViewModel>: View {
     }
 
     private var completedBooksCount: Int {
-        viewModel.progressData.filter { $0.finished }.count
+        currentUser.progressData.filter { $0.finished }.count
     }
 
     private var progressSection: some View {
@@ -99,14 +120,14 @@ struct ProfileView<ViewModel: ProfileViewModel>: View {
 
                 Spacer()
 
-                if !viewModel.progressData.isEmpty {
-                    Text("\(completedBooksCount) iš \(viewModel.progressData.count)")
+                if !currentUser.progressData.isEmpty {
+                    Text("\(completedBooksCount) iš \(currentUser.progressData.count)")
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
             }
 
-            if viewModel.progressData.isEmpty {
+            if currentUser.progressData.isEmpty {
                 emptyProgressView
             } else {
                 progressGrid
@@ -133,15 +154,15 @@ struct ProfileView<ViewModel: ProfileViewModel>: View {
                         .font(.title2)
                 }
             }
-
-            if viewModel.childs.isEmpty {
+            // TODO: - asdoifklsad
+            if childs.isEmpty {
                 Text("Nėra pridėtų vaikų")
                     .foregroundColor(.secondary)
                     .frame(maxWidth: .infinity)
                     .padding()
             } else {
                 LazyVStack(spacing: 12) {
-                    ForEach(viewModel.childs) { child in
+                    ForEach(childs) { child in
                         ChildRow(child: child)
                     }
                 }
@@ -158,12 +179,12 @@ struct ProfileView<ViewModel: ProfileViewModel>: View {
                 .font(.subheadline)
                 .foregroundColor(.blue)
 
-            InfoRow(label: "Vardas", value: viewModel.user.name)
-            InfoRow(label: "El. paštas", value: viewModel.user.email)
-            InfoRow(label: "Rolė", value: viewModel.user.role.localized)
+            InfoRow(label: "Vardas", value: currentUser.name)
+            InfoRow(label: "El. paštas", value: currentUser.email)
+            InfoRow(label: "Rolė", value: currentUser.role.localized)
 
-            if viewModel.user.role == .child {
-                InfoRow(label: "Taškai", value: viewModel.user.totalPoints.formatted())
+            if currentUser.role == .child {
+                InfoRow(label: "Taškai", value: currentUser.totalPoints.formatted())
             }
         }
         .padding()
@@ -179,11 +200,11 @@ struct ProfileView<ViewModel: ProfileViewModel>: View {
                     VStack(spacing: 20) {
                         userInfoSection
 
-                        if viewModel.user.role == .child {
+                        if currentUser.role == .child {
                             progressSection
                         }
 
-                        if viewModel.user.role == .parent {
+                        if currentUser.role == .parent {
                             childrenSection
                         }
                     }
@@ -200,13 +221,13 @@ struct ProfileView<ViewModel: ProfileViewModel>: View {
                 }
                 .sheet(isPresented: $viewModel.isUserCreationActive) {
                     CreateChildView(isLoading: $viewModel.isLoading) { [weak interactor] name, email, password in
-                        interactor?.createChild(name: name, email: email, password: password)
+                        interactor?.createChild(name: name, email: email, password: password, user: currentUser)
                     }
                 }
             }
         }
         .onAppear { [weak interactor] in interactor?.viewDidAppear() }
-        .animation(.spring, value: viewModel.childs)
+        // .animation(.spring, value: viewModel.childs)
         .animation(.easeInOut, value: viewModel.isLoading)
     }
 }

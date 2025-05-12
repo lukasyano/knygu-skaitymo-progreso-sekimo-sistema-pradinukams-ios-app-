@@ -4,8 +4,7 @@ import Resolver
 
 protocol UserRepository {
     func createUser(name: String, email: String, password: String, role: Role) -> AnyPublisher<UserEntity, UserError>
-    func createChildUser(name: String, email: String, password: String, parent: UserEntity)
-        -> AnyPublisher<UserEntity, UserError>
+    func createChildUser(name: String, email: String, password: String, parent: UserEntity) -> AnyPublisher<UserEntity, UserError>
     func logIn(email: String, password: String) -> AnyPublisher<UserEntity, UserError>
     func getCurrentUser() -> AnyPublisher<UserEntity?, Never>
     var authStatePublisher: AnyPublisher<String?, Never> { get }
@@ -13,47 +12,47 @@ protocol UserRepository {
     func saveUser(_ user: UserEntity) -> AnyPublisher<Void, Error>
     func fetchUserProgress(userID: String) -> AnyPublisher<[ProgressData], UserError>
     func signOut() throws
-    var cachedRole: Role? { get }
 }
 
 final class DefaultUserRepository: UserRepository {
     @Injected private var firebaseAuth: AuthenticationService
     @Injected private var firestoreService: UsersFirestoreService
+    @Injected private var userStorageService: UserStorageService
     private var cancellables = Set<AnyCancellable>()
     @Published private var currentUser: UserEntity?
 
-    private enum Keys {
-        static let userRole = "CurrentUserRole"
-    }
-
-    // MARK: - Public Interface
-    var cachedRole: Role? {
-        get { loadCachedRole() }
-        set { newValue.map(saveCachedRole) ?? clearCachedRole() }
-    }
-
     init() {
         setupAuthObserver()
-        loadInitialRole()
     }
 
     func fetchUserProgress(userID: String) -> AnyPublisher<[ProgressData], UserError> {
         firestoreService.getProgressData(userID: userID)
             .mapError { UserError.message($0.localizedDescription) }
+            .handleEvents(receiveOutput: { [weak self] progress in
+                self?.updateLocalUserProgress(userID: userID, progress: progress)
+            })
             .eraseToAnyPublisher()
     }
 
     func saveUser(_ user: UserEntity) -> AnyPublisher<Void, Error> {
         firestoreService.saveUserEntity(user)
+            .flatMap { [weak self] _ -> AnyPublisher<Void, Error> in
+                self?.persistUserLocally(user) ?? .empty()
+            }
+            .eraseToAnyPublisher()
     }
 
     func getChildrenForParent(parentID: String) -> AnyPublisher<[UserEntity], UserError> {
         firestoreService.getChildrenForParent(parentID: parentID)
             .mapError { UserError.message($0.localizedDescription) }
+            .handleEvents(receiveOutput: { [weak self] children in
+                self?.persistChildrenLocally(children)
+            })
             .eraseToAnyPublisher()
     }
 
-    func createChildUser(name: String, email: String, password: String, parent: UserEntity) -> AnyPublisher<UserEntity, UserError> {
+    func createChildUser(name: String, email: String, password: String, parent: UserEntity)
+        -> AnyPublisher<UserEntity, UserError> {
         firebaseAuth.createUser(email: email, password: password)
             .flatMap { [weak self] firebaseUser -> AnyPublisher<UserEntity, UserError> in
                 guard let self else { return .empty() }
@@ -73,26 +72,9 @@ final class DefaultUserRepository: UserRepository {
             .eraseToAnyPublisher()
     }
 
-    private func saveAndLinkChild(_ child: UserEntity, parent: UserEntity) -> AnyPublisher<UserEntity, UserError> {
-        let updatedParent = parent.withAddedChild(childID: child.id)
-
-        return Publishers.Zip(
-            firestoreService.saveUserEntity(child),
-            firestoreService.saveUserEntity(updatedParent)
-        )
-        .handleEvents(receiveOutput: { [weak self] _ in
-            self?.cachedRole = parent.role // Maintain parent role
-        })
-        .map { _ in child }
-        .mapError { UserError.message($0.localizedDescription) }
-        .eraseToAnyPublisher()
-    }
-
     func createUser(name: String, email: String, password: String, role: Role) -> AnyPublisher<UserEntity, UserError> {
         firebaseAuth.createUser(email: email, password: password)
             .flatMap { [weak self] firebaseUser -> AnyPublisher<UserEntity, UserError> in
-                guard let self else { return .empty() }
-
                 let user = UserEntity(
                     id: firebaseUser.uid,
                     email: email,
@@ -101,13 +83,7 @@ final class DefaultUserRepository: UserRepository {
                     childrensID: []
                 )
 
-                return self.firestoreService.saveUserEntity(user)
-                    .handleEvents(receiveOutput: { [weak self] _ in
-                        self?.cachedRole = role // Save role on creation
-                    })
-                    .map { _ in user }
-                    .mapError { UserError.message($0.localizedDescription) }
-                    .eraseToAnyPublisher()
+                return self?.persistUserRemotelyAndLocally(user) ?? .empty()
             }
             .eraseToAnyPublisher()
     }
@@ -115,7 +91,7 @@ final class DefaultUserRepository: UserRepository {
     func logIn(email: String, password: String) -> AnyPublisher<UserEntity, UserError> {
         firebaseAuth.signIn(email: email, password: password)
             .flatMap { [weak self] firebaseUser in
-                self?.fetchAndSetCurrentUser(uid: firebaseUser.uid) ?? .empty()
+                self?.synchronizeUserData(uid: firebaseUser.uid) ?? .empty()
             }
             .eraseToAnyPublisher()
     }
@@ -127,74 +103,113 @@ final class DefaultUserRepository: UserRepository {
     func signOut() throws {
         try firebaseAuth.signOut()
         currentUser = nil
-        clearCachedRole()
     }
 
     var authStatePublisher: AnyPublisher<String?, Never> {
         firebaseAuth.authStatePublisher
     }
 
-    // MARK: - Role Management
-    private func loadInitialRole() {
-        currentUser = cachedRole.map {
-            UserEntity.temporary(role: $0)
-        }
-    }
-
-    private func loadCachedRole() -> Role? {
-        UserDefaults.standard.string(forKey: Keys.userRole)
-            .flatMap(Role.init(rawValue:))
-    }
-
-    private func saveCachedRole(_ role: Role) {
-        UserDefaults.standard.set(role.rawValue, forKey: Keys.userRole)
-    }
-
-    private func clearCachedRole() {
-        UserDefaults.standard.removeObject(forKey: Keys.userRole)
-    }
-
-    // MARK: - Auth Handling
     private func setupAuthObserver() {
         authStatePublisher
             .handleEvents(receiveOutput: { [weak self] uid in
-                guard let self else { return }
-                if uid == nil {
-                    self.clearCachedRole()
-                    self.currentUser = nil
-                }
+                guard let self, uid == nil else { return }
+                currentUser = nil
             })
             .compactMap { $0 }
             .flatMap { [weak self] uid in
-                self?.fetchAndSetCurrentUser(uid: uid) ?? .empty()
+                self?.synchronizeUserData(uid: uid) ?? .empty()
             }
-            .sink(
-                receiveCompletion: { [weak self] _ in /* ... */ },
-                receiveValue: { [weak self] _ in /* ... */ }
-            )
+            .sink(receiveCompletion: { _ in }, receiveValue: { _ in })
             .store(in: &cancellables)
     }
 
-    private func fetchAndSetCurrentUser(uid: String) -> AnyPublisher<UserEntity, UserError> {
-        firestoreService.getUserEntity(userID: uid)
+    private func synchronizeUserData(uid: String) -> AnyPublisher<UserEntity, UserError> {
+        let localUser = try? userStorageService.fetchUser(byId: uid)
+
+        return firestoreService.getUserEntity(userID: uid)
+            .flatMap { [weak self] remoteUser -> AnyPublisher<UserEntity, Error> in
+                guard let self else { return .empty() }
+                return synchronizeRelatedData(for: remoteUser)
+                    .map { _ in remoteUser }
+                    .mapError { $0 as Error }
+                    .eraseToAnyPublisher()
+            }
             .handleEvents(receiveOutput: { [weak self] user in
                 self?.currentUser = user
-                self?.cachedRole = user.role
+                try? self?.userStorageService.saveUser(user)
             })
             .mapError { UserError.message($0.localizedDescription) }
             .eraseToAnyPublisher()
     }
 }
 
-// MARK: - Temporary User Extension
-extension UserEntity {
-    static func temporary(role: Role) -> UserEntity {
-        UserEntity(
-            id: "temp_\(UUID().uuidString)",
-            email: "",
-            name: "",
-            role: role,
-            childrensID: []
+// MARK: - Sync Helpers
+private extension DefaultUserRepository {
+    func persistUserLocally(_ user: UserEntity) -> AnyPublisher<Void, Error> {
+        Future { promise in
+            do {
+                try self.userStorageService.saveUser(user)
+                promise(.success(()))
+            } catch {
+                promise(.failure(error))
+            }
+        }
+        .eraseToAnyPublisher()
+    }
+
+    func persistChildrenLocally(_ children: [UserEntity]) {
+        children.forEach { try? userStorageService.saveUser($0) }
+    }
+
+    func updateLocalUserProgress(userID: String, progress: [ProgressData]) {
+        guard var user = try? userStorageService.fetchUser(byId: userID) else { return }
+        user.progressData = progress
+        try? userStorageService.saveUser(user)
+    }
+
+    func synchronizeRelatedData(for user: UserEntity) -> AnyPublisher<Void, UserError> {
+        var publishers = [AnyPublisher<Void, UserError>]()
+
+        // Sync children if parent
+        if user.role == .parent {
+            let childrenSync = getChildrenForParent(parentID: user.id)
+                .map { _ in () }
+                .eraseToAnyPublisher()
+            publishers.append(childrenSync)
+        }
+
+        // Sync progress if child
+        if user.role == .child {
+            let progressSync = fetchUserProgress(userID: user.id)
+                .map { _ in () }
+                .eraseToAnyPublisher()
+            publishers.append(progressSync)
+        }
+
+        return Publishers.MergeMany(publishers)
+            .mapError { UserError.message($0.localizedDescription) }
+            .eraseToAnyPublisher()
+    }
+
+    func saveAndLinkChild(_ child: UserEntity, parent: UserEntity) -> AnyPublisher<UserEntity, UserError> {
+        let updatedParent = parent.withAddedChild(child)
+
+        return Publishers.Zip(
+            persistUserRemotelyAndLocally(child),
+            persistUserRemotelyAndLocally(updatedParent)
         )
+        .map { _ in child }
+        .eraseToAnyPublisher()
+    }
+
+    func persistUserRemotelyAndLocally(_ user: UserEntity) -> AnyPublisher<UserEntity, UserError> {
+        firestoreService.saveUserEntity(user)
+            .flatMap { [weak self] _ in
+                self?.persistUserLocally(user)
+                    .map { _ in user }
+                    .eraseToAnyPublisher() ?? .empty()
+            }
+            .mapError { UserError.message($0.localizedDescription) }
+            .eraseToAnyPublisher()
     }
 }

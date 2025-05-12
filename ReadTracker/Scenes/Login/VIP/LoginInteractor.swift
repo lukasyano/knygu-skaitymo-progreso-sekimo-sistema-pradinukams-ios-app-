@@ -69,7 +69,7 @@ extension DefaultLoginInteractor: LoginInteractor {
             .receive(on: DispatchQueue.main)
             .sink(
                 receiveCompletion: { [weak self] in self?.handleLoginCompletion($0) },
-                receiveValue: { [weak coordinator] user in coordinator?.navigateToHome(user: user) }
+                receiveValue: { [weak coordinator] user in coordinator?.navigateToHome(userID: user.id) }
             )
             .store(in: &cancelBag)
     }

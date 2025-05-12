@@ -8,7 +8,7 @@ protocol HomeInteractor: AnyObject {
     func viewDidAppear()
     func onLogOutTap()
     func onProfileTap()
-    func onBookClicked(_ book: BookEntity)
+    func onBookClicked(_ book: BookEntity, with user: UserEntity)
 }
 
 final class DefaultHomeInteractor {
@@ -37,35 +37,6 @@ extension DefaultHomeInteractor: HomeInteractor {
         observeUsserSession()
     }
 
-//    private func loadUserProgress(userID: String) {
-//        userRepository.fetchUserProgress(userID: userID)
-//            .receive(on: DispatchQueue.main)
-//            .sink { completion in
-//                if case let .failure(error) = completion {
-//                    print("Firestore Error: \(error.localizedDescription)")
-//                }
-//            } receiveValue: { [weak self] progressData in
-//                self?.progress = progressData
-//                self?.presenter?.presentProgress(progressData)
-//            }
-//            .store(in: &cancelBag)
-//    }
-
-//    private func getUserRole(userID: String) {
-//        userRepository.getCurrentUser()
-//            .subscribe(on: DispatchQueue.global())
-//            .receive(on: DispatchQueue.main)
-//            .sink(receiveValue: { [weak self] in self?.receiveCurrentUser(user: $0) })
-//            .store(in: &cancelBag)
-//    }
-//
-//    private func receiveCurrentUser(user: UserEntity?) {
-//        guard let user else { return }
-//        self.user = user
-//        presenter?.presentUser(user)
-//        loadUserProgress(userID: user.id)
-//    }
-
     private func observeUsserSession() {
         let logOutDelay: DispatchQueue.SchedulerTimeType.Stride = .milliseconds(200)
 
@@ -90,14 +61,11 @@ extension DefaultHomeInteractor: HomeInteractor {
         }
     }
 
-    func onBookClicked(_ book: BookEntity) {
-        guard let user else { return }
-
+    func onBookClicked(_ book: BookEntity, with user: UserEntity) {
         coordinator?.showBook(book: book, with: user)
     }
 
     func onProfileTap() {
-        guard let user else { return }
-        coordinator?.showProfile(with: user)
+        coordinator?.showProfile()
     }
 }

@@ -31,10 +31,10 @@ struct BookReaderView<ViewModel: BookReaderViewModel>: View {
             Constants.mainScreenColor.ignoresSafeArea()
 
             ZStack(alignment: .bottom) {
-                if let bookURL = book.fileURL{
+                if let bookURL = book.fileURL {
                     PDFDocumentView(
                         url: bookURL) { [weak interactor] in interactor?.onBookPageChanged($0) }
-                    
+
                     HoldToDismissButton(action: dismiss.callAsFunction)
                         .padding(.bottom, 10)
                         .padding(.horizontal, 30)

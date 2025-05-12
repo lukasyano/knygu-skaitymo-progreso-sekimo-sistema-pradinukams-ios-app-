@@ -3,14 +3,14 @@ import Foundation
 enum RootCoordinatorRoute: Identifiable, Equatable {
     case carousel
     case authentication
-    case home(user: UserEntity)
+    case home(userID: String)
 
     var id: String {
         switch self {
         case .carousel:
             "carousel"
-        case .home:
-            "home_\(UUID())"
+        case let .home(userID):
+            "home_\(userID)"
         case .authentication:
             "authentication_\(UUID())"
         }

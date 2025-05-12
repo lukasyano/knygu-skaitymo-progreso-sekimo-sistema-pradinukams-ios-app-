@@ -34,8 +34,8 @@ struct RootCoordinatorView: View {
 
         case .carousel: LoadingView()
 
-        case let .home(user):
-            HomeCoordinatorView(coordinator: .init(parent: coordinator, user: user))
+        case let .home(userID):
+            HomeCoordinatorView(coordinator: .init(parent: coordinator, userID: userID))
 
         default:
             AuthenticationCoordinatorView(coordinator: Resolver.resolve())

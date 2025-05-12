@@ -5,7 +5,7 @@ import Resolver
 
 protocol ProfileInteractor: AnyObject {
     func viewDidAppear()
-    func createChild(name: String, email: String, password: String)
+    func createChild(name: String, email: String, password: String, user: UserEntity)
 }
 
 final class DefaultProfileInteractor {
@@ -19,32 +19,28 @@ final class DefaultProfileInteractor {
     private(set) var password: String = ""
     private lazy var cancelBag = Set<AnyCancellable>()
 
-    private(set) var user: UserEntity
-    private(set) var childrends: [UserEntity]?
-    private var progress: [ProgressData] = []
+    private(set) var userID: String
+
     // Repositories
-    private let userRepository: UserRepository
+    @Injected private var userRepository: UserRepository
 
     // MARK: - Lifecycle
 
     init(
         coordinator: (any ProfileCoordinator)?,
         presenter: ProfilePresenter?,
-        userRepository: UserRepository = Resolver.resolve(),
-        user: UserEntity
+        userID: String
     ) {
         self.coordinator = coordinator
         self.presenter = presenter
-        self.userRepository = userRepository
-        self.user = user
-        presenter?.presentUser(user)
+        self.userID = userID
     }
 }
 
 // MARK: - Business Logic
 
 extension DefaultProfileInteractor: ProfileInteractor {
-    func createChild(name: String, email: String, password: String) {
+    func createChild(name: String, email: String, password: String, user: UserEntity) {
         presenter?.presentLoading(true)
 
         let parent = user
@@ -84,36 +80,6 @@ extension DefaultProfileInteractor: ProfileInteractor {
     // MARK: - View Did Change
 
     func viewDidAppear() {
-        //cancelBag.removeAll()
-        fetchChildrends()
-        loadUserProgress()
-    }
-
-    private func fetchChildrends() {
-        userRepository.getChildrenForParent(parentID: user.id)
-            .receive(on: DispatchQueue.main)
-            .sink(receiveCompletion: { [weak self] completion in
-                if case let .failure(error) = completion {
-                    print("Error fetching children: \(error)")
-                }
-            }, receiveValue: { [weak self] children in
-                self?.childrends = children
-                self?.presenter?.presentChilds(children)
-            })
-            .store(in: &cancelBag)
-    }
-    
-    private func loadUserProgress() {
-        userRepository.fetchUserProgress(userID: user.id)
-            .receive(on: DispatchQueue.main)
-            .sink { completion in
-                if case let .failure(error) = completion {
-                    print("Firestore Error: \(error.localizedDescription)")
-                }
-            } receiveValue: { [weak self] progressData in
-                self?.progress = progressData
-                self?.presenter?.presentProgress(progressData)
-            }
-            .store(in: &cancelBag)
+        cancelBag.removeAll()
     }
 }

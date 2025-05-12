@@ -1,4 +1,5 @@
 import Resolver
+
 extension Resolver: @retroactive ResolverRegistering {
     public static func registerAllServices() {
         // for swiftData model context
@@ -10,6 +11,9 @@ extension Resolver: @retroactive ResolverRegistering {
         Resolver.register { DefaultRootInteractor() }
             .implements(RootInteractor.self)
             .scope(.shared)
+
+        register { DefaultUserStorageService() }
+            .implements(UserStorageService.self)
 
         // do not delete it will reinitialize navigation stack
         Resolver.register { DefaultAuthenticationCoordinator() }

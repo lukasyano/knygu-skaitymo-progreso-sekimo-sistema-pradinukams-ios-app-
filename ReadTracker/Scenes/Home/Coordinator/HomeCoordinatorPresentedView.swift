@@ -3,7 +3,7 @@ import Foundation
 enum HomeCoordinatorPresentedView: Identifiable, Equatable {
     case error(error: String, dismiss: () -> Void)
     case book(book: BookEntity, user: UserEntity)
-    case profile(UserEntity)
+    case profile(userID: String)
 
     var id: String {
         switch self {
@@ -11,8 +11,8 @@ enum HomeCoordinatorPresentedView: Identifiable, Equatable {
             "error:\(message)"
         case let .book(book, _):
             "book:\(book.id)"
-        case let .profile(user):
-            "profile_\(user.id)"
+        case let .profile(userID):
+            "profile_\(userID)"
         }
     }
 

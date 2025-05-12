@@ -14,8 +14,6 @@ final class DefaultBookReaderViewModel: BookReaderViewModel {
     @Published var isLoading = false
     @Published var shouldCelebrate = false
     @Published var isUserCreationActive = false
-    @Published private(set) var user: UserEntity = .init(id: "", email: "", name: "", role: .unknown)
-    @Published private(set) var childs: [UserEntity] = .init()
 }
 
 // MARK: - Display Logic

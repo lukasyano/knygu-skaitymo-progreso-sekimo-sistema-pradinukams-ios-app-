@@ -8,42 +8,52 @@ struct HomeView<ViewModel: HomeViewModel>: View {
     @State private var showLogoutConfirmation: Bool = false
     private unowned var interactor: HomeInteractor
     @ObservedObject private var viewModel: ViewModel
-    let user: UserEntity
+    let userID: String
 
     // MARK: - Init
     init(
         interactor: HomeInteractor,
         viewModel: ViewModel,
-        user: UserEntity
+        userID: String
     ) {
         self.interactor = interactor
         self.viewModel = viewModel
-        self.user = user
+        self.userID = userID
 
-        let role = user.role.rawValue
-
-        _books = Query(
-            filter: #Predicate<BookEntity> { $0.role == role },
-            sort: \.title
+        _users = Query(
+            filter: #Predicate<UserEntity> { $0.id == userID },
+            sort: \.name
         )
+
+        _books = Query(sort: \.title)
     }
 
     @Query private var books: [BookEntity]
+    @Query private var users: [UserEntity]
+
+    var currentUser: UserEntity {
+        users.first { $0.id == userID }!
+    }
+
+    private var filteredBooks: [BookEntity] {
+        return books.filter { $0.role == currentUser.role.rawValue }
+    }
 
     func profileButton() -> some View {
-        Button(
-            action: { [weak interactor] in interactor?.onProfileTap() },
-            label: {
-                HStack {
-                    Text("Tavo Profilis").frame(width: 120)
-                    Image(systemName: "person.crop.circle.fill")
+            Button(
+                action: { [weak interactor] in interactor?.onProfileTap() },
+                label: {
+                    HStack {
+                        Text("Tavo Profilis").frame(width: 120)
+                        Image(systemName: "person.crop.circle.fill")
+                    }
                 }
-            }
-        )
-        .buttonStyle(.bordered)
-        .buttonBorderShape(.roundedRectangle)
-        .tint(.black)
-    }
+            )
+            .buttonStyle(.bordered)
+            .buttonBorderShape(.roundedRectangle)
+            .tint(.black)
+        }
+    
 
     func logoutButton() -> some View {
         Button(
@@ -99,12 +109,11 @@ struct HomeView<ViewModel: HomeViewModel>: View {
                 pinnedViews: .sectionFooters
             ) {
                 Section {
-                    ForEach(books) { book in
+                    ForEach(filteredBooks) { book in
                         BookItemView(
                             book: book,
-                            user: user,
-                            viewModel: viewModel,
-                            interactor: interactor
+                            user: currentUser,
+                            onBookClicked: { [weak interactor] in interactor?.onBookClicked(book, with: currentUser) },
                         )
                     }
                 } footer: {

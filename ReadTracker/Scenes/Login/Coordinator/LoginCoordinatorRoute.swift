@@ -1,11 +1,11 @@
 import Foundation
 
 enum LoginCoordinatorRoute: Identifiable, Equatable {
-    case home(user: UserEntity)
+    case home(userID: String)
 
     var id: String {
         switch self {
-        case .home: "home_\(UUID())"
+        case let .home(userID): "home_\(userID)"
         }
     }
 

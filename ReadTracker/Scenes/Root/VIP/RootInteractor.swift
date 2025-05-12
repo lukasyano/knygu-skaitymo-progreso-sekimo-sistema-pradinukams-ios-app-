@@ -22,7 +22,6 @@ final class DefaultRootInteractor {
 
 extension DefaultRootInteractor: RootInteractor {
     func onAppear() {
-
         let authPublisher = userRepository.authStatePublisher
             .removeDuplicates()
             .eraseToAnyPublisher()
@@ -44,7 +43,7 @@ extension DefaultRootInteractor: RootInteractor {
                     }
                 },
                 receiveValue: { [weak self] userId, _ in
-                    guard let userId else {
+                    guard userId != .none else {
                         self?.coordinator?.navigateToAuthentication()
                         return
                     }
@@ -63,12 +62,12 @@ extension DefaultRootInteractor: RootInteractor {
                     coordinator?.presentError(message: "Nutiko klaida", onDismiss: {})
                     return
                 }
-                coordinator?.navigateToHome(user: user)
+                coordinator?.navigateToHome(userID: user.id)
             })
             .store(in: &cancelBag)
     }
 
     func onDisappear() {
-         cancelBag.removeAll()
+        cancelBag.removeAll()
     }
 }

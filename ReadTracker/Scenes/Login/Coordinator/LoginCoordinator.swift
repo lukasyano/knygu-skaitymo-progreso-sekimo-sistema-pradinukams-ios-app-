@@ -3,7 +3,7 @@ import SwiftUI
 protocol LoginCoordinator: Coordinator {
     func presentError(_ error: String, onClose: @escaping () -> Void)
     func presentLoginComplete(_ message: String, onClose: @escaping () -> Void)
-    func navigateToHome(user: UserEntity)
+    func navigateToHome(userID: String)
 }
 
 final class DefaultLoginCoordinator: LoginCoordinator {
@@ -46,7 +46,7 @@ extension DefaultLoginCoordinator {
 // MARK: - Navigation
 
 extension DefaultLoginCoordinator {
-    func navigateToHome(user: UserEntity) {
-        route = .home(user: user)
+    func navigateToHome(userID: String) {
+        route = .home(userID: userID)
     }
 }

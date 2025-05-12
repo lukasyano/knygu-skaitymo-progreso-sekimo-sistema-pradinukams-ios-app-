@@ -19,8 +19,8 @@ extension HomeCoordinatorView {
         case let .book(book, user):
             BookReaderCoordinatorView(coordinator: .init(book: book, user: user, parent: coordinator))
 
-        case let .profile(user):
-            ProfileCoordinatorView(coordinator: .init(user: user, parent: coordinator))
+        case let .profile(userID):
+            ProfileCoordinatorView(coordinator: .init(parent: coordinator, userID: userID))
 
         case let .error(error: error, dismiss: dismiss): EmptyView()
             // Toa

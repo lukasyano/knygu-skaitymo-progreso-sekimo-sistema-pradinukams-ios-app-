@@ -17,8 +17,8 @@ extension DefaultRootCoordinator {
         route = .authentication
     }
 
-    func navigateToHome(user: UserEntity) {
-        route = .home(user: user)
+    func navigateToHome(userID: String) {
+        route = .home(userID: userID)
     }
 
     func presentError(

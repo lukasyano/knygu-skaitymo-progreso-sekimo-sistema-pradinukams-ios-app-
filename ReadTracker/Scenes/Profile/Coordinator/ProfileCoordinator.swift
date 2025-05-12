@@ -19,20 +19,22 @@ final class DefaultProfileCoordinator: ProfileCoordinator {
     weak var parent: (any Coordinator)?
     @Published var presentedView: ProfileCoordinatorPresentedView?
     @Published var route: ProfileCoordinatorRoute?
+    private let userId: String
 
-    init(user: UserEntity, parent: (any Coordinator)?) {
+    init(parent: (any Coordinator)?, userID: String) {
+        self.userId = userID
         self.parent = parent
         self.viewModel = DefaultProfileViewModel()
         self.presenter = DefaultProfilePresenter(displayLogic: viewModel)
         self.interactor = DefaultProfileInteractor(
             coordinator: self,
             presenter: presenter,
-            user: user
+            userID: userID,
         )
     }
 
     func start() -> some View {
-        ProfileView(interactor: interactor, viewModel: viewModel)
+        ProfileView(interactor: interactor, viewModel: viewModel, userID: userId)
     }
 }
 
