@@ -1,22 +1,26 @@
 import PDFKit
 import SwiftUI
 
-public struct StablePDFDocumentView: UIViewRepresentable {
+struct StablePDFDocumentView: UIViewRepresentable {
     private let url: URL
     private let initialPageIndex: Int
     @Binding private var isOnLastPage: Bool
     private var onPageChange: ((Int) -> Void)?
+    private var role: Role
+    @ObservedObject private var soundPlayer = DefaultSoundPlayer()
 
-    public init(
+    init(
         url: URL,
         initialPageIndex: Int = 0,
         isOnLastPage: Binding<Bool> = .constant(false),
-        onPageChange: ((Int) -> Void)? = nil
+        onPageChange: ((Int) -> Void)? = nil,
+        role: Role
     ) {
         self.url = url
         self.initialPageIndex = initialPageIndex
         self._isOnLastPage = isOnLastPage
         self.onPageChange = onPageChange
+        self.role = role
     }
 
     public func makeUIView(context: Context) -> PDFView {
@@ -46,7 +50,8 @@ public struct StablePDFDocumentView: UIViewRepresentable {
         Coordinator(
             initialPageIndex: initialPageIndex,
             isOnLastPage: $isOnLastPage,
-            onPageChange: onPageChange
+            onPageChange: onPageChange,
+            role: role, soundPlayer: soundPlayer
         )
     }
 }
@@ -61,6 +66,17 @@ private extension StablePDFDocumentView {
         pdfView.pageShadowsEnabled = false
         pdfView.interpolationQuality = .low
         pdfView.backgroundColor = .clear
+
+        DispatchQueue.main.async {
+            for findAllSubview in pdfView.findAllSubviews(ofType: UIScrollView.self) {
+                findAllSubview.showsHorizontalScrollIndicator = false
+                findAllSubview.showsVerticalScrollIndicator = false
+            }
+        }
+
+        if role == .child {
+            pdfView.isUserInteractionEnabled = false
+        }
 
         context.coordinator.pdfView = pdfView
         setupPageChangeObserver(context.coordinator)
@@ -116,11 +132,14 @@ private extension StablePDFDocumentView {
 }
 
 // MARK: - Coordinator
-public extension StablePDFDocumentView {
+extension StablePDFDocumentView {
     class Coordinator: NSObject {
         private let initialPageIndex: Int
         @Binding private var isOnLastPage: Bool
         var onPageChange: ((Int) -> Void)?
+        let role: Role
+        var soundPlayer: SoundPlayer?
+
         var observer: Any?
         weak var pdfView: PDFView?
         var lastKnownPageIndex: Int = 0
@@ -128,12 +147,16 @@ public extension StablePDFDocumentView {
         init(
             initialPageIndex: Int,
             isOnLastPage: Binding<Bool>,
-            onPageChange: ((Int) -> Void)?
+            onPageChange: ((Int) -> Void)?,
+            role: Role,
+            soundPlayer: SoundPlayer?
         ) {
             self.initialPageIndex = initialPageIndex
             self._isOnLastPage = isOnLastPage
             self.onPageChange = onPageChange
             self.lastKnownPageIndex = initialPageIndex
+            self.role = role
+            self.soundPlayer = soundPlayer
         }
 
         deinit {
@@ -157,6 +180,23 @@ public extension StablePDFDocumentView {
                 onPageChange?(currentPageIndex)
                 lastKnownPageIndex = currentPageIndex
             }
+
+            if role == .child {
+                soundPlayer?.playPageFlipSound()
+            }
         }
+    }
+}
+
+extension UIView {
+    func findAllSubviews<T: UIView>(ofType type: T.Type) -> [T] {
+        var results = [T]()
+        for subview in subviews {
+            results += subview.findAllSubviews(ofType: type)
+            if let subview = subview as? T {
+                results.append(subview)
+            }
+        }
+        return results
     }
 }

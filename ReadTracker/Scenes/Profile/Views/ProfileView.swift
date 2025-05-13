@@ -59,7 +59,6 @@ struct ProfileView<ViewModel: ProfileViewModel>: View {
                     .foregroundColor(progress.finished ? .green : .orange)
             }
 
-            // Dynamic-width progress bar
             ZStack(alignment: .leading) {
                 GeometryReader { geo in
                     Capsule()

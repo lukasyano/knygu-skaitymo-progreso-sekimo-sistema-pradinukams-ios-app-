@@ -54,7 +54,10 @@ struct BookReaderView<ViewModel: BookReaderViewModel>: View {
             VStack {
                 topNavigation
                 pdfContent
-                bottomNavigation
+
+                if user.role == .child {
+                    bottomNavigation
+                }
             }
             .background(Color(.systemBackground))
             .onAppear {
@@ -134,7 +137,8 @@ struct BookReaderView<ViewModel: BookReaderViewModel>: View {
                     onPageChange: { newPage in
                         currentPage = newPage
                         // Save progress here
-                    }
+                    },
+                    role: user.role
                 )
                 .id("pdf_\(book.id)")
             } else {
@@ -166,7 +170,7 @@ struct BookReaderView<ViewModel: BookReaderViewModel>: View {
 
     private func markAsRead() {
         if user.role != .parent {
-            interactor.onBookPageChanged(totalPages - 1)
+            interactor.onBookPageChanged(totalPages)
         }
         dismiss()
     }
@@ -186,14 +190,13 @@ struct BookReaderView<ViewModel: BookReaderViewModel>: View {
             Spacer()
 
             if isOnLastPage {
-                Button(action: markAsRead) {
-                    Text("Mark as Read")
-                        .padding()
-                        .background(Color.green)
-                        .foregroundColor(.white)
-                        .cornerRadius(8)
-                }
-                .disabled(user.role != .parent && isCooldownActive)
+//                Button(action: markAsRead) {
+                    Button("Perskaičiau") {
+                        markAsRead()
+                    }
+                    .warmButtonStyle()
+                    .padding()
+
             } else {
                 Text("Page \(currentPage + 1) of \(totalPages)")
                     .font(.headline)

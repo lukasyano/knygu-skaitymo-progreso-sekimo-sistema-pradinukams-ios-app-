@@ -20,11 +20,13 @@ final class DefaultUserRepository: UserRepository {
     @Injected private var firestoreService: UsersFirestoreService
     @Injected private var userStorageService: UserStorageService
     private var cancellables = Set<AnyCancellable>()
-    @Published private var currentUser: UserEntity?
-
-    init() {
-        setupAuthObserver()
+    @Published private var currentUser: UserEntity? {
+        didSet {}
     }
+
+//    init() {
+//        setupAuthObserver()
+//    }
 
     func fetchUserProgress(userID: String) -> AnyPublisher<[ProgressData], UserError> {
         firestoreService.getProgressData(userID: userID)
@@ -39,9 +41,9 @@ final class DefaultUserRepository: UserRepository {
     func saveUser(_ user: UserEntity) -> AnyPublisher<Void, Error> {
         print("Save user called!")
         return firestoreService.saveUserEntity(user)
-            .flatMap { [weak self] _ -> AnyPublisher<Void, Error> in
-                self?.persistUserLocally(user) ?? .empty()
-            }
+//            .flatMap { [weak self] _ -> AnyPublisher<Void, Error> in
+//                self?.persistUserLocally(user) ?? .empty()
+//            }
             .eraseToAnyPublisher()
     }
 
@@ -119,8 +121,8 @@ final class DefaultUserRepository: UserRepository {
                 currentUser = nil
             })
             .compactMap { $0 }
-            .debounce(for: .seconds(10), scheduler: DispatchQueue.main) // ⬅️ Wait for UID stability
-            .removeDuplicates() // ⬅️ Suppress duplicates after debounce
+            .debounce(for: .seconds(10), scheduler: DispatchQueue.main)
+            .removeDuplicates()
             .flatMap { [weak self] uid -> AnyPublisher<UserEntity, UserError> in
                 self?.synchronizeUserData(uid: uid) ?? .empty()
             }
@@ -129,8 +131,6 @@ final class DefaultUserRepository: UserRepository {
     }
 
     private func synchronizeUserData(uid: String) -> AnyPublisher<UserEntity, UserError> {
-        let localUser = try? userStorageService.fetchUser(byId: uid)
-
         return firestoreService.getUserEntity(userID: uid)
             .flatMap { [weak self] remoteUser -> AnyPublisher<UserEntity, Error> in
                 guard let self else { return .empty() }

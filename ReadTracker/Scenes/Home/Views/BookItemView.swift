@@ -14,6 +14,10 @@ struct BookItemView: View {
         progressData?.pagesRead ?? 0
     }
 
+    private var isFinished: Bool {
+        progressData?.finished ?? false
+    }
+
     private var totalPages: Int {
         book.totalPages ?? 0
     }
@@ -23,11 +27,11 @@ struct BookItemView: View {
     }
 
     private var progressText: String {
-        pagesRead > 0 ? "Skaitoma" : "Nepradėta"
+        isFinished ? "Perskaityta" : pagesRead > 0 ? "Skaitoma" : "Nepradėta"
     }
 
     private var progressColor: Color {
-        pagesRead > 0 ? .blue : .gray.opacity(0.5)
+        isFinished ? .green : pagesRead > 0 ? .blue : .gray.opacity(0.5)
     }
 
     var body: some View {
@@ -48,8 +52,12 @@ struct BookItemView: View {
         .padding(8)
         .background(
             RoundedRectangle(cornerRadius: 14)
-                .fill(Color.white)
+                .fill(isFinished ? Color.white.opacity(0.5) : Color.white)
                 .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 14)
+                .stroke(isFinished ? Color.green : Color.clear, lineWidth: 2)
         )
         .onTapGesture {
             withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
@@ -106,12 +114,12 @@ struct BookItemView: View {
             .padding(.vertical, 4)
             .background(
                 Capsule()
-                    .fill(progress > 0 ? Color.blue.opacity(0.2) : Color.gray.opacity(0.2))
+                    .fill(isFinished ? Color.green : progress > 0 ? Color.blue.opacity(0.2) : Color.gray.opacity(0.2))
             )
-            .foregroundColor(progress > 0 ? .blue : .gray)
+            .foregroundColor(isFinished ? Color.black : progress > 0 ? .blue : .gray)
             .overlay(
                 Capsule()
-                    .stroke(progress > 0 ? Color.blue : Color.gray, lineWidth: 1)
+                    .stroke(isFinished ? Color.black : progress > 0 ? Color.blue : Color.gray, lineWidth: 1)
             )
     }
 }

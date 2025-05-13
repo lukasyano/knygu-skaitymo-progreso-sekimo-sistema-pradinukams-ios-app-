@@ -4,7 +4,6 @@ import SwiftData
 @Model
 class UserEntity {
     @Attribute(.unique) var id: String
-//    var userUID: String
     var email: String
     var name: String
     var role: Role
@@ -19,12 +18,14 @@ class UserEntity {
 
     @Relationship(deleteRule: .nullify)
     var parent: UserEntity?
+    
+    @Relationship(deleteRule: .cascade)
+    var readingSessions = [ReadingSession]()
 
     @Relationship(deleteRule: .nullify, inverse: \UserEntity.parent)
     var children = [UserEntity]()
 
     init(
-       // userUID: String,
         id: String,
         email: String,
         name: String,
@@ -33,7 +34,6 @@ class UserEntity {
         childrensID: String = "",
         totalPoints: Int = 0
     ) {
-       // self.userUID = userUID
         self.id = id
         self.email = email
         self.name = name

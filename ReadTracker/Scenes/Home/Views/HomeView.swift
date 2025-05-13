@@ -30,24 +30,16 @@ struct HomeView<ViewModel: HomeViewModel>: View {
     }
 
     var currentUser: UserEntity? {
-        // Debug print to console
-        if let user = users.first {
-            print("User found with id: \(user.id)")
-        } else {
-            print("No user found for userID: \(userID)")
-        }
         return users.first
     }
 
     private var filteredBooks: [BookEntity] {
         guard let currentUser = currentUser else {
-            print("filteredBooks: currentUser is nil")
             return []
         }
         let matchedBooks = books.filter { book in
             book.role == currentUser.role.rawValue
         }
-        print("filteredBooks: Found \(matchedBooks.count) books for role: \(currentUser.role.rawValue)")
         return matchedBooks
     }
 
@@ -227,7 +219,7 @@ struct HomeView<ViewModel: HomeViewModel>: View {
 
     private var notStartedBooks: [BookEntity] {
         guard let currentUser else { return [] }
-        
+
         return filteredBooks
             .filter { book in
                 !currentUser.progressData.contains { $0.bookId == book.id && $0.pagesRead > 0 }
@@ -248,14 +240,4 @@ struct HomeView<ViewModel: HomeViewModel>: View {
             }
         } else { [] }
     }
-}
-
-private func chipView(pagesRead: Int) -> some View {
-    let isStartedReading = pagesRead > 0
-
-    return Text(isStartedReading ? "Skaitoma" : "Nepradėta")
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 1)
-        .background(isStartedReading ? Color.mint.gradient.opacity(0.7) : Color.gray.gradient.opacity(0.7))
-        .clipShape(Capsule())
 }

@@ -23,7 +23,6 @@ final class DefaultRootInteractor {
 extension DefaultRootInteractor: RootInteractor {
     func onAppear() {
         let authPublisher = userRepository.authStatePublisher
-            .removeDuplicates()
             .eraseToAnyPublisher()
 
         let refreshPublisher = bookRepository.refreshIfNeeded()
@@ -47,23 +46,9 @@ extension DefaultRootInteractor: RootInteractor {
                         self?.coordinator?.navigateToAuthentication()
                         return
                     }
-                    self?.navigateToHome()
+                    self?.coordinator?.navigateToHome(userID: userId!)
                 }
             )
-            .store(in: &cancelBag)
-    }
-
-    private func navigateToHome() {
-        userRepository.getCurrentUser()
-            .subscribe(on: DispatchQueue.global())
-            .receive(on: DispatchQueue.main)
-            .sink(receiveValue: { [weak coordinator] in
-                guard let user = $0 else {
-                    coordinator?.presentError(message: "Nutiko klaida", onDismiss: {})
-                    return
-                }
-                coordinator?.navigateToHome(userID: user.id)
-            })
             .store(in: &cancelBag)
     }
 

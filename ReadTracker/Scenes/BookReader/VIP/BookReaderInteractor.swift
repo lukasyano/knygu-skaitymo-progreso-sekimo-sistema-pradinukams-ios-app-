@@ -6,6 +6,7 @@ import Resolver
 protocol BookReaderInteractor: AnyObject {
     func viewDidAppear()
     func onBookPageChanged(_ page: Int)
+  //  func onBookMarkedAsFinished()
     func getBookProgress() -> ProgressData?
     func saveSessionDuration(_ duration: TimeInterval)
 }
@@ -38,13 +39,9 @@ final class DefaultBookReaderInteractor {
     }
 }
 
-struct ReadingSession: Codable {
-    let startTime: Date
-    let endTime: Date
-    let duration: TimeInterval
-}
-
 extension DefaultBookReaderInteractor: BookReaderInteractor {
+    
+    
     func saveSessionDuration(_ duration: TimeInterval) {
         guard user.role != .parent else { return }
 
