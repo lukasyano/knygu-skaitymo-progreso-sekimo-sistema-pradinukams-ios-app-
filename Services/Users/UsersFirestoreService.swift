@@ -133,7 +133,7 @@ final class DefaultUsersFirestoreService: UsersFirestoreService {
             name: data["name"] as? String ?? "",
             role: Role(rawValue: data["role"] as? String ?? ""),
             parentID: data["parentId"] as? String,
-            childrensID: data["children"] as? [String] ?? [],
+            childrensID: data["children"] as? String ?? "",
             totalPoints: data["totalPoints"] as? Int ?? 0
         )
 

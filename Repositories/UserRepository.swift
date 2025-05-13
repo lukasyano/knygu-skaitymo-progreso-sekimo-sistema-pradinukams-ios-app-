@@ -63,7 +63,7 @@ final class DefaultUserRepository: UserRepository {
                     name: name,
                     role: .child,
                     parentID: parent.id,
-                    childrensID: [],
+                    childrensID: "",
                     totalPoints: 0
                 )
 
@@ -80,7 +80,7 @@ final class DefaultUserRepository: UserRepository {
                     email: email,
                     name: name,
                     role: role,
-                    childrensID: []
+                    childrensID: ""
                 )
 
                 return self?.persistUserRemotelyAndLocally(user) ?? .empty()
@@ -161,6 +161,8 @@ private extension DefaultUserRepository {
         children.forEach { try? userStorageService.saveUser($0) }
     }
 
+    
+    //TODO: - 
     func updateLocalUserProgress(userID: String, progress: [ProgressData]) {
         guard var user = try? userStorageService.fetchUser(byId: userID) else { return }
         user.progressData = progress

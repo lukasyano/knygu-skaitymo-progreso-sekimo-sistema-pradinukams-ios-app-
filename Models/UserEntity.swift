@@ -4,6 +4,7 @@ import SwiftData
 @Model
 class UserEntity {
     @Attribute(.unique) var id: String
+//    var userUID: String
     var email: String
     var name: String
     var role: Role
@@ -11,8 +12,7 @@ class UserEntity {
 
     // Firestore-compatible fields
     var parentID: String?
-    var childrensID: [String]
-
+    var childrensID: String = ""
     // Relationships
     @Relationship(deleteRule: .cascade)
     var progressData = [ProgressData]()
@@ -24,14 +24,16 @@ class UserEntity {
     var children = [UserEntity]()
 
     init(
+       // userUID: String,
         id: String,
         email: String,
         name: String,
         role: Role,
         parentID: String? = nil,
-        childrensID: [String] = [],
+        childrensID: String = "",
         totalPoints: Int = 0
     ) {
+       // self.userUID = userUID
         self.id = id
         self.email = email
         self.name = name
@@ -42,38 +44,9 @@ class UserEntity {
     }
 }
 
-@Model
-class ProgressData: Identifiable {
-    @Attribute(.unique) var id: String
-    var bookId: String
-    var pagesRead: Int
-    var totalPages: Int
-    var finished: Bool
-    var pointsEarned: Int
-
-    @Relationship(deleteRule: .nullify, inverse: \UserEntity.progressData)
-    var user: UserEntity?
-
-    init(
-        id: String = UUID().uuidString,
-        bookId: String,
-        pagesRead: Int,
-        totalPages: Int,
-        finished: Bool,
-        pointsEarned: Int
-    ) {
-        self.id = id
-        self.bookId = bookId
-        self.pagesRead = pagesRead
-        self.totalPages = totalPages
-        self.finished = finished
-        self.pointsEarned = pointsEarned
-    }
-}
-
 extension UserEntity {
     func updateChildrenIDs() {
-        childrensID = children.map { $0.id }
+        childrensID = children.map { $0.id }.joined(separator: ",")
     }
 
     func withAddedChild(_ child: UserEntity) -> UserEntity {
@@ -85,7 +58,11 @@ extension UserEntity {
 
     func deleteChild(_ child: UserEntity) {
         children.removeAll { $0.id == child.id }
-        childrensID.removeAll { $0 == child.id }
+        updateChildrenIDs()
         child.parentID = nil
+    }
+
+    func getChildrenIDs() -> [String] {
+        return childrensID.isEmpty ? [] : childrensID.components(separatedBy: ",")
     }
 }

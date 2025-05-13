@@ -1,3 +1,4 @@
+import FirebaseAuth
 import Resolver
 import SwiftData
 import SwiftUI

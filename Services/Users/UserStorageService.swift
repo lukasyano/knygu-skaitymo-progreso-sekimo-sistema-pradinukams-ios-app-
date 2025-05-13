@@ -14,10 +14,34 @@ final class DefaultUserStorageService: UserStorageService {
 
     func saveUser(_ user: UserEntity) throws {
         if let existing = try fetchUser(byId: user.id) {
-            context.delete(existing)
+            existing.email = user.email
+            existing.name = user.name
+            existing.role = user.role
+            existing.totalPoints = user.totalPoints
+            existing.parentID = user.parentID
+            existing.childrensID = user.childrensID
+
+            existing.progressData = user.progressData.map { progress in
+                progress
+            }
+            print("updated user")
+        } else {
+            let newUser = UserEntity(
+                id: user.id,
+                email: user.email,
+                name: user.name,
+                role: user.role,
+                parentID: user.parentID,
+                childrensID: user.childrensID,
+                totalPoints: user.totalPoints
+            )
+            newUser.progressData = user.progressData
+            context.insert(newUser)
+            print("insert newUser with id:\(newUser.id)")
         }
-        context.insert(user)
+
         try context.save()
+        print("save completed")
     }
 
     func fetchUser(byId id: String) throws -> UserEntity? {
