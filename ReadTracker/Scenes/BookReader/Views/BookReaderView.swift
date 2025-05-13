@@ -1,5 +1,6 @@
 import Lottie
 import PDFKit
+import Resolver
 import SwiftUI
 
 struct BookReaderView<ViewModel: BookReaderViewModel>: View {
@@ -15,6 +16,11 @@ struct BookReaderView<ViewModel: BookReaderViewModel>: View {
         "complete.json", "eye.json", "reading.json", "star.json"
     ]
 
+    @State private var currentPage: Int
+    @State private var isOnLastPage = false
+
+    private let soundPlayer: SoundPlayer = DefaultSoundPlayer()
+
     init(
         interactor: BookReaderInteractor,
         viewModel: ViewModel,
@@ -25,9 +31,10 @@ struct BookReaderView<ViewModel: BookReaderViewModel>: View {
         self.viewModel = viewModel
         self.book = book
         self.user = user
+
+        _currentPage = State(initialValue: user.progressData.first { $0.bookId == book.id }?.pagesRead ?? 0)
     }
 
-    @State private var currentPage = 0
     @State private var totalPages = 1
 
     var progress: Double {
@@ -45,6 +52,7 @@ struct BookReaderView<ViewModel: BookReaderViewModel>: View {
             }
             .background(Color(.systemBackground))
             .onAppear {
+               // soundPlayer.stopPlayer()
                 updateTotalPages()
             }
             .onChange(of: viewModel.shouldCelebrate) { _, shouldCelebrate in
@@ -95,12 +103,16 @@ struct BookReaderView<ViewModel: BookReaderViewModel>: View {
     private var pdfContent: some View {
         ZStack {
             if let bookURL = book.fileURL {
-                PDFDocumentView(
-                    url: bookURL,
-                    onPageChange: { pageIndex in
-                        currentPage = pageIndex
+                StablePDFDocumentView(
+                    url: book.fileURL!,
+                    initialPageIndex: currentPage,
+                    isOnLastPage: $isOnLastPage,
+                    onPageChange: { newPage in
+                        currentPage = newPage
+                        // Save progress here
                     }
                 )
+                .id("pdf_\(book.id)")
             } else {
                 Text("Unable to load PDF")
                     .foregroundColor(.gray)
@@ -176,41 +188,9 @@ struct BookReaderView<ViewModel: BookReaderViewModel>: View {
     // MARK: - Celebration Effect
     private func playCelebrationEffect() {
         HapticManager.playSuccessVibration()
-        SoundPlayer.shared.playCelebrationSound()
+        soundPlayer.playCelebrationSound()
         DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
             viewModel.shouldCelebrate = false
         }
-    }
-}
-
-enum HapticManager {
-    static func playSuccessVibration() {
-        let generator = UINotificationFeedbackGenerator()
-        generator.notificationOccurred(.success)
-    }
-}
-
-import AVFoundation
-
-class SoundPlayer {
-    static let shared = SoundPlayer()
-    private var player: AVAudioPlayer?
-
-    func playCelebrationSound() {
-        guard let url = Bundle.main.url(forResource: "checkpoint", withExtension: "mp3") else { return }
-        try? AVAudioSession.sharedInstance().setCategory(.ambient)
-        player = try? AVAudioPlayer(contentsOf: url)
-        player?.play()
-    }
-
-    func playLobbySound() {
-        guard let url = Bundle.main.url(forResource: "lobby", withExtension: "mp3") else { return }
-        try? AVAudioSession.sharedInstance().setCategory(.ambient)
-        player = try? AVAudioPlayer(contentsOf: url)
-        player?.play()
-    }
-
-    func stopLobbySound() {
-        player?.stop()
     }
 }

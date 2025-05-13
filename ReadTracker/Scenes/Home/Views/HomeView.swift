@@ -9,9 +9,14 @@ struct HomeView<ViewModel: HomeViewModel>: View {
     private unowned var interactor: HomeInteractor
     @ObservedObject private var viewModel: ViewModel
     let userID: String
-    
 
-    // MARK: - Init
+    @State private var isMusicOn: Bool = false
+
+    @Query private var books: [BookEntity]
+    @Query private var users: [UserEntity]
+
+    @StateObject private var soundPlayer = DefaultSoundPlayer()
+
     init(
         interactor: HomeInteractor,
         viewModel: ViewModel,
@@ -25,19 +30,42 @@ struct HomeView<ViewModel: HomeViewModel>: View {
             filter: #Predicate<UserEntity> { $0.id == userID },
             sort: \.name
         )
-
-        _books = Query(sort: \.title)
     }
 
-    @Query private var books: [BookEntity]
-    @Query private var users: [UserEntity]
-
     var currentUser: UserEntity {
-        users.first { $0.id == userID }!
+        users.first ?? .init(id: "", email: "", name: "", role: .child)
     }
 
     private var filteredBooks: [BookEntity] {
         return books.filter { $0.role == currentUser.role.rawValue }
+    }
+
+    private func handleMusicControl() {
+        if isMusicOn {
+            soundPlayer.playLobbySound()
+        } else {
+            soundPlayer.stopPlayer()
+        }
+    }
+
+    private var musicControlOverlay: some View {
+        VStack {
+            Spacer()
+            HStack {
+                Spacer()
+                Button(action: {
+                    isMusicOn.toggle()
+                    handleMusicControl()
+                }) {
+                    Image(systemName: isMusicOn ? "pause.circle.fill" : "play.circle.fill")
+                        .resizable()
+                        .frame(width: 60, height: 60)
+                        .foregroundColor(isMusicOn ? .blue : .gray)
+                        .shadow(radius: 4)
+                        .padding()
+                }
+            }
+        }
     }
 
     func profileButton() -> some View {
@@ -96,7 +124,26 @@ struct HomeView<ViewModel: HomeViewModel>: View {
                     .padding(.horizontal, 12)
                     .toolbarBackground(Constants.mainScreenColor, for: .navigationBar)
                     .onAppear(perform: { [weak interactor] in interactor?.viewDidAppear() })
-                    .onAppear(perform: SoundPlayer.shared.playLobbySound)
+                    // .onAppear(perform: soundPlayer.playLobbySound)
+                    .onDisappear(perform: soundPlayer.stopPlayer)
+            }
+
+            musicControlOverlay
+        }
+    }
+
+    private var notStartedSectionTitle: some View {
+        Group {
+            if currentUser.role == .child {
+                Text("Nepradėtos")
+                    .font(.headline)
+                    .padding(.horizontal)
+                    .padding(.top, startedBooks.isEmpty ? 0 : 24)
+            } else {
+                Text("Jums rekomanduojamos")
+                    .font(.headline)
+                    .padding(.horizontal)
+                    .padding(.top, startedBooks.isEmpty ? 0 : 24)
             }
         }
     }
@@ -121,10 +168,7 @@ struct HomeView<ViewModel: HomeViewModel>: View {
                 }
 
                 if !notStartedBooks.isEmpty {
-                    Text("Nepradėtos")
-                        .font(.headline)
-                        .padding(.horizontal)
-                        .padding(.top, startedBooks.isEmpty ? 0 : 24)
+                    notStartedSectionTitle
 
                     ForEach(notStartedBooks) { book in
                         BookItemView(

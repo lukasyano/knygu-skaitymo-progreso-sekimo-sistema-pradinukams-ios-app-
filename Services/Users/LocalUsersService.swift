@@ -1,6 +1,6 @@
 import Combine
-import SwiftData
 import Resolver
+import SwiftData
 
 protocol LocalUsersService {
     func saveUserEntity(_ user: UserEntity) -> AnyPublisher<Void, Error>
@@ -10,11 +10,11 @@ protocol LocalUsersService {
 final class DefaultLocalUsersService: LocalUsersService {
     @Injected private var context: ModelContext
     @Published private var currentUser: UserEntity?
-    
+
     init() {
         loadInitialUser()
     }
-    
+
     func saveUserEntity(_ user: UserEntity) -> AnyPublisher<Void, Error> {
         Future { [weak self] promise in
             self?.clearExistingUsers()
@@ -24,11 +24,11 @@ final class DefaultLocalUsersService: LocalUsersService {
         }
         .eraseToAnyPublisher()
     }
-    
+
     func getCurrentUser() -> AnyPublisher<UserEntity?, Never> {
         $currentUser.eraseToAnyPublisher()
     }
-    
+
     func clearAllUsers() -> AnyPublisher<Void, Error> {
         Future { [weak self] promise in
             self?.clearExistingUsers()
@@ -37,16 +37,16 @@ final class DefaultLocalUsersService: LocalUsersService {
         }
         .eraseToAnyPublisher()
     }
-    
+
     private func loadInitialUser() {
         let descriptor = FetchDescriptor<UserEntity>()
         currentUser = try? context.fetch(descriptor).first
     }
-    
+
     private func clearExistingUsers() {
         (try? context.fetch(FetchDescriptor<UserEntity>()))?.forEach { context.delete($0) }
     }
-    
+
     private func saveContext(promise: @escaping (Result<Void, Error>) -> Void) {
         do {
             try context.save()

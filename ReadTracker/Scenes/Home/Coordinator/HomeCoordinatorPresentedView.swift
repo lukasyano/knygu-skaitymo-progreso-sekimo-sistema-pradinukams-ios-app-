@@ -10,7 +10,7 @@ enum HomeCoordinatorPresentedView: Identifiable, Equatable {
         case let .error(message, _):
             "error:\(message)"
         case let .book(book, _):
-            "book:\(book.id)"
+            "book:\(book.id)_"
         case let .profile(userID):
             "profile_\(userID)"
         }
