@@ -4,7 +4,8 @@ import Resolver
 
 protocol UserRepository {
     func createUser(name: String, email: String, password: String, role: Role) -> AnyPublisher<UserEntity, UserError>
-    func createChildUser(name: String, email: String, password: String, parent: UserEntity) -> AnyPublisher<UserEntity, UserError>
+    func createChildUser(name: String, email: String, password: String, parent: UserEntity)
+        -> AnyPublisher<UserEntity, UserError>
     func logIn(email: String, password: String) -> AnyPublisher<UserEntity, UserError>
     func getCurrentUser() -> AnyPublisher<UserEntity?, Never>
     var authStatePublisher: AnyPublisher<String?, Never> { get }
@@ -27,6 +28,7 @@ final class DefaultUserRepository: UserRepository {
 
     func fetchUserProgress(userID: String) -> AnyPublisher<[ProgressData], UserError> {
         firestoreService.getProgressData(userID: userID)
+            .removeDuplicates()
             .mapError { UserError.message($0.localizedDescription) }
             .handleEvents(receiveOutput: { [weak self] progress in
                 self?.updateLocalUserProgress(userID: userID, progress: progress)
@@ -35,7 +37,8 @@ final class DefaultUserRepository: UserRepository {
     }
 
     func saveUser(_ user: UserEntity) -> AnyPublisher<Void, Error> {
-        firestoreService.saveUserEntity(user)
+        print("Save user called!")
+        return firestoreService.saveUserEntity(user)
             .flatMap { [weak self] _ -> AnyPublisher<Void, Error> in
                 self?.persistUserLocally(user) ?? .empty()
             }
@@ -116,7 +119,9 @@ final class DefaultUserRepository: UserRepository {
                 currentUser = nil
             })
             .compactMap { $0 }
-            .flatMap { [weak self] uid in
+            .debounce(for: .seconds(10), scheduler: DispatchQueue.main) // ⬅️ Wait for UID stability
+            .removeDuplicates() // ⬅️ Suppress duplicates after debounce
+            .flatMap { [weak self] uid -> AnyPublisher<UserEntity, UserError> in
                 self?.synchronizeUserData(uid: uid) ?? .empty()
             }
             .sink(receiveCompletion: { _ in }, receiveValue: { _ in })
@@ -161,8 +166,7 @@ private extension DefaultUserRepository {
         children.forEach { try? userStorageService.saveUser($0) }
     }
 
-    
-    //TODO: - 
+    // TODO: -
     func updateLocalUserProgress(userID: String, progress: [ProgressData]) {
         guard var user = try? userStorageService.fetchUser(byId: userID) else { return }
         user.progressData = progress

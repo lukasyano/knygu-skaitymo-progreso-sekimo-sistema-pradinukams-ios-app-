@@ -26,10 +26,7 @@ struct HomeView<ViewModel: HomeViewModel>: View {
         self.viewModel = viewModel
         self.userID = userID
 
-        _users = Query(
-            filter: #Predicate<UserEntity> { $0.id == userID },
-            sort: \.name
-        )
+        _users = Query(filter: #Predicate<UserEntity> { $0.id == userID })
     }
 
     var currentUser: UserEntity? {
@@ -229,12 +226,13 @@ struct HomeView<ViewModel: HomeViewModel>: View {
     }
 
     private var notStartedBooks: [BookEntity] {
-        if let currentUser {
-            filteredBooks
-                .filter { book in
-                    (currentUser.progressData.first(where: { $0.bookId == book.id })?.pagesRead ?? 0) == 0
-                }
-        } else { [] }
+        guard let currentUser else { return [] }
+        
+        return filteredBooks
+            .filter { book in
+                !currentUser.progressData.contains { $0.bookId == book.id && $0.pagesRead > 0 }
+            }
+            .sorted { $0.title < $1.title }
     }
 
     private var sortedBooksByProgress: [BookEntity] {
