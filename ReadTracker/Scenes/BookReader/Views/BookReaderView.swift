@@ -9,8 +9,10 @@ struct BookReaderView<ViewModel: BookReaderViewModel>: View {
     @State private var lastPageChangeTime = Date().addingTimeInterval(-5)
     @State private var cooldownProgress: CGFloat = 0.0
     @State private var isCooldownActive = false
-
+    
     @State private var sessionStartTime: Date?
+    @State private var currentSessionDuration: TimeInterval = 0
+    private let sessionTimer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     private let book: BookEntity
     private let user: UserEntity
@@ -62,12 +64,14 @@ struct BookReaderView<ViewModel: BookReaderViewModel>: View {
             .background(Color(.systemBackground))
             .onAppear {
                 sessionStartTime = Date()
+                startNewReadingSession()
                 updateTotalPages()
             }
             .onDisappear {
-                guard let start = sessionStartTime else { return }
-                let duration = Date().timeIntervalSince(start)
-                interactor.saveSessionDuration(duration)
+                endReadingSession()
+            }
+            .onReceive(sessionTimer) { _ in
+                updateSessionDuration()
             }
             .onChange(of: viewModel.shouldCelebrate) { _, shouldCelebrate in
                 guard shouldCelebrate else { return }
@@ -263,5 +267,21 @@ struct BookReaderView<ViewModel: BookReaderViewModel>: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
             viewModel.shouldCelebrate = false
         }
+    }
+    
+    private func startNewReadingSession() {
+        interactor.startNewSession()
+        sessionStartTime = Date()
+    }
+    
+    private func updateSessionDuration() {
+        guard let start = sessionStartTime else { return }
+        currentSessionDuration = Date().timeIntervalSince(start)
+    }
+    
+    private func endReadingSession() {
+        guard let start = sessionStartTime else { return }
+        let duration = Date().timeIntervalSince(start)
+        interactor.saveSessionDuration(duration)
     }
 }

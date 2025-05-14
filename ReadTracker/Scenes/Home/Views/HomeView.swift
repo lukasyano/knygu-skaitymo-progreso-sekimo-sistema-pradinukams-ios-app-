@@ -10,13 +10,22 @@ struct HomeView<ViewModel: HomeViewModel>: View {
     @ObservedObject private var viewModel: ViewModel
     let userID: String
 
+    @State private var todayMinutesRead = 0
+    @State private var cancellables = Set<AnyCancellable>()
+
     @State private var isMusicOn: Bool = false
     @State private var readingSessions: [ReadingSession]?
+
+    @Injected private var userRepository: UserRepository
 
     @Query private var books: [BookEntity]
     @Query private var users: [UserEntity]
 
     @StateObject private var soundPlayer = DefaultSoundPlayer()
+
+    @State private var sessionStartTime: Date?
+    @State private var currentSessionDuration: TimeInterval = 0
+    private let sessionTimer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     init(
         interactor: HomeInteractor,
@@ -38,10 +47,9 @@ struct HomeView<ViewModel: HomeViewModel>: View {
         guard let currentUser = currentUser else {
             return []
         }
-        let matchedBooks = books.filter { book in
+        return books.filter { book in
             book.role == currentUser.role.rawValue
         }
-        return matchedBooks
     }
 
     private func handleMusicControl() {
@@ -50,6 +58,30 @@ struct HomeView<ViewModel: HomeViewModel>: View {
         } else {
             soundPlayer.stopPlayer()
         }
+    }
+
+    private func loadTodayProgress() {
+        userRepository.getReadingSessions(userID: userID)
+            .map { sessions in
+                sessions.filter { session in
+                    Calendar.current.isDateInToday(session.startTime) || Calendar.current.isDateInToday(session.endTime)
+                }.reduce(0) { total, session in
+                    let startOfDay = Calendar.current.startOfDay(for: Date())
+                    let endOfDay = Calendar.current.date(byAdding: .day, value: 1, to: startOfDay)!
+
+                    let start = max(session.startTime, startOfDay)
+                    let end = min(session.endTime, endOfDay)
+
+                    let sessionDuration = max(0, end.timeIntervalSince(start))
+                    return total + Int(sessionDuration / 60)
+                }
+            }
+            .replaceError(with: 0)
+            .receive(on: DispatchQueue.main)
+            .sink { minutes in
+                todayMinutesRead = minutes
+            }
+            .store(in: &cancellables)
     }
 
     private var musicControlOverlay: some View {
@@ -128,8 +160,10 @@ struct HomeView<ViewModel: HomeViewModel>: View {
                     .padding(.horizontal, 12)
                     .toolbarBackground(Constants.mainScreenColor, for: .navigationBar)
                     .onAppear(perform: { [weak interactor] in interactor?.viewDidAppear() })
-                    // .onAppear(perform: soundPlayer.playLobbySound)
                     .onDisappear(perform: soundPlayer.stopPlayer)
+                    .onAppear {
+                        loadTodayProgress()
+                    }
             }
 
             musicControlOverlay
@@ -159,11 +193,10 @@ struct HomeView<ViewModel: HomeViewModel>: View {
         if let currentUser {
             VStack(spacing: 0) {
                 if currentUser.role == .child, let dailyReadingGoal = currentUser.dailyReadingGoal {
-                    DailyProgressBar(minutesRead: 3, goal: dailyReadingGoal)
+                    DailyProgressBar(minutesRead: todayMinutesRead, goal: dailyReadingGoal)
                         .padding()
                         .frame(height: 45)
-                        //.background(Color(.clear)) // For visual clarity
-                        .zIndex(1) 
+                        .zIndex(1)
                 }
 
                 ScrollView(showsIndicators: false) {
@@ -198,6 +231,24 @@ struct HomeView<ViewModel: HomeViewModel>: View {
                             }
                         }
 
+                        if !finishedBooks.isEmpty {
+                            Text("Perskaityta")
+                                .font(.headline)
+                                .padding(.horizontal)
+                                .padding(.top, 24)
+
+                            ForEach(finishedBooks) { book in
+                                BookItemView(
+                                    book: book,
+                                    user: currentUser,
+                                    onBookClicked: { [weak interactor] in
+                                        interactor?.onBookClicked(book, with: currentUser)
+                                    }
+                                )
+                                .opacity(0.7)
+                            }
+                        }
+
                         Text("Tavo bibliotekoje yra: \(filteredBooks.count) knygų (-os)")
                             .frame(maxWidth: .infinity, alignment: .center)
                             .font(.footnote)
@@ -214,7 +265,10 @@ struct HomeView<ViewModel: HomeViewModel>: View {
         if let currentUser {
             filteredBooks
                 .filter { book in
-                    currentUser.progressData.first(where: { $0.bookId == book.id })?.pagesRead ?? 0 > 0
+                    if let progress = currentUser.progressData.first(where: { $0.bookId == book.id }) {
+                        return progress.pagesRead > 0 && !progress.finished
+                    }
+                    return false
                 }
                 .sorted { lhs, rhs in
                     let lhsProgress = currentUser.progressData.first { $0.bookId == lhs.id }
@@ -250,5 +304,15 @@ struct HomeView<ViewModel: HomeViewModel>: View {
                 return firstRatio > secondRatio
             }
         } else { [] }
+    }
+
+    private var finishedBooks: [BookEntity] {
+        guard let currentUser else { return [] }
+
+        return filteredBooks.filter { book in
+            currentUser.progressData.first {
+                $0.bookId == book.id && $0.finished
+            } != nil
+        }.sorted { $0.title < $1.title }
     }
 }

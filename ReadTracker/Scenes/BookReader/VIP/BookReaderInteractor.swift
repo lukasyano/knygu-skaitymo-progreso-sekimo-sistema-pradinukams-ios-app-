@@ -9,6 +9,7 @@ protocol BookReaderInteractor: AnyObject {
     //  func onBookMarkedAsFinished()
     func getBookProgress() -> ProgressData?
     func saveSessionDuration(_ duration: TimeInterval)
+    func startNewSession()
 }
 
 final class DefaultBookReaderInteractor {
@@ -21,6 +22,12 @@ final class DefaultBookReaderInteractor {
     private let userRepository: UserRepository
     private let bookRepository: BookRepository
     private var user: UserEntity
+
+    private var currentSession: ReadingSession?
+    private var currentPages: [PageRead] = []
+    private var sessionTimer: Timer?
+    private var totalSessionDuration: TimeInterval = 0
+    private let sessionUpdateInterval: TimeInterval = 60
 
     init(
         coordinator: (any BookReaderCoordinator)?,
@@ -43,21 +50,55 @@ extension DefaultBookReaderInteractor: BookReaderInteractor {
     func saveSessionDuration(_ duration: TimeInterval) {
         guard user.role != .parent else { return }
 
-//        let newSession = ReadingSession(
-//            startTime: Date().addingTimeInterval(-duration),
-//            endTime: Date(),
-//            duration: duration
-//        )
+        currentSession?.endTime = Date()
+        currentSession?.duration = duration
+        currentSession?.pagesRead = currentPages
 
-        userRepository.saveUser(user)
+        guard let session = currentSession else { return }
+
+        // Save to Firestore
+        userRepository.saveReadingSession(session, for: user.id)
             .sink(receiveCompletion: { _ in }, receiveValue: { _ in })
             .store(in: &cancelBag)
+
+        // Reset session
+        currentSession = nil
+        currentPages.removeAll()
+    }
+
+    func startNewSession() {
+        currentSession = ReadingSession(
+            bookId: book.id,
+            startTime: Date(),
+            endTime: Date(),
+            duration: 0,
+            pagesRead: []
+        )
+        startSessionTimer()
+    }
+
+    private func startSessionTimer() {
+        sessionTimer?.invalidate()
+        sessionTimer = Timer.scheduledTimer(
+            withTimeInterval: sessionUpdateInterval,
+            repeats: true
+        ) { [weak self] _ in
+            self?.updateSessionDuration()
+        }
+    }
+
+    private func updateSessionDuration() {
+        guard let start = currentSession?.startTime else { return }
+        currentSession?.duration = Date().timeIntervalSince(start)
+        totalSessionDuration = currentSession?.duration ?? 0
     }
 
     func onBookPageChanged(_ page: Int) {
         guard let totalPages = book.totalPages else { return }
-
         guard page > 0, page <= totalPages else { return }
+
+        let pageRead = PageRead(pageNumber: page, timestamp: Date())
+        currentPages.append(pageRead)
 
         let progress = user.progressData.first { $0.bookId == book.id } ?? ProgressData(
             bookId: book.id,
@@ -88,9 +129,7 @@ extension DefaultBookReaderInteractor: BookReaderInteractor {
 
         // Save updates
         userRepository.saveUser(user)
-            .sink(receiveCompletion: { [weak self] _ in
-
-            }, receiveValue: { [weak self] _ in
+            .sink(receiveCompletion: { [weak self] _ in }, receiveValue: { [weak self] _ in
                 if pointsDelta > 0 {
                     self?.presenter?.presentCelebrate()
                 }

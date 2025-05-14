@@ -21,16 +21,35 @@ struct CustomProgressViewStyle: ProgressViewStyle {
 
     func makeBody(configuration: Configuration) -> some View {
         GeometryReader { geometry in
-            ZStack(alignment: .leading) {
+            ZStack {
+                // Fonas
                 Capsule()
                     .frame(height: height)
                     .foregroundColor(accentColor.opacity(0.2))
-
+                
+                // Užpildas
                 Capsule()
-                    .frame(width: geometry.size.width * CGFloat(configuration.fractionCompleted ?? 0), height: height)
-                    .foregroundColor(isCompleted ? .blue : accentColor.darker(by: 0.2))
+                    .frame(
+                        width: geometry.size.width * CGFloat(configuration.fractionCompleted ?? 0),
+                        height: height
+                    )
+                    // Jei užbaigta – ryškiai žalia, kitu atveju – tamsesnė akcento spalva
+                    .foregroundColor(isCompleted ? accentColor : accentColor.darker(by: 0.2))
+                    .animation(.easeInOut(duration: 0.4), value: configuration.fractionCompleted)
+                
+                // Overlay užbaigimo atveju: varnelė su tekstu
+                if isCompleted {
+                    HStack(spacing: 8) {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.system(size: height * 0.8))
+                        Text("Atlikta")
+                            .font(.system(size: height * 0.5, weight: .bold))
+                    }
+                    .foregroundColor(.white)
+                }
             }
         }
+        .frame(height: height)
     }
 }
 
@@ -50,9 +69,14 @@ struct DailyProgressBar: View {
                 .font(.subheadline)
 
             ProgressView(value: progress)
-                .progressViewStyle(CustomProgressViewStyle(height: height, isCompleted: progress >= 1.0))
+                .progressViewStyle(
+                    CustomProgressViewStyle(
+                        height: height,
+                        accentColor: .green,
+                        isCompleted: progress >= 1.0
+                    )
+                )
                 .frame(maxWidth: .infinity)
-                .animation(.easeInOut(duration: 0.4), value: progress)
         }
         .padding(.vertical, 8)
     }

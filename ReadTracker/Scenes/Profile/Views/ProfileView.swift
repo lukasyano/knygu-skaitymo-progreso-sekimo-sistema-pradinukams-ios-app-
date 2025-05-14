@@ -8,6 +8,8 @@ struct ProfileView<ViewModel: ProfileViewModel>: View {
     @ObservedObject private var viewModel: ViewModel
     private let userID: String
 
+    @State private var showUserWeekProgress: UserEntity?
+
     init(
         interactor: ProfileInteractor,
         viewModel: ViewModel,
@@ -162,7 +164,7 @@ struct ProfileView<ViewModel: ProfileViewModel>: View {
             } else {
                 LazyVStack(spacing: 12) {
                     ForEach(childs) { child in
-                        ChildRow(child: child)
+                        ChildRow(child: child, onSelect: { showUserWeekProgress = child })
                     }
                 }
             }
@@ -170,6 +172,9 @@ struct ProfileView<ViewModel: ProfileViewModel>: View {
         .padding()
         .background(RoundedRectangle(cornerRadius: 12).fill(Color(.systemBackground)))
         .shadow(color: Color.black.opacity(0.1), radius: 5, y: 2)
+        .sheet(item: $showUserWeekProgress) { user in
+            ProgressStatsView(userName: user.name, userId: user.id)
+        }
     }
 
     private var userInfoSection: some View {

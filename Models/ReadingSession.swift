@@ -1,12 +1,13 @@
 import Foundation
+import FirebaseFirestore
 
 struct ReadingSession: Codable {
-    var id: String?
-    var bookId: String
-    var startTime: Date
+    @DocumentID var id: String?
+    let bookId: String
+    let startTime: Date
     var endTime: Date
     var duration: TimeInterval
-    var pages: [PageRead]
+    var pagesRead: [PageRead]
     
     enum CodingKeys: String, CodingKey {
         case id
@@ -14,11 +15,11 @@ struct ReadingSession: Codable {
         case startTime
         case endTime
         case duration
-        case pages
+        case pagesRead
     }
 }
 
 struct PageRead: Codable {
-    var pageNumber: Int
-    var timestamp: Date
+    let pageNumber: Int
+    let timestamp: Date
 }

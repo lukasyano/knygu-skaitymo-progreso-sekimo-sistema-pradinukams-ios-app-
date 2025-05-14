@@ -8,6 +8,9 @@ protocol UsersFirestoreService {
     func getUserEntity(userID: String) -> AnyPublisher<UserEntity, Error>
     func getChildrenForParent(parentID: String) -> AnyPublisher<[UserEntity], Error>
     func getProgressData(userID: String) -> AnyPublisher<[ProgressData], Error>
+    func saveReadingSession(userID: String, session: ReadingSession) -> AnyPublisher<Void, Error>
+    func getReadingSessions(userID: String) -> AnyPublisher<[ReadingSession], Error>
+    func getWeeklyStats(userID: String) -> AnyPublisher<WeeklyReadingStats, Error>
 }
 
 final class DefaultUsersFirestoreService: UsersFirestoreService {
@@ -244,6 +247,113 @@ final class DefaultUsersFirestoreService: UsersFirestoreService {
                 "children": FieldValue.arrayUnion([childID])
             ]) { error in
                 error.map { promise(.failure($0)) } ?? promise(.success(()))
+            }
+        }
+        .eraseToAnyPublisher()
+    }
+}
+
+// MARK: - sessin
+extension DefaultUsersFirestoreService {
+    // Add new method
+    func saveReadingSession(userID: String, session: ReadingSession) -> AnyPublisher<Void, Error> {
+        let sessionsRef = fireStoreReference
+            .collection("users")
+            .document(userID)
+            .collection("readingSessions")
+            .document()
+
+        return Future<Void, Error> { promise in
+            do {
+                try sessionsRef.setData(from: session) { error in
+                    if let error = error {
+                        promise(.failure(error))
+                    } else {
+                        promise(.success(()))
+                    }
+                }
+            } catch {
+                promise(.failure(error))
+            }
+        }
+        .eraseToAnyPublisher()
+    }
+
+    func getWeeklyStats(userID: String) -> AnyPublisher<WeeklyReadingStats, Error> {
+        let sessionsRef = fireStoreReference
+            .collection("users")
+            .document(userID)
+            .collection("readingSessions")
+            .whereField("startTime", isGreaterThan: Date().addingTimeInterval(-604_800)) // 1 week
+
+        return Future<QuerySnapshot, Error> { promise in
+            sessionsRef.getDocuments { snapshot, error in
+                if let error = error {
+                    promise(.failure(error))
+                } else if let snapshot = snapshot {
+                    promise(.success(snapshot))
+                } else {
+                    promise(.failure(NSError(domain: "UnknownError", code: 500)))
+                }
+            }
+        }
+        .tryMap { snapshot -> WeeklyReadingStats in
+            let sessions = try snapshot.documents.compactMap { document -> ReadingSession? in
+                do {
+                    return try document.data(as: ReadingSession.self)
+                } catch {
+                    print("Error decoding session: \(error)")
+                    return nil
+                }
+            }
+            return self.calculateWeeklyStats(from: sessions)
+        }
+        .eraseToAnyPublisher()
+    }
+
+    private func calculateWeeklyStats(from sessions: [ReadingSession]) -> WeeklyReadingStats {
+        var totalDuration: TimeInterval = 0
+        var pagesRead = 0
+        var daysActive = Set<Date>()
+
+        for session in sessions {
+            totalDuration += session.duration
+            pagesRead += session.pagesRead.count
+
+            let calendar = Calendar.current
+            let startDate = calendar.startOfDay(for: session.startTime)
+            daysActive.insert(startDate)
+        }
+
+        return WeeklyReadingStats(
+            totalDuration: totalDuration,
+            averageDailyDuration: totalDuration / Double(max(daysActive.count, 1)),
+            pagesRead: pagesRead,
+            daysActive: daysActive.count
+        )
+    }
+
+    func getReadingSessions(userID: String) -> AnyPublisher<[ReadingSession], Error> {
+        let sessionsRef = fireStoreReference
+            .collection("users")
+            .document(userID)
+            .collection("readingSessions")
+            .order(by: "startTime", descending: true)
+
+        return Future<QuerySnapshot, Error> { promise in
+            sessionsRef.getDocuments { snapshot, error in
+                if let error = error {
+                    promise(.failure(error))
+                } else if let snapshot = snapshot {
+                    promise(.success(snapshot))
+                } else {
+                    promise(.failure(NSError(domain: "FirestoreError", code: 404, userInfo: [NSLocalizedDescriptionKey: "No data found"])))
+                }
+            }
+        }
+        .tryMap { snapshot -> [ReadingSession] in
+            try snapshot.documents.compactMap { document in
+                try document.data(as: ReadingSession.self)
             }
         }
         .eraseToAnyPublisher()

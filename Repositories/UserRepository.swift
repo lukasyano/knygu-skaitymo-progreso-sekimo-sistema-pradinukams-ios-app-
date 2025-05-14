@@ -12,17 +12,44 @@ protocol UserRepository {
     func getChildrenForParent(parentID: String) -> AnyPublisher<[UserEntity], UserError>
     func saveUser(_ user: UserEntity) -> AnyPublisher<Void, Error>
     func fetchUserProgress(userID: String) -> AnyPublisher<[ProgressData], UserError>
+    func saveReadingSession(_ session: ReadingSession, for userId: String) -> AnyPublisher<Void, Error>
+    func getWeeklyStats(userID: String) -> AnyPublisher<WeeklyReadingStats, UserError>
+    func getReadingSessions(userID: String) -> AnyPublisher<[ReadingSession], UserError>
+    func getProgressHistory(userID: String) -> AnyPublisher<[ProgressData], UserError>
+
     func signOut() throws
 }
 
 final class DefaultUserRepository: UserRepository {
+    func saveReadingSession(_ session: ReadingSession, for userId: String) -> AnyPublisher<Void, Error> {
+        firestoreService.saveReadingSession(userID: userId, session: session)
+            .mapError { $0 as Error }
+            .eraseToAnyPublisher()
+    }
+
+    func getWeeklyStats(userID: String) -> AnyPublisher<WeeklyReadingStats, UserError> {
+        firestoreService.getWeeklyStats(userID: userID)
+            .mapError { UserError.message($0.localizedDescription) }
+            .eraseToAnyPublisher()
+    }
+
+    func getReadingSessions(userID: String) -> AnyPublisher<[ReadingSession], UserError> {
+        firestoreService.getReadingSessions(userID: userID)
+            .mapError { UserError.message($0.localizedDescription) }
+            .eraseToAnyPublisher()
+    }
+
+    func getProgressHistory(userID: String) -> AnyPublisher<[ProgressData], UserError> {
+        firestoreService.getProgressData(userID: userID)
+            .mapError { UserError.message($0.localizedDescription) }
+            .eraseToAnyPublisher()
+    }
+
     @Injected private var firebaseAuth: AuthenticationService
     @Injected private var firestoreService: UsersFirestoreService
     @Injected private var userStorageService: UserStorageService
     private var cancellables = Set<AnyCancellable>()
-    @Published private var currentUser: UserEntity? {
-        didSet {}
-    }
+    @Published private var currentUser: UserEntity?
 
     func fetchUserProgress(userID: String) -> AnyPublisher<[ProgressData], UserError> {
         firestoreService.getProgressData(userID: userID)

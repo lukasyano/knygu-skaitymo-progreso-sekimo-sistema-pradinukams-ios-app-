@@ -58,6 +58,8 @@
 		AA1E9C922DD3525D00577C89 /* ProgressData.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1E9C912DD3525D00577C89 /* ProgressData.swift */; };
 		AA1E9C982DD4C36C00577C89 /* DailyProgressBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1E9C972DD4C36C00577C89 /* DailyProgressBar.swift */; };
 		AA1E9C9A2DD4C4EF00577C89 /* ReadingSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1E9C992DD4C4EF00577C89 /* ReadingSession.swift */; };
+		AA1E9CA12DD4D13A00577C89 /* ProgressStatsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1E9CA02DD4D13A00577C89 /* ProgressStatsView.swift */; };
+		AA1E9CA52DD4D23900577C89 /* WeeklyReadingStats.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1E9CA42DD4D23900577C89 /* WeeklyReadingStats.swift */; };
 		AA31A94F2DC8EF7700761A0D /* BookStorageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA31A94E2DC8EF7700761A0D /* BookStorageService.swift */; };
 		AA31A9522DC8F2C800761A0D /* UserEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA31A9512DC8F2B800761A0D /* UserEntity.swift */; };
 		AA34FF112DC6277F00B885A7 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = AA34FF102DC6277F00B885A7 /* Lottie */; };
@@ -283,6 +285,8 @@
 		AA1E9C912DD3525D00577C89 /* ProgressData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressData.swift; sourceTree = "<group>"; };
 		AA1E9C972DD4C36C00577C89 /* DailyProgressBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyProgressBar.swift; sourceTree = "<group>"; };
 		AA1E9C992DD4C4EF00577C89 /* ReadingSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadingSession.swift; sourceTree = "<group>"; };
+		AA1E9CA02DD4D13A00577C89 /* ProgressStatsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressStatsView.swift; sourceTree = "<group>"; };
+		AA1E9CA42DD4D23900577C89 /* WeeklyReadingStats.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeeklyReadingStats.swift; sourceTree = "<group>"; };
 		AA31A94E2DC8EF7700761A0D /* BookStorageService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookStorageService.swift; sourceTree = "<group>"; };
 		AA31A9512DC8F2B800761A0D /* UserEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserEntity.swift; sourceTree = "<group>"; };
 		AA3BBF762DC2656D00B14271 /* LoginCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginCoordinator.swift; sourceTree = "<group>"; };
@@ -764,6 +768,7 @@
 		AA3BBFC42DC2987A00B14271 /* VIP */ = {
 			isa = PBXGroup;
 			children = (
+				AA1E9CA42DD4D23900577C89 /* WeeklyReadingStats.swift */,
 				AA3BBFC12DC2987A00B14271 /* HomeInteractor.swift */,
 				AA3BBFC22DC2987A00B14271 /* HomePresenter.swift */,
 				AA3BBFC32DC2987A00B14271 /* HomeViewModel.swift */,
@@ -937,6 +942,7 @@
 		AA791FDC2DCBFF80007C2F0D /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				AA1E9CA02DD4D13A00577C89 /* ProgressStatsView.swift */,
 				AA8DBE132DC63D00000C3803 /* HoldToDismissButton.swift */,
 				AA791FDB2DCBFF80007C2F0D /* BookReaderView.swift */,
 			);
@@ -1208,6 +1214,7 @@
 				AA791FC32DCB8F29007C2F0D /* ProfileCoordinatorPresentedView.swift in Sources */,
 				AA3BC1772DC5E27100B14271 /* LoadingFiveLinesChronological.swift in Sources */,
 				AA3BC1782DC5E27100B14271 /* LoadingFiveLines.swift in Sources */,
+				AA1E9CA12DD4D13A00577C89 /* ProgressStatsView.swift in Sources */,
 				AA3BC1792DC5E27100B14271 /* LoadingPulseOutlineRepeater.swift in Sources */,
 				AA3BC17A2DC5E27100B14271 /* LoadingPulse.swift in Sources */,
 				AA791FCA2DCB8F29007C2F0D /* ProfileInteractor.swift in Sources */,
@@ -1218,6 +1225,7 @@
 				AA791FCC2DCB925E007C2F0D /* CreateChildView.swift in Sources */,
 				AA3BC17D2DC5E27100B14271 /* LoadingDoubleHelix.swift in Sources */,
 				AA31A94F2DC8EF7700761A0D /* BookStorageService.swift in Sources */,
+				AA1E9CA52DD4D23900577C89 /* WeeklyReadingStats.swift in Sources */,
 				AA3BC17E2DC5E27100B14271 /* LoadingText.swift in Sources */,
 				AA3BC17F2DC5E27100B14271 /* LoadingCircleBars.swift in Sources */,
 				AA1E9C922DD3525D00577C89 /* ProgressData.swift in Sources */,
