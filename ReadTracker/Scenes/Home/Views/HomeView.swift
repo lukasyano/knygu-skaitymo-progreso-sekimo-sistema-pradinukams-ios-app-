@@ -11,6 +11,7 @@ struct HomeView<ViewModel: HomeViewModel>: View {
     let userID: String
 
     @State private var isMusicOn: Bool = false
+    @State private var readingSessions: [ReadingSession]?
 
     @Query private var books: [BookEntity]
     @Query private var users: [UserEntity]
@@ -156,45 +157,55 @@ struct HomeView<ViewModel: HomeViewModel>: View {
     @ViewBuilder
     private var mainContentView: some View {
         if let currentUser {
-            ScrollView(showsIndicators: false) {
-                LazyVStack(alignment: .leading, spacing: 8) {
-                    if !startedBooks.isEmpty {
-                        Text("Skaitomos")
-                            .font(.headline)
-                            .padding(.horizontal)
-
-                        ForEach(startedBooks) { book in
-                            BookItemView(
-                                book: book,
-                                user: currentUser,
-                                onBookClicked: { [weak interactor] in
-                                    interactor?.onBookClicked(book, with: currentUser)
-                                }
-                            )
-                        }
-                    }
-
-                    if !notStartedBooks.isEmpty {
-                        notStartedSectionTitle
-
-                        ForEach(notStartedBooks) { book in
-                            BookItemView(
-                                book: book,
-                                user: currentUser,
-                                onBookClicked: { [weak interactor] in
-                                    interactor?.onBookClicked(book, with: currentUser)
-                                }
-                            )
-                        }
-                    }
-
-                    Text("Tavo bibliotekoje yra: \(filteredBooks.count) knygų (-os)")
-                        .frame(maxWidth: .infinity, alignment: .center)
-                        .font(.footnote)
-                        .padding(.top, 24)
-                        .padding(.horizontal)
+            VStack(spacing: 0) {
+                if currentUser.role == .child, let dailyReadingGoal = currentUser.dailyReadingGoal {
+                    DailyProgressBar(minutesRead: 3, goal: dailyReadingGoal)
+                        .padding()
+                        .frame(height: 45)
+                        //.background(Color(.clear)) // For visual clarity
+                        .zIndex(1) 
                 }
-                .padding(.top)
+
+                ScrollView(showsIndicators: false) {
+                    LazyVStack(alignment: .leading, spacing: 8) {
+                        if !startedBooks.isEmpty {
+                            Text("Skaitomos")
+                                .font(.headline)
+                                .padding(.horizontal)
+
+                            ForEach(startedBooks) { book in
+                                BookItemView(
+                                    book: book,
+                                    user: currentUser,
+                                    onBookClicked: { [weak interactor] in
+                                        interactor?.onBookClicked(book, with: currentUser)
+                                    }
+                                )
+                            }
+                        }
+
+                        if !notStartedBooks.isEmpty {
+                            notStartedSectionTitle
+
+                            ForEach(notStartedBooks) { book in
+                                BookItemView(
+                                    book: book,
+                                    user: currentUser,
+                                    onBookClicked: { [weak interactor] in
+                                        interactor?.onBookClicked(book, with: currentUser)
+                                    }
+                                )
+                            }
+                        }
+
+                        Text("Tavo bibliotekoje yra: \(filteredBooks.count) knygų (-os)")
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .font(.footnote)
+                            .padding(.top, 24)
+                            .padding(.horizontal)
+                    }
+                    .padding(.top)
+                }
             }
         }
     }

@@ -6,7 +6,7 @@ import Resolver
 protocol BookReaderInteractor: AnyObject {
     func viewDidAppear()
     func onBookPageChanged(_ page: Int)
-  //  func onBookMarkedAsFinished()
+    //  func onBookMarkedAsFinished()
     func getBookProgress() -> ProgressData?
     func saveSessionDuration(_ duration: TimeInterval)
 }
@@ -40,18 +40,14 @@ final class DefaultBookReaderInteractor {
 }
 
 extension DefaultBookReaderInteractor: BookReaderInteractor {
-    
-    
     func saveSessionDuration(_ duration: TimeInterval) {
         guard user.role != .parent else { return }
 
-        // Update user's reading sessions
-        let newSession = ReadingSession(
-            startTime: Date().addingTimeInterval(-duration),
-            endTime: Date(),
-            duration: duration
-        )
-        // user.readingSessions.append(newSession)
+//        let newSession = ReadingSession(
+//            startTime: Date().addingTimeInterval(-duration),
+//            endTime: Date(),
+//            duration: duration
+//        )
 
         userRepository.saveUser(user)
             .sink(receiveCompletion: { _ in }, receiveValue: { _ in })
@@ -71,9 +67,8 @@ extension DefaultBookReaderInteractor: BookReaderInteractor {
             pointsEarned: 0
         )
 
-        // Calculate based on total pages read, not increment
         let previousPages = progress.pagesRead
-        let newPages = max(page, previousPages) // Don't allow going backward
+        let newPages = max(page, previousPages)
         let totalPointsEarned = newPages / 10
         let pointsDelta = totalPointsEarned - progress.pointsEarned
 
@@ -94,14 +89,11 @@ extension DefaultBookReaderInteractor: BookReaderInteractor {
         // Save updates
         userRepository.saveUser(user)
             .sink(receiveCompletion: { [weak self] _ in
-//                if case .failure(let error) = completion {
-//                    self?.coordinator?.presentError(message: "Failed to save progress: \(error.localizedDescription)")
-//                }
+
             }, receiveValue: { [weak self] _ in
                 if pointsDelta > 0 {
                     self?.presenter?.presentCelebrate()
                 }
-                // self?.presenter?.presentProgressUpdate(progress: progress)
             })
             .store(in: &cancelBag)
     }
@@ -112,6 +104,5 @@ extension DefaultBookReaderInteractor: BookReaderInteractor {
 
     func viewDidAppear() {
         cancelBag.removeAll()
-        //   presenter?.presentInitialProgress(getBookProgress())
     }
 }

@@ -134,7 +134,8 @@ final class DefaultUsersFirestoreService: UsersFirestoreService {
             role: Role(rawValue: data["role"] as? String ?? ""),
             parentID: data["parentId"] as? String,
             childrensID: data["children"] as? String ?? "",
-            totalPoints: data["totalPoints"] as? Int ?? 0
+            totalPoints: data["totalPoints"] as? Int ?? 0,
+            dailyReadingGoal: data["dailyReadingGoal"] as? Int ?? 0
         )
 
         fetchProgressData(userRef: document.reference) { progressData in
@@ -183,6 +184,7 @@ final class DefaultUsersFirestoreService: UsersFirestoreService {
         case .child:
             payload["parentId"] = user.parentID
             payload["totalPoints"] = user.totalPoints
+            payload["dailyReadingGoal"] = user.dailyReadingGoal
 
         case .unknown: break
         }

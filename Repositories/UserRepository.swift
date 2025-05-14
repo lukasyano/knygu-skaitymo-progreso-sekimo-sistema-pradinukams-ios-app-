@@ -24,10 +24,6 @@ final class DefaultUserRepository: UserRepository {
         didSet {}
     }
 
-//    init() {
-//        setupAuthObserver()
-//    }
-
     func fetchUserProgress(userID: String) -> AnyPublisher<[ProgressData], UserError> {
         firestoreService.getProgressData(userID: userID)
             .removeDuplicates()
@@ -166,7 +162,6 @@ private extension DefaultUserRepository {
         children.forEach { try? userStorageService.saveUser($0) }
     }
 
-    // TODO: -
     func updateLocalUserProgress(userID: String, progress: [ProgressData]) {
         guard var user = try? userStorageService.fetchUser(byId: userID) else { return }
         user.progressData = progress
@@ -198,14 +193,14 @@ private extension DefaultUserRepository {
     }
 
     func saveAndLinkChild(_ child: UserEntity, parent: UserEntity) -> AnyPublisher<UserEntity, UserError> {
-        let updatedParent = parent.withAddedChild(child)
-
-        return Publishers.Zip(
-            persistUserRemotelyAndLocally(child),
-            persistUserRemotelyAndLocally(updatedParent)
-        )
-        .map { _ in child }
-        .eraseToAnyPublisher()
+        persistUserRemotelyAndLocally(child)
+            .flatMap { [weak self] _ -> AnyPublisher<UserEntity, UserError> in
+                guard let self else { return .empty() }
+                let updatedParent = parent.withAddedChild(child)
+                return self.persistUserRemotelyAndLocally(updatedParent)
+            }
+            .map { _ in child }
+            .eraseToAnyPublisher()
     }
 
     func persistUserRemotelyAndLocally(_ user: UserEntity) -> AnyPublisher<UserEntity, UserError> {

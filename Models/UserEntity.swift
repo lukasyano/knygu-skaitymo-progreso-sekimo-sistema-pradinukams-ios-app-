@@ -18,12 +18,11 @@ class UserEntity {
 
     @Relationship(deleteRule: .nullify)
     var parent: UserEntity?
-    
-    @Relationship(deleteRule: .cascade)
-    var readingSessions = [ReadingSession]()
 
     @Relationship(deleteRule: .nullify, inverse: \UserEntity.parent)
     var children = [UserEntity]()
+    
+    var dailyReadingGoal: Int?
 
     init(
         id: String,
@@ -32,7 +31,8 @@ class UserEntity {
         role: Role,
         parentID: String? = nil,
         childrensID: String = "",
-        totalPoints: Int = 0
+        totalPoints: Int = 0,
+        dailyReadingGoal: Int = 10
     ) {
         self.id = id
         self.email = email
@@ -41,6 +41,7 @@ class UserEntity {
         self.parentID = parentID
         self.childrensID = childrensID
         self.totalPoints = totalPoints
+        self.dailyReadingGoal = dailyReadingGoal
     }
 }
 

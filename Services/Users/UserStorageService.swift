@@ -20,6 +20,7 @@ final class DefaultUserStorageService: UserStorageService {
             existing.totalPoints = user.totalPoints
             existing.parentID = user.parentID
             existing.childrensID = user.childrensID
+            existing.dailyReadingGoal = user.dailyReadingGoal
 
             existing.progressData = user.progressData.map { progress in
                 progress
@@ -33,7 +34,8 @@ final class DefaultUserStorageService: UserStorageService {
                 role: user.role,
                 parentID: user.parentID,
                 childrensID: user.childrensID,
-                totalPoints: user.totalPoints
+                totalPoints: user.totalPoints,
+                dailyReadingGoal: user.dailyReadingGoal ?? 10
             )
             newUser.progressData = user.progressData
             context.insert(newUser)

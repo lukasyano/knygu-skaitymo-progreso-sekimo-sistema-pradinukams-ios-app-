@@ -56,7 +56,8 @@
 		AA1E9C8C2DD2913600577C89 /* SoundPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1E9C8B2DD2913600577C89 /* SoundPlayer.swift */; };
 		AA1E9C8E2DD2970200577C89 /* StablePDFDocumentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1E9C8D2DD2970200577C89 /* StablePDFDocumentView.swift */; };
 		AA1E9C922DD3525D00577C89 /* ProgressData.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1E9C912DD3525D00577C89 /* ProgressData.swift */; };
-		AA1E9C942DD38F3400577C89 /* ReadingSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1E9C932DD38F3400577C89 /* ReadingSession.swift */; };
+		AA1E9C982DD4C36C00577C89 /* DailyProgressBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1E9C972DD4C36C00577C89 /* DailyProgressBar.swift */; };
+		AA1E9C9A2DD4C4EF00577C89 /* ReadingSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1E9C992DD4C4EF00577C89 /* ReadingSession.swift */; };
 		AA31A94F2DC8EF7700761A0D /* BookStorageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA31A94E2DC8EF7700761A0D /* BookStorageService.swift */; };
 		AA31A9522DC8F2C800761A0D /* UserEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA31A9512DC8F2B800761A0D /* UserEntity.swift */; };
 		AA34FF112DC6277F00B885A7 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = AA34FF102DC6277F00B885A7 /* Lottie */; };
@@ -280,7 +281,8 @@
 		AA1E9C8B2DD2913600577C89 /* SoundPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundPlayer.swift; sourceTree = "<group>"; };
 		AA1E9C8D2DD2970200577C89 /* StablePDFDocumentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StablePDFDocumentView.swift; sourceTree = "<group>"; };
 		AA1E9C912DD3525D00577C89 /* ProgressData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressData.swift; sourceTree = "<group>"; };
-		AA1E9C932DD38F3400577C89 /* ReadingSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadingSession.swift; sourceTree = "<group>"; };
+		AA1E9C972DD4C36C00577C89 /* DailyProgressBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyProgressBar.swift; sourceTree = "<group>"; };
+		AA1E9C992DD4C4EF00577C89 /* ReadingSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadingSession.swift; sourceTree = "<group>"; };
 		AA31A94E2DC8EF7700761A0D /* BookStorageService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookStorageService.swift; sourceTree = "<group>"; };
 		AA31A9512DC8F2B800761A0D /* UserEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserEntity.swift; sourceTree = "<group>"; };
 		AA3BBF762DC2656D00B14271 /* LoginCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginCoordinator.swift; sourceTree = "<group>"; };
@@ -509,7 +511,7 @@
 		1245C7292DC219B2000A6933 /* Models */ = {
 			isa = PBXGroup;
 			children = (
-				AA1E9C932DD38F3400577C89 /* ReadingSession.swift */,
+				AA1E9C992DD4C4EF00577C89 /* ReadingSession.swift */,
 				AA1E9C912DD3525D00577C89 /* ProgressData.swift */,
 				AA31A9512DC8F2B800761A0D /* UserEntity.swift */,
 				AA8DBE172DC69BC1000C3803 /* ReadingProgressEntity.swift */,
@@ -752,6 +754,7 @@
 		AA3BBFC02DC2987A00B14271 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				AA1E9C972DD4C36C00577C89 /* DailyProgressBar.swift */,
 				AA77312D2DCFE29200F203A6 /* BookItemView.swift */,
 				AA3BBFBF2DC2987A00B14271 /* HomeView.swift */,
 			);
@@ -1243,12 +1246,12 @@
 				AA8DBE142DC63D03000C3803 /* HoldToDismissButton.swift in Sources */,
 				AA3BBFCA2DC2987A00B14271 /* HomeCoordinator.swift in Sources */,
 				AA791FE92DCBFF80007C2F0D /* BookReaderCoordinatorView.swift in Sources */,
-				AA1E9C942DD38F3400577C89 /* ReadingSession.swift in Sources */,
 				AA3BBFCB2DC2987A00B14271 /* HomeCoordinatorView.swift in Sources */,
 				AA3BBFCC2DC2987A00B14271 /* HomePresenter.swift in Sources */,
 				AA3BC13B2DC4F96300B14271 /* BookEntity.swift in Sources */,
 				AA3BBFCD2DC2987A00B14271 /* HomeModels.swift in Sources */,
 				AA3BBFCF2DC2987A00B14271 /* HomeInteractor.swift in Sources */,
+				AA1E9C982DD4C36C00577C89 /* DailyProgressBar.swift in Sources */,
 				AA3BBFD02DC2987A00B14271 /* HomeCoordinatorPresentedView.swift in Sources */,
 				AA1E9C7B2DD1124700577C89 /* RootCoordinatorPresentedView.swift in Sources */,
 				12B65D502DBFCAF900D478CA /* AuthenticationInteractor.swift in Sources */,
@@ -1277,6 +1280,7 @@
 				AA43A4BE2DC62AFE00109467 /* ReadTrackerApp.swift in Sources */,
 				AA43A4BF2DC62AFE00109467 /* AppDelegate+Application.swift in Sources */,
 				AA43A4C02DC62AFE00109467 /* MockCredentials.swift in Sources */,
+				AA1E9C9A2DD4C4EF00577C89 /* ReadingSession.swift in Sources */,
 				AA43A4C12DC62AFE00109467 /* AppDelegate.swift in Sources */,
 				AA8DBE182DC69BC1000C3803 /* ReadingProgressEntity.swift in Sources */,
 				AA3BBF8A2DC2656D00B14271 /* LoginCoordinator.swift in Sources */,
