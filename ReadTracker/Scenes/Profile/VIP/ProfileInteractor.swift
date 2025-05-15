@@ -6,6 +6,7 @@ import Resolver
 protocol ProfileInteractor: AnyObject {
     func viewDidAppear()
     func createChild(name: String, email: String, password: String, user: UserEntity)
+    func updateChildDailyGoal(user: UserEntity, goal: Int)
 }
 
 final class DefaultProfileInteractor {
@@ -40,6 +41,19 @@ final class DefaultProfileInteractor {
 // MARK: - Business Logic
 
 extension DefaultProfileInteractor: ProfileInteractor {
+    func updateChildDailyGoal(user: UserEntity, goal: Int) {
+        var updatedUser = user
+        updatedUser.dailyReadingGoal = goal
+
+       // userRepository.saveUserDailyTarget(userID: user.id, goal: goal)
+
+        userRepository.saveUser(updatedUser)
+            .subscribe(on: DispatchQueue.global())
+            .receive(on: DispatchQueue.main)
+            .sink(receiveCompletion: { _ in }, receiveValue: { _ in })
+            .store(in: &cancelBag)
+    }
+
     func createChild(name: String, email: String, password: String, user: UserEntity) {
         presenter?.presentLoading(true)
 

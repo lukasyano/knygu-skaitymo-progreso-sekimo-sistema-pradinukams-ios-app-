@@ -1,3 +1,4 @@
+import Combine
 import Lottie
 import PDFKit
 import Resolver
@@ -9,10 +10,8 @@ struct BookReaderView<ViewModel: BookReaderViewModel>: View {
     @State private var lastPageChangeTime = Date().addingTimeInterval(-5)
     @State private var cooldownProgress: CGFloat = 0.0
     @State private var isCooldownActive = false
-    
-    @State private var sessionStartTime: Date?
-    @State private var currentSessionDuration: TimeInterval = 0
-    private let sessionTimer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+
+    @Injected private var userRepository: UserRepository
 
     private let book: BookEntity
     private let user: UserEntity
@@ -61,18 +60,17 @@ struct BookReaderView<ViewModel: BookReaderViewModel>: View {
                     bottomNavigation
                 }
             }
+            .onAppear {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    startNewSession()
+                }
+            }
             .background(Color(.systemBackground))
             .onAppear {
-                sessionStartTime = Date()
-                startNewReadingSession()
+                //  interactor.startNewSession()
                 updateTotalPages()
             }
-            .onDisappear {
-                endReadingSession()
-            }
-            .onReceive(sessionTimer) { _ in
-                updateSessionDuration()
-            }
+
             .onChange(of: viewModel.shouldCelebrate) { _, shouldCelebrate in
                 guard shouldCelebrate else { return }
                 playCelebrationEffect()
@@ -91,10 +89,33 @@ struct BookReaderView<ViewModel: BookReaderViewModel>: View {
         .animation(.spring(), value: viewModel.shouldCelebrate)
     }
 
+    func clearCurrentSession() {
+        currentSession = nil
+        currentPages.removeAll()
+        print("[Session] Session cleared")
+    }
+
+    private func stopReading() {
+//        interactor.saveSessionDurationFromCurrentSession()
+//        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+//            dismiss.callAsFunction()
+//        }
+    }
+
+    @State private var cancelBag = Set<AnyCancellable>()
+    @State private var currentSession: ReadingSession?
+    @State private var currentPages: [PageRead] = []
+
     // MARK: - Top Navigation
     private var topNavigation: some View {
         HStack {
-            Button(action: dismiss.callAsFunction) {
+            Button(action: {
+                if let currentSession {
+                    let duration = Date().timeIntervalSince(currentSession.startTime)
+
+                    saveSession(currentSession, duration: duration)
+                }
+            }) {
                 Image(systemName: "xmark")
                     .padding()
                     .background(Circle().fill(Color.blue.opacity(0.2)))
@@ -176,7 +197,23 @@ struct BookReaderView<ViewModel: BookReaderViewModel>: View {
         if user.role != .parent {
             interactor.onBookPageChanged(totalPages)
         }
-        dismiss()
+        stopReading()
+    }
+
+    func startNewSession() {
+        guard currentSession == nil else {
+            print("[Session] Session already exists")
+            return
+        }
+
+        currentSession = ReadingSession(
+            bookId: book.id,
+            startTime: Date(),
+            endTime: Date(),
+            duration: 0,
+            pagesRead: []
+        )
+        print("[Session] New session started: \(currentSession!.startTime)")
     }
 
     // MARK: - Bottom Navigation
@@ -195,11 +232,11 @@ struct BookReaderView<ViewModel: BookReaderViewModel>: View {
 
             if isOnLastPage {
 //                Button(action: markAsRead) {
-                    Button("Perskaičiau") {
-                        markAsRead()
-                    }
-                    .warmButtonStyle()
-                    .padding()
+                Button("Perskaičiau") {
+                    markAsRead()
+                }
+                .warmButtonStyle()
+                .padding()
 
             } else {
                 Text("Page \(currentPage + 1) of \(totalPages)")
@@ -226,7 +263,7 @@ struct BookReaderView<ViewModel: BookReaderViewModel>: View {
     private var celebrationOverlay: some View {
         ZStack {
             if viewModel.shouldCelebrate {
-                LottieView(animation: .named(lottieList.randomElement() ?? "star.json"))
+                LottieView(animation: .named("complete.json"))
                     .looping()
                     .animationSpeed(0.9)
                     .frame(height: 200)
@@ -268,20 +305,34 @@ struct BookReaderView<ViewModel: BookReaderViewModel>: View {
             viewModel.shouldCelebrate = false
         }
     }
-    
-    private func startNewReadingSession() {
-        interactor.startNewSession()
-        sessionStartTime = Date()
-    }
-    
-    private func updateSessionDuration() {
-        guard let start = sessionStartTime else { return }
-        currentSessionDuration = Date().timeIntervalSince(start)
-    }
-    
-    private func endReadingSession() {
-        guard let start = sessionStartTime else { return }
-        let duration = Date().timeIntervalSince(start)
-        interactor.saveSessionDuration(duration)
+
+    @MainActor // ← guarantees all state writes are on the main thread
+    private func saveSession(
+        _ session: ReadingSession,
+        duration: TimeInterval
+    ) {
+        // 1. Prepare the value you want to persist
+        var sessionToSave = session
+        sessionToSave.endTime = Date()
+        sessionToSave.duration = duration
+        sessionToSave.pagesRead = .init(repeating: .init(pageNumber: 1, timestamp: .init()), count: 2)
+
+        // 2. Fire-and-forget Combine pipeline
+        userRepository
+            .saveReadingSession(sessionToSave, for: user.id)
+            .receive(on: DispatchQueue.main) // UI updates → main queue
+            .sink { [self] completion in // weak to break retain-cycle
+                switch completion {
+                case .finished:
+                    print("[Session] Saved \(sessionToSave.pagesRead.count) pages")
+                    self.clearCurrentSession()
+                    dismiss.callAsFunction() // ← safe: `self` is a class on main thread
+                case let .failure(error):
+                    print("[Session] Save failed – keeping session for retry: \(error)")
+                    self.currentSession = sessionToSave // keep a copy for retry
+                    self.currentPages = sessionToSave.pagesRead
+                }
+            } receiveValue: { _ in }
+            .store(in: &cancelBag)
     }
 }

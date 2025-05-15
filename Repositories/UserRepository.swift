@@ -11,6 +11,7 @@ protocol UserRepository {
     var authStatePublisher: AnyPublisher<String?, Never> { get }
     func getChildrenForParent(parentID: String) -> AnyPublisher<[UserEntity], UserError>
     func saveUser(_ user: UserEntity) -> AnyPublisher<Void, Error>
+    func saveUserDailyTarget(userID: String, goal: Int)
     func fetchUserProgress(userID: String) -> AnyPublisher<[ProgressData], UserError>
     func saveReadingSession(_ session: ReadingSession, for userId: String) -> AnyPublisher<Void, Error>
     func getWeeklyStats(userID: String) -> AnyPublisher<WeeklyReadingStats, UserError>
@@ -21,8 +22,15 @@ protocol UserRepository {
 }
 
 final class DefaultUserRepository: UserRepository {
+    func saveUserDailyTarget(userID: String, goal: Int) {
+        firestoreService.setDailyGoal(userId: userID, goal: goal)
+    }
+
     func saveReadingSession(_ session: ReadingSession, for userId: String) -> AnyPublisher<Void, Error> {
         firestoreService.saveReadingSession(userID: userId, session: session)
+            .retry(3) // Retry on failure
+            .delay(for: .seconds(1), scheduler: DispatchQueue.global()) // Wait between retries
+            .eraseToAnyPublisher()
             .mapError { $0 as Error }
             .eraseToAnyPublisher()
     }
@@ -64,9 +72,9 @@ final class DefaultUserRepository: UserRepository {
     func saveUser(_ user: UserEntity) -> AnyPublisher<Void, Error> {
         print("Save user called!")
         return firestoreService.saveUserEntity(user)
-//            .flatMap { [weak self] _ -> AnyPublisher<Void, Error> in
-//                self?.persistUserLocally(user) ?? .empty()
-//            }
+            .flatMap { [weak self] _ -> AnyPublisher<Void, Error> in
+                self?.persistUserLocally(user) ?? .empty()
+            }
             .eraseToAnyPublisher()
     }
 

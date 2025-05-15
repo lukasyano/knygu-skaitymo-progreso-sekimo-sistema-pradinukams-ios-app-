@@ -12,38 +12,50 @@ protocol UserStorageService {
 final class DefaultUserStorageService: UserStorageService {
     @Injected private var context: ModelContext
 
-    func saveUser(_ user: UserEntity) throws {
-        if let existing = try fetchUser(byId: user.id) {
-            existing.email = user.email
-            existing.name = user.name
-            existing.role = user.role
-            existing.totalPoints = user.totalPoints
-            existing.parentID = user.parentID
-            existing.childrensID = user.childrensID
-            existing.dailyReadingGoal = user.dailyReadingGoal
-
-            existing.progressData = user.progressData.map { progress in
-                progress
-            }
-            print("updated user")
+    func saveUser(_ incoming: UserEntity) throws {
+        // 1. Locate or create the target user *inside the current context*
+        let target: UserEntity
+        if let existing = try fetchUser(byId: incoming.id) {
+            target = existing
         } else {
-            let newUser = UserEntity(
-                id: user.id,
-                email: user.email,
-                name: user.name,
-                role: user.role,
-                parentID: user.parentID,
-                childrensID: user.childrensID,
-                totalPoints: user.totalPoints,
-                dailyReadingGoal: user.dailyReadingGoal ?? 10
+            target = UserEntity(
+                id: incoming.id,
+                email: incoming.email,
+                name: incoming.name,
+                role: incoming.role,
+                parentID: incoming.parentID,
+                childrensID: incoming.childrensID,
+                totalPoints: incoming.totalPoints,
+                dailyReadingGoal: incoming.dailyReadingGoal ?? 10
             )
-            newUser.progressData = user.progressData
-            context.insert(newUser)
-            print("insert newUser with id:\(newUser.id)")
+            context.insert(target)
+        }
+
+        // 2. Copy the *scalars* you actually want
+        target.email = incoming.email
+        target.name = incoming.name
+        target.role = incoming.role
+        target.totalPoints = incoming.totalPoints
+        target.parentID = incoming.parentID
+        target.childrensID = incoming.childrensID
+        target.dailyReadingGoal = incoming.dailyReadingGoal
+
+        // 3. Replace the progress list with *fresh* objects in this context
+        target.progressData.removeAll()
+        for src in incoming.progressData {
+            let pd = ProgressData(
+                bookId: src.bookId,
+                pagesRead: src.pagesRead,
+                totalPages: src.totalPages,
+                finished: src.finished,
+                pointsEarned: src.pointsEarned
+            )
+            pd.user = target // set the inverse
+            context.insert(pd) // explicit insert → same context
+            target.progressData.append(pd)
         }
 
         try context.save()
-        print("save completed")
     }
 
     func fetchUser(byId id: String) throws -> UserEntity? {

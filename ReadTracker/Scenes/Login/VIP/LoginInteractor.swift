@@ -66,6 +66,7 @@ extension DefaultLoginInteractor: LoginInteractor {
         presenter?.presentLoading(true)
 
         userRepository.logIn(email: email, password: password)
+            .subscribe(on: DispatchQueue.global())
             .receive(on: DispatchQueue.main)
             .sink(
                 receiveCompletion: { [weak self] in self?.handleLoginCompletion($0) },

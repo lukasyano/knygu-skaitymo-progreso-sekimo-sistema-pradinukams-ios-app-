@@ -2,12 +2,13 @@ import SwiftUI
 
 struct ProgressStatsView: View {
     @StateObject var viewModel = ProgressStatsViewModel()
-    let userName: String
-    let userId: String
+
+    let user: UserEntity
+    let onDailyProgressUpdated: (Int) -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("\(userName) savaitės skaitymo progresas")
+            Text("\(user.name) savaitės skaitymo progresas")
                 .font(.title2.bold())
                 .padding(.bottom, 10)
 
@@ -30,12 +31,42 @@ struct ProgressStatsView: View {
                      value: "\(viewModel.stats.daysActive)",
                      systemImage: "calendar",
                      backgroundColor: .purple.opacity(0.1))
+
+            // ―–––––––––––––––––––––––––––––––––––––––––
+            if let dailyReadingGoal = user.dailyReadingGoal {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Dienos skaitymo tikslas")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+
+                    HStack {
+                        Stepper(
+                            value: .init(get: { user.dailyReadingGoal ?? 5 }, set: onDailyProgressUpdated),
+                            in: 5 ... 300,
+                            step: 5
+                        ) {
+                            Text("\(dailyReadingGoal) min")
+                                .font(.title3.bold())
+                        }
+
+                        Spacer()
+                    }
+                    .padding()
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color(.systemBackground))
+                            .shadow(color: .gray.opacity(0.3),
+                                    radius: 4, x: 0, y: 2)
+                    )
+                }
+                .padding(.top, 4)
+            }
         }
         .padding()
         .background(RoundedRectangle(cornerRadius: 16).fill(Color(.systemBackground)))
         .shadow(radius: 5)
         .onAppear {
-            viewModel.loadStats(for: userId)
+            viewModel.loadStats(for: user.id)
         }
     }
 }

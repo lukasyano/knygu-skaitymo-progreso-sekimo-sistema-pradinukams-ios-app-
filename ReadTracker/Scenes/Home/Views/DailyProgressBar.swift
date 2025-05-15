@@ -26,7 +26,7 @@ struct CustomProgressViewStyle: ProgressViewStyle {
                 Capsule()
                     .frame(height: height)
                     .foregroundColor(accentColor.opacity(0.2))
-                
+
                 // Užpildas
                 Capsule()
                     .frame(
@@ -36,7 +36,7 @@ struct CustomProgressViewStyle: ProgressViewStyle {
                     // Jei užbaigta – ryškiai žalia, kitu atveju – tamsesnė akcento spalva
                     .foregroundColor(isCompleted ? accentColor : accentColor.darker(by: 0.2))
                     .animation(.easeInOut(duration: 0.4), value: configuration.fractionCompleted)
-                
+
                 // Overlay užbaigimo atveju: varnelė su tekstu
                 if isCompleted {
                     HStack(spacing: 8) {
@@ -62,9 +62,15 @@ struct DailyProgressBar: View {
         goal > 0 ? Double(minutesRead) / Double(goal) : 0
     }
 
+    var presentableMinutes: Int {
+        if minutesRead > goal {
+            return goal
+        } else { return minutesRead }
+    }
+
     var body: some View {
         VStack(spacing: 8) {
-            Text("Dienos skaitymo tikslas: \(minutesRead)/\(goal) min.")
+            Text("Dienos skaitymo tikslas: \(presentableMinutes)/\(goal) min.")
                 .frame(maxWidth: .infinity, alignment: .center)
                 .font(.subheadline)
 

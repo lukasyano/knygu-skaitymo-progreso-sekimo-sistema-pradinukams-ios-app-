@@ -11,10 +11,22 @@ protocol UsersFirestoreService {
     func saveReadingSession(userID: String, session: ReadingSession) -> AnyPublisher<Void, Error>
     func getReadingSessions(userID: String) -> AnyPublisher<[ReadingSession], Error>
     func getWeeklyStats(userID: String) -> AnyPublisher<WeeklyReadingStats, Error>
+    func setDailyGoal(userId: String, goal: Int)
 }
 
 final class DefaultUsersFirestoreService: UsersFirestoreService {
     private let fireStoreReference = Firestore.firestore()
+    
+    func setDailyGoal(userId: String, goal: Int) {
+        let userRef = fireStoreReference.collection("users").document(userId)
+        userRef.updateData(["dailyReadingGoal": goal]) { error in
+            if let error = error {
+                print("Klaida atnaujinant tikslą: \(error)")
+            } else {
+                print("Tikslas sėkmingai atnaujintas")
+            }
+        }
+    }
 
     func getProgressData(userID: String) -> AnyPublisher<[ProgressData], Error> {
         guard !userID.isEmpty else {

@@ -59,29 +59,35 @@ struct HomeView<ViewModel: HomeViewModel>: View {
             soundPlayer.stopPlayer()
         }
     }
+    
+    @StateObject var viewModel1 = ProgressStatsViewModel()
 
     private func loadTodayProgress() {
-        userRepository.getReadingSessions(userID: userID)
-            .map { sessions in
-                sessions.filter { session in
-                    Calendar.current.isDateInToday(session.startTime) || Calendar.current.isDateInToday(session.endTime)
-                }.reduce(0) { total, session in
-                    let startOfDay = Calendar.current.startOfDay(for: Date())
-                    let endOfDay = Calendar.current.date(byAdding: .day, value: 1, to: startOfDay)!
-
-                    let start = max(session.startTime, startOfDay)
-                    let end = min(session.endTime, endOfDay)
-
-                    let sessionDuration = max(0, end.timeIntervalSince(start))
-                    return total + Int(sessionDuration / 60)
-                }
-            }
-            .replaceError(with: 0)
-            .receive(on: DispatchQueue.main)
-            .sink { minutes in
-                todayMinutesRead = minutes
-            }
-            .store(in: &cancellables)
+        viewModel1.loadStats(for: userID)
+        
+        todayMinutesRead = Int(viewModel1.stats.totalDuration)
+        
+//        userRepository.getReadingSessions(userID: userID)
+//            .map { sessions in
+//                sessions.filter { session in
+//                    Calendar.current.isDateInToday(session.startTime) || Calendar.current.isDateInToday(session.endTime)
+//                }.reduce(0) { total, session in
+//                    let startOfDay = Calendar.current.startOfDay(for: Date())
+//                    let endOfDay = Calendar.current.date(byAdding: .day, value: 1, to: startOfDay)!
+//
+//                    let start = max(session.startTime, startOfDay)
+//                    let end = min(session.endTime, endOfDay)
+//
+//                    let sessionDuration = max(0, end.timeIntervalSince(start))
+//                    return total + Int(sessionDuration / 60)
+//                }
+//            }
+//            .replaceError(with: 0)
+//            .receive(on: DispatchQueue.main)
+//            .sink { minutes in
+//                todayMinutesRead = minutes
+//            }
+//            .store(in: &cancellables)
     }
 
     private var musicControlOverlay: some View {
@@ -193,7 +199,7 @@ struct HomeView<ViewModel: HomeViewModel>: View {
         if let currentUser {
             VStack(spacing: 0) {
                 if currentUser.role == .child, let dailyReadingGoal = currentUser.dailyReadingGoal {
-                    DailyProgressBar(minutesRead: todayMinutesRead, goal: dailyReadingGoal)
+                    DailyProgressBar(minutesRead: Int(viewModel1.stats.averageDailyDuration.asMinutes) , goal: dailyReadingGoal)
                         .padding()
                         .frame(height: 45)
                         .zIndex(1)

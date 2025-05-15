@@ -40,4 +40,7 @@ extension TimeInterval {
         let minutes = Int(self) / 60 % 60
         return String(format: "%02d h %02d min", hours, minutes)
     }
+    var asMinutes: Int {
+        return Int(self / 60)
+    }
 }
