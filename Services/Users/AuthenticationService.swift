@@ -13,8 +13,8 @@ enum UserError: LocalizedError {
 }
 
 protocol AuthenticationService {
-    func createUser(email: String, password: String) -> AnyPublisher<User, UserError>
-    func signIn(email: String, password: String) -> AnyPublisher<User, UserError>
+    func createUser(email: String, password: String) -> AnyPublisher<AuthenticatedUser, UserError>
+    func signIn(email: String, password: String) -> AnyPublisher<AuthenticatedUser, UserError>
     func signOut() throws
     var authStatePublisher: AnyPublisher<String?, Never> { get }
 }
@@ -34,7 +34,7 @@ final class DefaultAuthenticationService: AuthenticationService {
         }
     }
 
-    func createUser(email: String, password: String) -> AnyPublisher<User, UserError> {
+    func createUser(email: String, password: String) -> AnyPublisher<AuthenticatedUser, UserError> {
         Future { [weak instance] promise in
             instance?.createUser(withEmail: email, password: password) { result, error in
                 if let error = error {
@@ -47,7 +47,7 @@ final class DefaultAuthenticationService: AuthenticationService {
         .eraseToAnyPublisher()
     }
 
-    func signIn(email: String, password: String) -> AnyPublisher<User, UserError> {
+    func signIn(email: String, password: String) -> AnyPublisher<AuthenticatedUser, UserError> {
         Future { [weak instance] promise in
             instance?.signIn(withEmail: email, password: password) { result, error in
                 if let error = error {
@@ -102,3 +102,5 @@ extension DefaultAuthenticationService {
         }
     }
 }
+
+extension User: AuthenticatedUser {}

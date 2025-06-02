@@ -29,7 +29,7 @@ final class DefaultUserRepository: UserRepository {
     func saveReadingSession(_ session: ReadingSession, for userId: String) -> AnyPublisher<Void, Error> {
         firestoreService.saveReadingSession(userID: userId, session: session)
             .retry(3) // Retry on failure
-            .delay(for: .seconds(1), scheduler: DispatchQueue.global()) // Wait between retries
+            .delay(for: .seconds(1), scheduler: DispatchQueue.global())
             .eraseToAnyPublisher()
             .mapError { $0 as Error }
             .eraseToAnyPublisher()
@@ -53,9 +53,20 @@ final class DefaultUserRepository: UserRepository {
             .eraseToAnyPublisher()
     }
 
-    @Injected private var firebaseAuth: AuthenticationService
-    @Injected private var firestoreService: UsersFirestoreService
-    @Injected private var userStorageService: UserStorageService
+    private var firebaseAuth: AuthenticationService
+    private var firestoreService: UsersFirestoreService
+    private var userStorageService: UserStorageService
+
+    init(
+        firebaseAuth: AuthenticationService = Resolver.resolve(),
+        firestoreService: UsersFirestoreService = Resolver.resolve(),
+        userStorageService: UserStorageService = Resolver.resolve()
+    ) {
+        self.firebaseAuth = firebaseAuth
+        self.firestoreService = firestoreService
+        self.userStorageService = userStorageService
+    }
+
     private var cancellables = Set<AnyCancellable>()
     @Published private var currentUser: UserEntity?
 

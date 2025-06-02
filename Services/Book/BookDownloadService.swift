@@ -12,15 +12,21 @@ protocol BookDownloadService {
 }
 
 final class DefaultBookDownloadService: BookDownloadService {
-    @Injected private var modelContext: ModelContext
+    private var modelContext: ModelContext
 
     private let fileManager: FileManager = .default
     private let queue = DispatchQueue(label: "BookDownloadService", qos: .utility)
     let booksDirectory: URL
 
-    init() {
-        self.booksDirectory = Self.createBooksDirectory()
-        print("📁 Books Directory: \(booksDirectory.path)")
+    init(modelContext: ModelContext = Resolver.resolve(), booksDirectory: URL? = nil) {
+        self.modelContext = modelContext
+        
+        if let booksDirectory {
+            self .booksDirectory = booksDirectory
+        } else {
+            self.booksDirectory = Self.createBooksDirectory()
+        }
+        print("📁 Books Directory: \(self.booksDirectory.path)")
     }
 
     func downloadMissingBooks() -> AnyPublisher<Void, Error> {
