@@ -21,6 +21,8 @@ extension Resolver {
         register { BookStorageService() }
             .implements(BookStorageServiceProtocol.self)
             .scope(.application)
-        Resolver.register { BookSyncService() }
+        Resolver.register { DefaultBookSyncService() }
+            .implements(BookSyncService.self)
+            .scope(.application)
     }
 }

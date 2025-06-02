@@ -16,7 +16,7 @@ protocol UsersFirestoreService {
 
 final class DefaultUsersFirestoreService: UsersFirestoreService {
     private let fireStoreReference = Firestore.firestore()
-    
+
     func setDailyGoal(userId: String, goal: Int) {
         let userRef = fireStoreReference.collection("users").document(userId)
         userRef.updateData(["dailyReadingGoal": goal]) { error in
@@ -353,13 +353,17 @@ extension DefaultUsersFirestoreService {
             .order(by: "startTime", descending: true)
 
         return Future<QuerySnapshot, Error> { promise in
-            sessionsRef.getDocuments { snapshot, error in
+            sessionsRef.getDocuments {
+                snapshot,
+                    error in
                 if let error = error {
                     promise(.failure(error))
                 } else if let snapshot = snapshot {
                     promise(.success(snapshot))
                 } else {
-                    promise(.failure(NSError(domain: "FirestoreError", code: 404, userInfo: [NSLocalizedDescriptionKey: "No data found"])))
+                    promise(.failure(
+                        NSError(domain: "FirestoreError", code: 404, userInfo: [NSLocalizedDescriptionKey: "No data found"])
+                    ))
                 }
             }
         }

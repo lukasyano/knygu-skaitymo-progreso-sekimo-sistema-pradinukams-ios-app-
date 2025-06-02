@@ -3,7 +3,22 @@ import FirebaseFirestore
 import Resolver
 import SwiftData
 
-class BookSyncService {
+private struct GitHubItem: Codable {
+    let name: String
+    let pdfURL: String
+
+    enum CodingKeys: String, CodingKey {
+        case name
+        case pdfURL = "download_url"
+    }
+}
+
+protocol BookSyncService {
+    func fetchFromGitHubAndAddToFirestore() -> AnyPublisher<Void, Error>
+    func syncFirestoreToSwiftData() -> AnyPublisher<Void, Error>
+}
+
+class DefaultBookSyncService: BookSyncService {
     @Injected private var firestoreService: BookFirestoreService
     @Injected private var modelContext: ModelContext
 
@@ -97,15 +112,5 @@ class BookSyncService {
                 return error
             }
             .eraseToAnyPublisher()
-    }
-
-    private struct GitHubItem: Codable {
-        let name: String
-        let pdfURL: String
-
-        enum CodingKeys: String, CodingKey {
-            case name
-            case pdfURL = "download_url"
-        }
     }
 }

@@ -13,7 +13,6 @@ final class DefaultUserStorageService: UserStorageService {
     @Injected private var context: ModelContext
 
     func saveUser(_ incoming: UserEntity) throws {
-        // 1. Locate or create the target user *inside the current context*
         let target: UserEntity
         if let existing = try fetchUser(byId: incoming.id) {
             target = existing
@@ -31,7 +30,6 @@ final class DefaultUserStorageService: UserStorageService {
             context.insert(target)
         }
 
-        // 2. Copy the *scalars* you actually want
         target.email = incoming.email
         target.name = incoming.name
         target.role = incoming.role
@@ -40,19 +38,18 @@ final class DefaultUserStorageService: UserStorageService {
         target.childrensID = incoming.childrensID
         target.dailyReadingGoal = incoming.dailyReadingGoal
 
-        // 3. Replace the progress list with *fresh* objects in this context
         target.progressData.removeAll()
         for src in incoming.progressData {
-            let pd = ProgressData(
+            let progressData = ProgressData(
                 bookId: src.bookId,
                 pagesRead: src.pagesRead,
                 totalPages: src.totalPages,
                 finished: src.finished,
                 pointsEarned: src.pointsEarned
             )
-            pd.user = target // set the inverse
-            context.insert(pd) // explicit insert → same context
-            target.progressData.append(pd)
+            progressData.user = target
+            context.insert(progressData)
+            target.progressData.append(progressData)
         }
 
         try context.save()
