@@ -67,7 +67,6 @@ struct BookReaderView<ViewModel: BookReaderViewModel>: View {
             }
             .background(Color(.systemBackground))
             .onAppear {
-                //  interactor.startNewSession()
                 updateTotalPages()
             }
 
@@ -154,15 +153,12 @@ struct BookReaderView<ViewModel: BookReaderViewModel>: View {
     // MARK: - PDF Content
     private var pdfContent: some View {
         ZStack {
-            if let bookURL = book.fileURL {
+            if let _ = book.fileURL {
                 StablePDFDocumentView(
                     url: book.fileURL!,
                     initialPageIndex: currentPage,
                     isOnLastPage: $isOnLastPage,
-                    onPageChange: { newPage in
-                        currentPage = newPage
-                        // Save progress here
-                    },
+                    onPageChange: { newPage in currentPage = newPage },
                     role: user.role
                 )
                 .id("pdf_\(book.id)")
@@ -231,7 +227,6 @@ struct BookReaderView<ViewModel: BookReaderViewModel>: View {
             Spacer()
 
             if isOnLastPage {
-//                Button(action: markAsRead) {
                 Button("Perskaičiau") {
                     markAsRead()
                 }
@@ -306,30 +301,29 @@ struct BookReaderView<ViewModel: BookReaderViewModel>: View {
         }
     }
 
-    @MainActor // ← guarantees all state writes are on the main thread
+    @MainActor
     private func saveSession(
         _ session: ReadingSession,
         duration: TimeInterval
     ) {
-        // 1. Prepare the value you want to persist
         var sessionToSave = session
         sessionToSave.endTime = Date()
         sessionToSave.duration = duration
         sessionToSave.pagesRead = .init(repeating: .init(pageNumber: 1, timestamp: .init()), count: 2)
 
-        // 2. Fire-and-forget Combine pipeline
         userRepository
             .saveReadingSession(sessionToSave, for: user.id)
-            .receive(on: DispatchQueue.main) // UI updates → main queue
-            .sink { [self] completion in // weak to break retain-cycle
+            .receive(on: DispatchQueue.main)
+            .sink { [self] completion in
                 switch completion {
                 case .finished:
                     print("[Session] Saved \(sessionToSave.pagesRead.count) pages")
                     self.clearCurrentSession()
-                    dismiss.callAsFunction() // ← safe: `self` is a class on main thread
+                    dismiss.callAsFunction()
+
                 case let .failure(error):
                     print("[Session] Save failed – keeping session for retry: \(error)")
-                    self.currentSession = sessionToSave // keep a copy for retry
+                    self.currentSession = sessionToSave
                     self.currentPages = sessionToSave.pagesRead
                 }
             } receiveValue: { _ in }

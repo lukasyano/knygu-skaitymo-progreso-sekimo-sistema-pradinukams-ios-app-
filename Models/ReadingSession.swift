@@ -1,5 +1,5 @@
-import Foundation
 import FirebaseFirestore
+import Foundation
 
 struct ReadingSession: Codable {
     @DocumentID var id: String?
@@ -8,7 +8,7 @@ struct ReadingSession: Codable {
     var endTime: Date
     var duration: TimeInterval
     var pagesRead: [PageRead]
-    
+
     enum CodingKeys: String, CodingKey {
         case id
         case bookId

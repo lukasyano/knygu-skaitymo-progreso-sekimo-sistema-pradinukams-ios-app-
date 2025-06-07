@@ -155,7 +155,6 @@ struct ProfileView<ViewModel: ProfileViewModel>: View {
                         .font(.title2)
                 }
             }
-            // TODO: - asdoifklsad
             if childs.isEmpty {
                 Text("Nėra pridėtų vaikų")
                     .foregroundColor(.secondary)
@@ -176,7 +175,8 @@ struct ProfileView<ViewModel: ProfileViewModel>: View {
             ProgressStatsView(
                 user: user,
                 onDailyProgressUpdated: { [weak interactor] in
-                    interactor?.updateChildDailyGoal(user: user, goal: $0) }
+                    interactor?.updateChildDailyGoal(user: user, goal: $0)
+                }
             )
         }
     }

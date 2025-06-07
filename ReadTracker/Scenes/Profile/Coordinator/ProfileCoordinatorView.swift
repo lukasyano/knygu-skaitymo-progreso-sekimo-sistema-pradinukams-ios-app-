@@ -4,7 +4,7 @@ struct ProfileCoordinatorView: View {
     @ObservedObject var coordinator: DefaultProfileCoordinator
 
     var body: some View {
-        NavigationStack{
+        NavigationStack {
             coordinator.start()
                 .presentedView($coordinator.presentedView, content: presentedViewContent)
                 .navigation(item: $coordinator.route, destination: routeView(for:))

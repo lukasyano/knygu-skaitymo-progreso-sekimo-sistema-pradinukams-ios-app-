@@ -42,10 +42,8 @@ final class DefaultProfileInteractor {
 
 extension DefaultProfileInteractor: ProfileInteractor {
     func updateChildDailyGoal(user: UserEntity, goal: Int) {
-        var updatedUser = user
+        let updatedUser = user
         updatedUser.dailyReadingGoal = goal
-
-       // userRepository.saveUserDailyTarget(userID: user.id, goal: goal)
 
         userRepository.saveUser(updatedUser)
             .subscribe(on: DispatchQueue.global())

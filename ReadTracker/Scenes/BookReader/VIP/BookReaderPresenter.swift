@@ -17,7 +17,7 @@ extension DefaultBookReaderPresenter: BookReaderPresenter {
     func presentLoading(_ isLoading: Bool) {
         displayLogic?.displayLoading(isLoading)
     }
-    
+
     func presentCelebrate() {
         displayLogic?.displayCelebrate()
     }

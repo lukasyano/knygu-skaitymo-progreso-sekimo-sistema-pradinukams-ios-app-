@@ -33,7 +33,7 @@ struct RegistrationView<ViewModel: RegistrationViewModel>: View {
                 .toolbar {
                     ToolbarItem(placement: .topBarTrailing) {
                         Button("Demo") { [weak interactor] in
-                            
+
                             interactor?.onNameChange(MockCredentials.name(index: mockedParentCounter))
                             interactor?.onEmailChange(MockCredentials.email(index: mockedParentCounter))
                             interactor?.onPasswordChange(MockCredentials.password(index: mockedParentCounter))

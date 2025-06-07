@@ -209,7 +209,7 @@ private extension DefaultUserRepository {
     }
 
     func updateLocalUserProgress(userID: String, progress: [ProgressData]) {
-        guard var user = try? userStorageService.fetchUser(byId: userID) else { return }
+        guard let user = try? userStorageService.fetchUser(byId: userID) else { return }
         user.progressData = progress
         try? userStorageService.saveUser(user)
     }
@@ -217,7 +217,6 @@ private extension DefaultUserRepository {
     func synchronizeRelatedData(for user: UserEntity) -> AnyPublisher<Void, UserError> {
         var publishers = [AnyPublisher<Void, UserError>]()
 
-        // Sync children if parent
         if user.role == .parent {
             let childrenSync = getChildrenForParent(parentID: user.id)
                 .map { _ in () }
@@ -225,7 +224,6 @@ private extension DefaultUserRepository {
             publishers.append(childrenSync)
         }
 
-        // Sync progress if child
         if user.role == .child {
             let progressSync = fetchUserProgress(userID: user.id)
                 .map { _ in () }

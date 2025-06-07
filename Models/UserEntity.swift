@@ -21,7 +21,7 @@ class UserEntity {
 
     @Relationship(deleteRule: .nullify, inverse: \UserEntity.parent)
     var children = [UserEntity]()
-    
+
     var dailyReadingGoal: Int?
 
     init(

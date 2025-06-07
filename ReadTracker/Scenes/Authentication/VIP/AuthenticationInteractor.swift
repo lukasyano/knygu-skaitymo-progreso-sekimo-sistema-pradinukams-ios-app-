@@ -24,7 +24,7 @@ final class DefaultAuthenticationInteractor {
 // MARK: - Business Logic
 
 extension DefaultAuthenticationInteractor: AuthenticationInteractor {
-    func tapReload() {        
+    func tapReload() {
         bookRepository.refreshBooks()
             .subscribe(on: DispatchQueue.global())
             .receive(on: DispatchQueue.main)

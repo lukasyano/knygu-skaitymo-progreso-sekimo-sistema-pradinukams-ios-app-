@@ -3,7 +3,7 @@ import Foundation
 enum RegistrationCoordinatorPresentedView: Identifiable, Equatable {
     case validationError(error: String, onDismiss: () -> Void)
     case infoMessage(message: String, onDismiss: () -> Void)
-    
+
     var id: String {
         switch self {
         case let .validationError(error, _):

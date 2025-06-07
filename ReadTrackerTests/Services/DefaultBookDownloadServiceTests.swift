@@ -82,7 +82,7 @@ final class DefaultBookDownloadServiceTests: XCTestCase {
 
         // Verify
         XCTAssertNil(receivedError)
-        XCTAssertEqual(entity.fileURL, existingFile) // Unchanged URL
+        XCTAssertEqual(entity.fileURL, existingFile)
     }
 
     func test_handlesDownloadErrors() throws {

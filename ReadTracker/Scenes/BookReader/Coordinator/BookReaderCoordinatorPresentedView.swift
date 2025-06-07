@@ -3,7 +3,7 @@ import Foundation
 enum BookReaderCoordinatorPresentedView: Identifiable, Equatable {
     case validationError(error: String, onDismiss: () -> Void)
     case infoMessage(message: String, onDismiss: () -> Void)
-    
+
     var id: String {
         switch self {
         case let .validationError(error, _):

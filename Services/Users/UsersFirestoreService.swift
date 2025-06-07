@@ -154,7 +154,7 @@ final class DefaultUsersFirestoreService: UsersFirestoreService {
         )
 
         fetchProgressData(userRef: document.reference) { progressData in
-            var user = baseUser
+            let user = baseUser
             user.progressData = progressData
             completion(.success(user))
         }
@@ -310,7 +310,7 @@ extension DefaultUsersFirestoreService {
             }
         }
         .tryMap { snapshot -> WeeklyReadingStats in
-            let sessions = try snapshot.documents.compactMap { document -> ReadingSession? in
+            let sessions = snapshot.documents.compactMap { document -> ReadingSession? in
                 do {
                     return try document.data(as: ReadingSession.self)
                 } catch {
@@ -354,16 +354,21 @@ extension DefaultUsersFirestoreService {
 
         return Future<QuerySnapshot, Error> { promise in
             sessionsRef.getDocuments {
-                snapshot,
-                    error in
+                snapshot, error in
                 if let error = error {
                     promise(.failure(error))
                 } else if let snapshot = snapshot {
                     promise(.success(snapshot))
                 } else {
-                    promise(.failure(
-                        NSError(domain: "FirestoreError", code: 404, userInfo: [NSLocalizedDescriptionKey: "No data found"])
-                    ))
+                    promise(
+                        .failure(
+                            NSError(
+                                domain: "FirestoreError",
+                                code: 404,
+                                userInfo: [NSLocalizedDescriptionKey: "No data found"]
+                            )
+                        )
+                    )
                 }
             }
         }

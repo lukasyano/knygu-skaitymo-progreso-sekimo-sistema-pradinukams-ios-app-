@@ -9,12 +9,12 @@ protocol BookRepository {
 }
 
 final class DefaultBookRepository: BookRepository {
-     private var firestoreService: BookFirestoreService
-     private var syncService: BookSyncService
-     private var downloadService: BookDownloadService
-     private var modelContext: ModelContext
-     private var storage: BookStorageServiceProtocol
-    
+    private var firestoreService: BookFirestoreService
+    private var syncService: BookSyncService
+    private var downloadService: BookDownloadService
+    private var modelContext: ModelContext
+    private var storage: BookStorageServiceProtocol
+
     init(
         firestoreService: BookFirestoreService = Resolver.resolve(),
         syncService: BookSyncService = Resolver.resolve(),

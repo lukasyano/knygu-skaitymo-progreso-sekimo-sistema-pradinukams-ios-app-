@@ -34,7 +34,7 @@ final class DefaultLoginCoordinator: LoginCoordinator {
 // MARK: - Presentation
 
 extension DefaultLoginCoordinator {
-    func presentError(_ error: String, onClose: @escaping () -> Void){
+    func presentError(_ error: String, onClose: @escaping () -> Void) {
         presentedView = .validationError(error: error, onClose: onClose)
     }
 

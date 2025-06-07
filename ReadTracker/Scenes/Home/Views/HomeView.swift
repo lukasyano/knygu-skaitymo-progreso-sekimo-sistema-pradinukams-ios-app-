@@ -59,14 +59,14 @@ struct HomeView<ViewModel: HomeViewModel>: View {
             soundPlayer.stopPlayer()
         }
     }
-    
+
     @StateObject var viewModel1 = ProgressStatsViewModel()
 
     private func loadTodayProgress() {
         viewModel1.loadStats(for: userID)
-        
+
         todayMinutesRead = Int(viewModel1.stats.totalDuration)
-        
+        // TODO: - can be refactored
 //        userRepository.getReadingSessions(userID: userID)
 //            .map { sessions in
 //                sessions.filter { session in
@@ -199,7 +199,7 @@ struct HomeView<ViewModel: HomeViewModel>: View {
         if let currentUser {
             VStack(spacing: 0) {
                 if currentUser.role == .child, let dailyReadingGoal = currentUser.dailyReadingGoal {
-                    DailyProgressBar(minutesRead: Int(viewModel1.stats.averageDailyDuration.asMinutes) , goal: dailyReadingGoal)
+                    DailyProgressBar(minutesRead: Int(viewModel1.stats.averageDailyDuration.asMinutes), goal: dailyReadingGoal)
                         .padding()
                         .frame(height: 45)
                         .zIndex(1)

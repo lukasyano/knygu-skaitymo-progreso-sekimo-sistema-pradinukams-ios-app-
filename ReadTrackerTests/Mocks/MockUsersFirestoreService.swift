@@ -87,9 +87,9 @@ class MockUsersFirestoreService: UsersFirestoreService {
     }
 
     // MARK: - getWeeklyStats
-    var mockGetWeeklyStats: AnyPublisher<WeeklyReadingStats, Error> = Just(.init(totalDuration: .infinity, averageDailyDuration: .infinity, pagesRead: 1, daysActive: 22))
-        .setFailureType(to: Error.self)
-        .eraseToAnyPublisher()
+    var mockGetWeeklyStats: AnyPublisher<WeeklyReadingStats, Error> =
+        .just(.init(totalDuration: .infinity, averageDailyDuration: .infinity, pagesRead: 1, daysActive: 22))
+
     var getWeeklyStatsCall: Closure<String>?
 
     func getWeeklyStats(userID: String) -> AnyPublisher<WeeklyReadingStats, Error> {

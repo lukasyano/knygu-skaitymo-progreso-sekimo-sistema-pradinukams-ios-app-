@@ -36,9 +36,9 @@ extension DefaultLoginViewModel: LoginDisplayLogic {
         self.email = email
         manageDisableState()
     }
-    
+
     func displayRememberMe(_ isRememberMe: Bool) {
-        self.rememberMe = isRememberMe
+        rememberMe = isRememberMe
     }
 
     func displayPassword(_ password: String) {

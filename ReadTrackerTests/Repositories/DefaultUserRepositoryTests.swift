@@ -441,7 +441,13 @@ extension DefaultUserRepositoryTests {
 
     func test_saveReadingSession_retriesOnFailure() {
         // Given
-        let session = ReadingSession(bookId: "", startTime: .distantFuture, endTime: .distantFuture, duration: .infinity, pagesRead: [])
+        let session = ReadingSession(
+            bookId: "",
+            startTime: .distantFuture,
+            endTime: .distantFuture,
+            duration: .infinity,
+            pagesRead: []
+        )
         firestoreService.mockSaveReadingSession = Fail(error: NSError(domain: "Test", code: 500))
             .delay(for: .seconds(0.1), scheduler: RunLoop.main)
             .eraseToAnyPublisher()
@@ -473,7 +479,12 @@ extension DefaultUserRepositoryTests {
     func test_getWeeklyStats_success() {
         // Given
         let userId = "user1"
-        let expectedStats = WeeklyReadingStats(totalDuration: 120, averageDailyDuration: 30, pagesRead: 50, daysActive: 4)
+        let expectedStats = WeeklyReadingStats(
+            totalDuration: 120,
+            averageDailyDuration: 30,
+            pagesRead: 50,
+            daysActive: 4
+        )
         firestoreService.mockGetWeeklyStats = Just(expectedStats)
             .setFailureType(to: Error.self)
             .eraseToAnyPublisher()
@@ -531,8 +542,20 @@ extension DefaultUserRepositoryTests {
         // Given
         let userId = "user1"
         let sessions = [
-            ReadingSession(bookId: "", startTime: .distantFuture, endTime: .distantFuture, duration: .infinity, pagesRead: []),
-            ReadingSession(bookId: "", startTime: .distantFuture, endTime: .distantFuture, duration: .infinity, pagesRead: [])
+            ReadingSession(
+                bookId: "",
+                startTime: .distantFuture,
+                endTime: .distantFuture,
+                duration: .infinity,
+                pagesRead: []
+            ),
+            ReadingSession(
+                bookId: "",
+                startTime: .distantFuture,
+                endTime: .distantFuture,
+                duration: .infinity,
+                pagesRead: []
+            )
         ]
         firestoreService.mockGetReadingSessions = Just(sessions)
             .setFailureType(to: Error.self)

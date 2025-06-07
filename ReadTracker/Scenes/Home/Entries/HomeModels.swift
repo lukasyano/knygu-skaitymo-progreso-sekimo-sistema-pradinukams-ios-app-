@@ -8,7 +8,7 @@ enum HomeModels {
         let totalPages: Int?
         let image: UIImage?
     }
-    
+
     struct BookProgressPreseentable: Identifiable {
         let id: String
         let readedPages: Int
